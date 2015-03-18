@@ -1,0 +1,20 @@
+MIN_SNAPSHOT_NUM              0
+MAX_SNAPSHOT_NUM              161
+
+SNAPSHOT_DIR                  /path/to/snapshot/dir/ 
+SNAPSHOT_BASE                 2lpt_512_z300_PM      #without the trailing _ 
+
+GROUP_DIR                     /path/to/groups/dir/   
+GROUP_BASE                    groups                #without the trailing _  
+
+OUTPUT_DIR                   /path/to/output/dir/
+
+MAX_INCR                     3       # number of later snapshots to search for a descendant
+MAX_RANK_LOC                 100     # max. number of particles to use for binding energy rank. set to 0/negative to use all common particles
+
+MIN_FCOMMON_FINDPROGENITOR_THRESH                      0.5     # don't change assigned prog-desc pair unless more than 50% are common (and the subhalo is progenitor-less)
+MIN_NUMPART_IN_FINDPROGENITOR_HALO                     50      # Min. number of particles in the progenitorless subhalos to consider. 
+
+MIN_FCOMMON_SWITCHFOF_THRESH                           0.3     # 
+MIN_NUMPART_IN_SWITCHFOF_HALO                          500     # the min. number of halo particles in the fof to consider
+

@@ -1,0 +1,18 @@
+MIN_SNAPSHOT_NUM              0
+MAX_SNAPSHOT_NUM              161
+
+SNAPSHOT_DIR                  /path/to/snapshot/dir    #without trailing /
+SNAPSHOT_BASE                 snapshotbasename         #without trailing _
+
+GROUP_DIR                  /path/to/groups/dir         #without the trailing /
+GROUP_BASE                 groupbasename               #without the trailing _  
+
+OUTPUT_DIR                 /path/to/output/dir/
+
+BOXSIZE													50.0e3
+MAX_DECR_GROUPS                   5                    #maximum number of snapshots in the past. MAX_DECR_GROUPS+2 snapshots will be loaded
+MAX_RANK_LOC                      100                  #max. index to use for the binding energy rank
+MIN_FCOMMON_THRESH                0.5                  
+LOAD_FOUND_PROGENITORS			  1                    #Load previously generated orphan fixes                     
+LOAD_PARTIAL_FOUND_PROGENITORS    0                    #Load from previously interrupted orphan fix. Only looked at if LOAD_FOUND_PROGENITORS is 0
+

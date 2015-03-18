@@ -1,0 +1,14 @@
+MIN_SNAPSHOT_NUM              0
+MAX_SNAPSHOT_NUM              112
+
+SNAPSHOT_DIR                  /path/to/snapshot/dir   ## without trailing /
+SNAPSHOT_BASE                 snapshot_file_base      ## without trailing _
+
+GROUP_DIR                  /path/to/groups/dir        ## without trailing /
+GROUP_BASE                 groups                     ## without trailing _
+
+OUTPUT_DIR                 /path/to/output/dir        ## without trailing /
+
+BOXSIZE										 50.0e3
+LINKLENGTH                 0.2
+INDIVIDUAL_MERGERS	       0
