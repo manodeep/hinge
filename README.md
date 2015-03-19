@@ -41,14 +41,14 @@ Installing HINGE
 Prerequisites
 ------------------
 
-`GNU Scientific Library <http://www.gnu.org/software/gsl/>`_ is the 
+[GNU Scientific Library](http://www.gnu.org/software/gsl/ "GSL") is the 
 only pre-requisite for HINGE. And a working C compiler, of course. 
 
 
 HINGE Compile Options
 ------------------------
 
-Get the source code from the [here] (https://bitbucket.org/manodeep/hinge/ "HINGE repository") ::
+Get the source code from the [here](https://bitbucket.org/manodeep/hinge/ "HINGE repository") ::
 
 ``hg clone https://manodeep@bitbucket.org/manodeep/hinge``
 
@@ -70,7 +70,7 @@ Deprecated HINGE Compile Options
 -----------------------------
 
 * FOF_ONLY			-- Generate the interaction network just based on FOF halos
-* GET_GROUPVEL	-- Read in group velocities for [SubFind] (http://enzo-project.org/ "SubFind is bundled with Enzo") halos. 
+* GET_GROUPVEL	-- Read in group velocities for [SubFind](http://enzo-project.org/ "SubFind is bundled with Enzo") halos. 
 
 
 Compiler Options under development
@@ -78,7 +78,7 @@ Compiler Options under development
 
 These are the following compile options that will be active in the near-future ::
 
-* BGC2  		-- Read-in [Rockstar] (https://bitbucket.org/gfcstanford/rockstar "Rockstar Repository") halo catalogs that have been written in the ``bgc2`` format
+* BGC2  		-- Read-in [Rockstar](https://bitbucket.org/gfcstanford/rockstar "Rockstar Repository") halo catalogs that have been written in the ``bgc2`` format
 * USE_OMP   -- Enable OpenMP parallelization
 
 Running HINGE
@@ -86,7 +86,7 @@ Running HINGE
 
 Input Formats for Halo Catalogs
 -----------------------------
-HINGE currently supports standard SubFind halos, and [AHF] (http://popia.ft.uam.es/AHF/ "Download AHF") halos generated
+HINGE currently supports standard SubFind halos, and [AHF](http://popia.ft.uam.es/AHF/ "Download AHF") halos generated
 with the ``SUSSING2013`` Makefile option. 
 
 

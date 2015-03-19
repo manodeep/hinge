@@ -285,7 +285,7 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
 					}
 					max_part_id++;
 					if(DestMaxPartId[snapshot] < max_part_id) {
-						fprintf(stderr,"Replaceing DestMaxPartId[%d] = %"STR_ID_FMT" with %"STR_ID_FMT" NUMPART = %"STR_FMT"\n",snapshot,DestMaxPartId[snapshot],max_part_id,NUMPART);
+						fprintf(stderr,"Replacing DestMaxPartId[%d] = %"STR_ID_FMT" with %"STR_ID_FMT" NUMPART = %"STR_FMT"\n",snapshot,DestMaxPartId[snapshot],max_part_id,NUMPART);
 						DestMaxPartId[snapshot] = max_part_id;
 					}
 					

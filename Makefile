@@ -6,6 +6,9 @@ CLEANDIRS = $(DIRS:%=clean-%)
 
 all: $(BUILDDIRS)
 
+tar:
+	hg archive $(DISTNAME).$(MAJOR).0.$(MINOR).no_version_control.tar.gz -X ".hg*"
+
 dist:
 	hg archive $(DISTNAME).$(MAJOR).0.$(MINOR).tar.gz 
 
