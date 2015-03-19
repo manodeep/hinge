@@ -35,22 +35,22 @@ Adds stellar masses from various fits in the literature. genplotdata.c
 contains majority of the routines to generate data used to make plots.
 
 
-Installing ``HINGE``
+Installing `HINGE`
 ===================
 
 Prerequisites
 ------------------
 
-`GNU Scientific Library <http://www.gnu.org/software/gsl/>_` is the 
+`GNU Scientific Library <http://www.gnu.org/software/gsl/>`_ is the 
 only pre-requisite for HINGE. And a working C compiler, of course. 
 
 
-``HINGE`` Compile Options
+HINGE Compile Options
 ------------------------
 
-Get the source code from the `HINGE repo <http://bitbucket.org/manodeep/HINGE>_` ::
+Get the source code from the `HINGE repo <https://bitbucket.org/manodeep/hinge/>`_ ::
 
-hg clone https://manodeep@bitbucket.org/manodeep/hinge
+``hg clone https://manodeep@bitbucket.org/manodeep/hinge``
 
 Edit the ``common.mk`` file to set up your compilation options ::
 
@@ -70,7 +70,7 @@ Deprecated ``HINGE`` Compile Options
 -----------------------------
 
 * FOF_ONLY			-- Generate the interaction network just based on FOF halos
-* GET_GROUPVEL	-- Read in group velocities for `SubFind <http://enzo-project.org/>_` halos 
+* GET_GROUPVEL	-- Read in group velocities for `SubFind <http://enzo-project.org/>`_ halos 
 
 
 Compiler Options under development
@@ -78,7 +78,7 @@ Compiler Options under development
 
 These are the following compile options that will be active in the near-future ::
 
-* BGC2  		-- Read-in `Rockstar <https://bitbucket.org/gfcstanford/rockstar>_` halo catalogs that have been written in the ``bgc2`` format
+* BGC2  		-- Read-in `Rockstar <https://bitbucket.org/gfcstanford/rockstar>`_ halo catalogs that have been written in the ``bgc2`` format
 * USE_OMP   -- Enable OpenMP parallelization
 
 Running ``HINGE``
@@ -86,9 +86,8 @@ Running ``HINGE``
 
 Input Formats for Halo Catalogs
 -----------------------------
-``HINGE`` currently supports standard SubFind halos, and `AHF <popia.ft.uam.es/AHF/>_` halos generated
-with the SUSSING MERGERTREE option. 
-
+HINGE currently supports standard SubFind halos, and `AHF <popia.ft.uam.es/AHF/>`_ halos generated
+with the ``SUSSING2013`` Makefile option. 
 
 
 Common parameters
