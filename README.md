@@ -48,11 +48,11 @@ only pre-requisite for HINGE. And a working C compiler, of course.
 HINGE Compile Options
 ------------------------
 
-Get the source code from the [here](https://bitbucket.org/manodeep/hinge/ "HINGE repository") ::
+Get the source code from the [here](https://bitbucket.org/manodeep/hinge/ "HINGE repository"), ::
 
-``hg clone https://manodeep@bitbucket.org/manodeep/hinge``
+``hg clone https://USERNAME@bitbucket.org/manodeep/hinge``
 
-Edit the ``common.mk`` file to set up your compilation options ::
+Edit the ``common.mk`` file to set up your compilation options, ::
 
 * BIGSIM     -- Particle load is > INT_MAX (~ 2 Billion). All loop counters will be 64-bit integers
 * LONGIDS    -- Particle IDs are 64-bit integers
@@ -76,7 +76,7 @@ Deprecated HINGE Compile Options
 Compiler Options under development
 ------------------------------
 
-These are the following compile options that will be active in the near-future ::
+These are the following compile options that will be active in the near-future, ::
 
 * BGC2  		-- Read-in [Rockstar](https://bitbucket.org/gfcstanford/rockstar "Rockstar Repository") halo catalogs that have been written in the ``bgc2`` format
 * USE_OMP   -- Enable OpenMP parallelization
@@ -93,7 +93,7 @@ with the ``SUSSING2013`` Makefile option.
 Common parameters
 -----------------
 
-Here are the parameters that are common to all three codes ::
+Here are the parameters that are common to all three codes, ::
 
 * MIN_SNAPSHOT_NUM			-- Minimum snapshot number (integer).
 * MAX_SNAPSHOT_NUM			-- Maximum snapshot number (integer).
