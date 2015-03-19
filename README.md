@@ -35,7 +35,7 @@ Adds stellar masses from various fits in the literature. genplotdata.c
 contains majority of the routines to generate data used to make plots.
 
 
-Installing `HINGE`
+Installing HINGE
 ===================
 
 Prerequisites
