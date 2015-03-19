@@ -48,7 +48,7 @@ only pre-requisite for HINGE. And a working C compiler, of course.
 HINGE Compile Options
 ------------------------
 
-Get the source code from the `HINGE repo <https://bitbucket.org/manodeep/hinge/>`_ ::
+Get the source code from the [here] (https://bitbucket.org/manodeep/hinge/ "HINGE repository") ::
 
 ``hg clone https://manodeep@bitbucket.org/manodeep/hinge``
 
@@ -66,11 +66,11 @@ Edit the ``common.mk`` file to set up your compilation options ::
 * WMAP1 				-- Set up WMAP1 cosmology
 
 
-Deprecated ``HINGE`` Compile Options
+Deprecated HINGE Compile Options
 -----------------------------
 
 * FOF_ONLY			-- Generate the interaction network just based on FOF halos
-* GET_GROUPVEL	-- Read in group velocities for `SubFind <http://enzo-project.org/>`_ halos 
+* GET_GROUPVEL	-- Read in group velocities for [SubFind] (http://enzo-project.org/ "SubFind is bundled with Enzo") halos. 
 
 
 Compiler Options under development
@@ -78,15 +78,15 @@ Compiler Options under development
 
 These are the following compile options that will be active in the near-future ::
 
-* BGC2  		-- Read-in `Rockstar <https://bitbucket.org/gfcstanford/rockstar>`_ halo catalogs that have been written in the ``bgc2`` format
+* BGC2  		-- Read-in [Rockstar] (https://bitbucket.org/gfcstanford/rockstar "Rockstar Repository") halo catalogs that have been written in the ``bgc2`` format
 * USE_OMP   -- Enable OpenMP parallelization
 
-Running ``HINGE``
+Running HINGE
 ===========================
 
 Input Formats for Halo Catalogs
 -----------------------------
-HINGE currently supports standard SubFind halos, and `AHF <popia.ft.uam.es/AHF/>`_ halos generated
+HINGE currently supports standard SubFind halos, and [AHF] (http://popia.ft.uam.es/AHF/ "Download AHF") halos generated
 with the ``SUSSING2013`` Makefile option. 
 
 
@@ -111,17 +111,17 @@ Here are the parameters that are common to all three codes ::
 * OUTPUT_DIR						-- Directory where all output is written
 
 
-Parameter File for ``HaloParentFinder``
+Parameter File for `HaloParentFinder`
 -----------------------------------
 
 Please refer to the README file in the appropriate directory.
 
-Parameter File for ``OrphanFixer``
+Parameter File for `OrphanFixer`
 -----------------------------------
 
 Please refer to the README file in the appropriate directory.
 
-Parameter File for ``MergerTree``
+Parameter File for `MergerTree`
 -----------------------------------
 
 Please refer to the README file in the appropriate directory.
