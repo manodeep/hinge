@@ -16,14 +16,14 @@ This repo contains a set of 3 tools (written in C) to create a
 full interaction network from a cosmological simulation. The code
 is divided into 3 stages:
 
-HaloParentFinder
--------------------
+## HaloParentFinder
+
 Creates the progenitor-descendant pairs between a target snapshot
 and future snapshots. Refer to the README in the HaloParentFinder
 sub-directory for more details. 
 
-OrphanFixer
--------------------
+## OrphanFixer
+
 Corrects the situation where the halofinder misses subhalos that
 pass too close to the host halo center. Such subhalos appear to have
 (artificially) disrupted; and reappear as a progenitor-less subhalo
@@ -33,8 +33,8 @@ This step can only be run after ``HaloParentFinder`` has processed
 all of the snapshots. OrphanFixer creates the exact same interaction
 network as the next step, ``MergerTree``. 
 
-MergerTree
-------------------
+## MergerTree
+
 Creates the full interaction network and outputs various interactions.
 Adds stellar masses from various fits in the literature. genplotdata.c
 contains majority of the routines to generate data used to make plots.
@@ -43,15 +43,13 @@ contains majority of the routines to generate data used to make plots.
 # Installing HINGE
 
 
-Prerequisites
-------------------
+## Prerequisites
 
 [GNU Scientific Library](http://www.gnu.org/software/gsl/ "GSL") is the 
 only pre-requisite for HINGE. And a working C compiler, of course. 
 
 
-HINGE Compile Options
-------------------------
+## HINGE Compile Options
 
 Get the source code from the repo, [here](https://bitbucket.org/manodeep/hinge/ "HINGE repository"), ::
 
@@ -71,15 +69,13 @@ Edit the ``common.mk`` file to set up your compilation options,
 * WMAP1 				-- Set up WMAP1 cosmology
 
 
-Deprecated HINGE Compile Options
------------------------------
+## Deprecated HINGE Compile Options
 
 * FOF_ONLY			-- Generate the interaction network just based on FOF halos
 * GET_GROUPVEL	-- Read in group velocities for [SubFind](http://enzo-project.org/ "SubFind is bundled with Enzo") halos. 
 
 
-Compiler Options under development
-------------------------------
+## Options under development
 
 These are the following compile options that will be active in the near-future, 
 
@@ -88,53 +84,44 @@ These are the following compile options that will be active in the near-future,
 
 # Running HINGE
 
-Input Formats for Halo Catalogs
------------------------------
+## Input Formats for Halo Catalogs
+
 HINGE currently supports standard SubFind halos, and [AHF](http://popia.ft.uam.es/AHF/ "Download AHF") halos generated
 with the ``SUSSING2013`` Makefile option. 
 
 
-Common parameters
------------------
+## Common parameters
 
 Here are the parameters that are common to all three codes, 
 
-* MIN_SNAPSHOT_NUM			-- Minimum snapshot number (integer).
-* MAX_SNAPSHOT_NUM			-- Maximum snapshot number (integer).
-
-* SNAPSHOT_DIR					-- Directory where all the snapshots are stored (string).
-* SNAPSHOT_BASE					-- Basename for all the snapshots (string). Fully qualified
-													 snapshot names are generated using the C printf format
-													 ``sprintf(%s/%s_%03d, SNAPSHOT_DIR, SNAPSHOT_BASE, snapshot_number)``.
-
-* GROUP_DIR							-- Directory where the halo catalogs are stored (string)
-* GROUP_BASE						-- Basename for all the halo catalogs (string). For instance,
-													 SubFind writes out halo catalogs as groups_XXX.*. So, if you
-													 are using SubFind halos then, ``GROUP_BASE`` should be `groups`
-
-* OUTPUT_DIR						-- Directory where all output is written
+Parameter name                                     |  Parameter Effect
+[----------------------------------------------------|-------------------------------
+ MIN_SNAPSHOT_NUM			 | Minimum snapshot number (integer).
+ MAX_SNAPSHOT_NUM			| Maximum snapshot number (integer).
+ SNAPSHOT_DIR					| Directory where all the snapshots are stored (string).
+ SNAPSHOT_BASE				| Basename for all the snapshots (string). Fully qualified snapshot names are generated using the C printf format ``sprintf(%s/%s_%03d,SNAPSHOT_DIR,SNAPSHOT_BASE,snapshot_number)``.
+ GROUP_DIR						| Directory where the halo catalogs are stored (string)
+ GROUP_BASE					| Basename for all the halo catalogs (string). For instance, 			SubFind writes out halo catalogs as groups_XXX.*. So, if you are using SubFind halos then, ``GROUP_BASE`` should be `groups`.
+ OUTPUT_DIR					| Directory where all output is written
 
 
-Parameter File for HaloParentFinder
------------------------------------
+## Parameter File for HaloParentFinder
 
 Please refer to the [HaloParentFinder/README](haloparentfinder/README.md) file. 
 
-Parameter File for OrphanFixer
------------------------------------
+## Parameter File for OrphanFixer
 
 Please refer to the [OrphanFixer/README](orphanfixer/README.md) file. 
 
-Parameter File for MergerTree
------------------------------------
+## Parameter File for MergerTree
 
 Please refer to the [MergerTree/README](mergertree/README.md) file.
 
 # Author
 
 
-HINGE was written by Manodeep Sinha. Please contact the author in
-case of any issues manodeep@gmail.com
+HINGE was written by Manodeep Sinha. Please contact the [author](mailto:manodeep@gmail.com) in
+case of any issues.
 
 # LICENSE
 
