@@ -6,7 +6,7 @@
 # Contents 
 
 * [Description](#description)
-* [Installation](#installing-hinge)
+* [Installation](#installing-HINGE)
 * [Running the codes](#running-hinge)
 
 
@@ -58,16 +58,16 @@ Get the source code from the repo, [here](https://bitbucket.org/manodeep/hinge/ 
 Edit the ``common.mk`` file to set up your compilation options, 
 
 
-Compile Option          |   Effect of compile option
------------------------------|-----------------------------------
- BIGSIM                     | Particle load is > INT_MAX (~ 2 Billion). All loop counters will be 64-bit integers
-LONGIDS                  | Particle IDs are 64-bit integers
-MAKE_LEAN             | Remove memory allocations when they are no longer required (recommended)
-SUSSING_TREES    | Read in AHF halos generated with the SUSSING TREES compile option
-SUBFIND                  | Read in SubFind halos
-BGC2 		          | Read in Rockstar halos written in the bgc2 format ( ** under development **)
+Compile Option    |   Effect of compile option
+------------------|-----------------------------------
+BIGSIM            | Particle load is > INT\_MAX (2^31 ~ 2 Billion). All loop counters will be 64-bit integers
+LONGIDS           | Particle IDs are 64-bit integers
+MAKE\_LEAN        | Remove memory allocations when they are no longer required (recommended)
+SUSSING\_TREES    | Read in AHF halos generated with the SUSSING TREES compile option
+SUBFIND           | Read in SubFind halos
+BGC2 		      | Read in Rockstar halos written in the bgc2 format ( ** under development **)
 WMAP5 			  | Set up WMAP5 cosmology
-WMAP3 		          | Set up WMAP3 cosmology
+WMAP3 		      | Set up WMAP3 cosmology
 WMAP1 			  | Set up WMAP1 cosmology
 
 
@@ -96,15 +96,15 @@ with the ``SUSSING2013`` Makefile option.
 
 Here are the parameters that are common to all three codes, 
 
-Parameter name                                     |  Parameter Meaning
-:----------------------------------------------------|:-------------------------------
- MIN_SNAPSHOT_NUM			        | Minimum snapshot number (integer).
- MAX_SNAPSHOT_NUM			| Maximum snapshot number (integer).
- SNAPSHOT_DIR					| Directory where all the snapshots are stored (string).
- SNAPSHOT_BASE				| Basename for all the snapshots (string). Fully qualified snapshot names are generated using the C printf format ``sprintf(%s/%s_%03d,SNAPSHOT_DIR,SNAPSHOT_BASE,snapshot_number)``.
- GROUP_DIR						| Directory where the halo catalogs are stored (string)
- GROUP_BASE					| Basename for all the halo catalogs (string). For instance, 			SubFind writes out halo catalogs as groups_XXX.*. So, if you are using SubFind halos then, ``GROUP_BASE`` should be `groups`.
- OUTPUT_DIR					| Directory where all output is written
+Parameter name               |  Parameter Meaning
+-----------------------------|-------------------------------
+ MIN\_SNAPSHOT\_NUM			 | Minimum snapshot number (integer).
+ MAX_SNAPSHOT_NUM			 | Maximum snapshot number (integer).
+ SNAPSHOT\_DIR				 | Directory where all the snapshots are stored (string).
+ SNAPSHOT\_BASE				 | Basename for all the snapshots (string). Fully qualified snapshot names are generated using the C printf format ``sprintf(%s/%s_%03d,SNAPSHOT_DIR,SNAPSHOT_BASE,snapshot_number)``.
+ GROUP\_DIR					 | Directory where the halo catalogs are stored (string)
+ GROUP\_BASE				 | Basename for all the halo catalogs (string). For instance, SubFind writes out halo catalogs as ``groups\_XXX.*``. So, if you are using SubFind halos then, ``GROUP_BASE`` should be `groups`.
+ OUTPUT\_DIR				 | Directory where all output is written
 
 
 ## Parameter File for HaloParentFinder
