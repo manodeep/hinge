@@ -3,12 +3,6 @@
    LICENSE: MIT
 */
 
-# Contents 
-
-* [Description](#description)
-* [Installation](#installing)
-* [Running the codes](#running)
-
 # Description
 
 This repo contains a set of 3 tools (written in C) to create a
@@ -39,7 +33,7 @@ Adds stellar masses from various fits in the literature. genplotdata.c
 contains majority of the routines to generate data used to make plots.
 
 
-<h2 id="installing">Installing HINGE</h2>
+# Installing HINGE
 
 ## Prerequisites
 
@@ -82,7 +76,7 @@ These are the following compile options that will be active in the near-future,
 * BGC2  		-- Read-in [Rockstar](https://bitbucket.org/gfcstanford/rockstar "Rockstar Repository") halo catalogs that have been written in the ``bgc2`` format
 * USE_OMP   -- Enable OpenMP parallelization
 
-<h2 id="running">Running HINGE</h2>
+# Running HINGE
 
 ## Input Formats for Halo Catalogs
 
