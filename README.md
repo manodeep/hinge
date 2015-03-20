@@ -6,8 +6,8 @@
 # Contents 
 
 * [Description](#description)
-* [Installation](#installing-HINGE)
-* [Running the codes](#running-hinge)
+* [Installation](#installing)
+* [Running the codes](#running)
 
 
 # Description
@@ -40,8 +40,7 @@ Adds stellar masses from various fits in the literature. genplotdata.c
 contains majority of the routines to generate data used to make plots.
 
 
-# Installing HINGE
-
+<h2 id="installing">Installing HINGE</h2>
 
 ## Prerequisites
 
@@ -62,16 +61,16 @@ Compile Option    |   Effect of compile option
 ------------------|-----------------------------------
 BIGSIM            | Particle load is > INT\_MAX (2^31 ~ 2 Billion). All loop counters will be 64-bit integers
 LONGIDS           | Particle IDs are 64-bit integers
-MAKE\_LEAN        | Remove memory allocations when they are no longer required (recommended)
+MAKE\_LEAN        | Remove memory allocations when they are no longer required (* always recommended *)
 SUSSING\_TREES    | Read in AHF halos generated with the SUSSING TREES compile option
 SUBFIND           | Read in SubFind halos
-BGC2 		      | Read in Rockstar halos written in the bgc2 format ( ** under development **)
+BGC2 		      | Read in Rockstar halos written in the bgc2 format ( * under development *)
 WMAP5 			  | Set up WMAP5 cosmology
 WMAP3 		      | Set up WMAP3 cosmology
 WMAP1 			  | Set up WMAP1 cosmology
 
 
-## Deprecated HINGE Compile Options
+## Deprecated **HINGE** Compile Options
 
 * FOF_ONLY			-- Generate the interaction network just based on FOF halos
 * GET_GROUPVEL	-- Read in group velocities for [SubFind](http://enzo-project.org/ "SubFind is bundled with Enzo") halos. 
@@ -84,7 +83,7 @@ These are the following compile options that will be active in the near-future,
 * BGC2  		-- Read-in [Rockstar](https://bitbucket.org/gfcstanford/rockstar "Rockstar Repository") halo catalogs that have been written in the ``bgc2`` format
 * USE_OMP   -- Enable OpenMP parallelization
 
-# Running HINGE
+<h2 id="running">Running **HINGE*</h2>
 
 ## Input Formats for Halo Catalogs
 
