@@ -9,8 +9,7 @@
 * [Installation](#installing)
 * [Running the codes](#running)
 
-
-# Description
+<h2 id="description">Description</h2>
 
 This repo contains a set of 3 tools (written in C) to create a
 full interaction network from a cosmological simulation. The code
@@ -70,7 +69,7 @@ WMAP3 		      | Set up WMAP3 cosmology
 WMAP1 			  | Set up WMAP1 cosmology
 
 
-## Deprecated **HINGE** Compile Options
+## Deprecated HINGE Compile Options
 
 * FOF_ONLY			-- Generate the interaction network just based on FOF halos
 * GET_GROUPVEL	-- Read in group velocities for [SubFind](http://enzo-project.org/ "SubFind is bundled with Enzo") halos. 
@@ -83,7 +82,7 @@ These are the following compile options that will be active in the near-future,
 * BGC2  		-- Read-in [Rockstar](https://bitbucket.org/gfcstanford/rockstar "Rockstar Repository") halo catalogs that have been written in the ``bgc2`` format
 * USE_OMP   -- Enable OpenMP parallelization
 
-<h2 id="running">Running **HINGE*</h2>
+<h2 id="running">Running HINGE</h2>
 
 ## Input Formats for Halo Catalogs
 
