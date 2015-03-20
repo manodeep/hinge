@@ -9,7 +9,7 @@
 * [Installation](#installing)
 * [Running the codes](#running)
 
-<h2 id="description">Description</h2>
+# Description
 
 This repo contains a set of 3 tools (written in C) to create a
 full interaction network from a cosmological simulation. The code
