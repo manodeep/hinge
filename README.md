@@ -3,9 +3,14 @@
    LICENSE: MIT
 */
 
+# Contents 
 
-Description
-======================
+* [Description](#description)
+* [Installation](#installing-hinge)
+* [Running the codes](#running-hinge)
+
+
+# Description
 
 This repo contains a set of 3 tools (written in C) to create a
 full interaction network from a cosmological simulation. The code
@@ -35,8 +40,8 @@ Adds stellar masses from various fits in the literature. genplotdata.c
 contains majority of the routines to generate data used to make plots.
 
 
-Installing HINGE
-===================
+# Installing HINGE
+
 
 Prerequisites
 ------------------
@@ -48,11 +53,11 @@ only pre-requisite for HINGE. And a working C compiler, of course.
 HINGE Compile Options
 ------------------------
 
-Get the source code from the [here](https://bitbucket.org/manodeep/hinge/ "HINGE repository"), ::
+Get the source code from the repo, [here](https://bitbucket.org/manodeep/hinge/ "HINGE repository"), ::
 
-``hg clone https://USERNAME@bitbucket.org/manodeep/hinge``
+    hg clone https://USERNAME@bitbucket.org/manodeep/hinge
 
-Edit the ``common.mk`` file to set up your compilation options, ::
+Edit the ``common.mk`` file to set up your compilation options, 
 
 * BIGSIM     -- Particle load is > INT_MAX (~ 2 Billion). All loop counters will be 64-bit integers
 * LONGIDS    -- Particle IDs are 64-bit integers
@@ -76,13 +81,12 @@ Deprecated HINGE Compile Options
 Compiler Options under development
 ------------------------------
 
-These are the following compile options that will be active in the near-future, ::
+These are the following compile options that will be active in the near-future, 
 
 * BGC2  		-- Read-in [Rockstar](https://bitbucket.org/gfcstanford/rockstar "Rockstar Repository") halo catalogs that have been written in the ``bgc2`` format
 * USE_OMP   -- Enable OpenMP parallelization
 
-Running HINGE
-===========================
+# Running HINGE
 
 Input Formats for Halo Catalogs
 -----------------------------
@@ -93,7 +97,7 @@ with the ``SUSSING2013`` Makefile option.
 Common parameters
 -----------------
 
-Here are the parameters that are common to all three codes, ::
+Here are the parameters that are common to all three codes, 
 
 * MIN_SNAPSHOT_NUM			-- Minimum snapshot number (integer).
 * MAX_SNAPSHOT_NUM			-- Maximum snapshot number (integer).
@@ -111,29 +115,28 @@ Here are the parameters that are common to all three codes, ::
 * OUTPUT_DIR						-- Directory where all output is written
 
 
-Parameter File for `HaloParentFinder`
+Parameter File for HaloParentFinder
 -----------------------------------
 
-Please refer to the README file in the appropriate directory.
+Please refer to the [HaloParentFinder/README](haloparentfinder/README.md) file. 
 
-Parameter File for `OrphanFixer`
+Parameter File for OrphanFixer
 -----------------------------------
 
-Please refer to the README file in the appropriate directory.
+Please refer to the [OrphanFixer/README](orphanfixer/README.md) file. 
 
-Parameter File for `MergerTree`
+Parameter File for MergerTree
 -----------------------------------
 
-Please refer to the README file in the appropriate directory.
+Please refer to the [MergerTree/README](mergertree/README.md) file.
 
-Author
-=====================
+# Author
+
 
 HINGE was written by Manodeep Sinha. Please contact the author in
 case of any issues manodeep@gmail.com
 
-LICENSE
-=====================
+# LICENSE
 
 HINGE is released under the MIT license. Basically, do what you want
 with the code including using it in commercial application (however,
@@ -141,8 +144,6 @@ in that case, please send me an email - I would like to know how
 you could possibly make a commercial application application out
 of this code).
 
-Project URL
-=====================
-
+# Project URL
+ 
 * version control (https://bitbucket.org/manodeep/hinge)
-
