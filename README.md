@@ -109,15 +109,15 @@ Parameter name               |  Parameter Meaning
 
 ## Parameter File for HaloParentFinder
 
-Please refer to the [HaloParentFinder/README](haloparentfinder/README.md) file. 
+Please refer to the README file in the [HaloParentFinder](haloparentfinder) directory. 
 
 ## Parameter File for OrphanFixer
 
-Please refer to the [OrphanFixer/README](orphanfixer/README.md) file. 
+Please refer to the README file in the [OrphanFixer](orphanfixer) directory. 
 
 ## Parameter File for MergerTree
 
-Please refer to the [MergerTree/README](mergertree/README.md) file.
+Please refer to the README file in the [MergerTree](mergertree) file.
 
 # Author
 
