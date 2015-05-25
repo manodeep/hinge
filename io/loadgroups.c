@@ -199,6 +199,7 @@ void remove_duplicate_particles(const int64 Ngroups, struct group_data *groups)
 					partids   = my_realloc(partids,sizeof(*partids),max_npart,"partids");
 					halolevel = my_realloc(halolevel,sizeof(*halolevel),max_npart,"halolevel");
 					haloindex = my_realloc(haloindex,sizeof(*haloindex),max_npart,"haloindex");
+					partloc_in_halo = my_realloc(partloc_in_halo, sizeof(*partloc_in_halo), max_npart, "partloc_in_halo");
 				} 
 
 				/* if(this_id == 2047766) { */
