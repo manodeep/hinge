@@ -16,7 +16,7 @@ all: $(SOURCES) $(EXECUTABLE) $(INCL)
 $(EXECUTABLE): $(OBJECTS) $(INCL)
 	$(CC) $(CLINK) $(GSL_LINK) $(OBJECTS) -o $@
 
-$(OBJECTS): %.o: %.c $(INCL)
+%.o: %.c $(INCL)
 	$(CC) $(GSL_CFLAGS) $(CFLAGS) $(OPT) $(INCLUDE) -c $< -o $@
 
 .PHONY: clean clena celan celna

@@ -470,12 +470,12 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
     for(int64 igroup=0;igroup<Ngroups[isnapshot];igroup++) {
       thisnode = &BaseNode[igroup];
       if(thisnode->Nchild > 1 && thisnode->isFof == 0)	{
-	savenode  = thisnode;
-	thisnode = savenode->BigChild->Sibling;
-	while(thisnode != NULL)	{
-	  savenode->Mstar += thisnode->Mstar;
-	  thisnode = thisnode->Sibling;
-	}
+				savenode  = thisnode;
+				thisnode = savenode->BigChild->Sibling;
+				while(thisnode != NULL)	{
+					savenode->Mstar += thisnode->Mstar;
+					thisnode = thisnode->Sibling;
+				}
       }
     }
   }
@@ -485,176 +485,176 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
     BaseNode = tree[isnapshot];
     if(Ngroups[isnapshot] > 0) {
       for(int64 igroup=0;igroup<Ngroups[isnapshot];igroup++) {
-	thisnode = &BaseNode[igroup];
-	haloid = thisnode->haloid;
-	lastmergerz  = -1.0;
-	totnmergers  = 0;
-	totndissolve = 0;
-	totndisrupt  = 0;
-	
-	if(thisnode->Nchild > 1) {
-	  /* Disruptions and Dissolutions */
-	  if(thisnode->isFof == 1) {
-	    savenode = thisnode;
-	    thisnode = thisnode->BigChild;
-	    while(thisnode->Sibling != NULL) {
-	      thisnode = thisnode->Sibling;
-	      if(thisnode->FofHalo->haloid == haloid) {
-		savenode->NDisruptions +=1;
-		totndisrupt +=1;
-		lastmergerz = savenode->z;
-	      } else {
-		savenode->NDissolutions +=1;
-		totndissolve +=1;
-		lastmergerz = savenode->z;
-	      }
-	      
-	    }
-	    
-	    thisnode = savenode; /* reset thisnode to actual node that we are dealing with */
-	    assert(thisnode->haloid == haloid);
-	  } else {
-	    /*thisnode is a subhalo*/
-	    
-	    /* 
-	       Subhalo merging. Its possible that a FOF halo falls in and directly points into 
-	       this subhalo. In principle that could be the same as a `dissolution' event but
-	       I am treating it as a `merger' event.
-	    */
-	    
-	    savenode = thisnode;
-	    count_mergers=thisnode->Nchild-1;
-	    thisnode->Nmergers = count_mergers;
-	    totnmergers += count_mergers;
-	    lastmergerz = thisnode->z;
-	    
-	    thisnode = thisnode->BigChild;
-	    while(thisnode !=NULL && count_mergers > 0) {
-	      if (thisnode->FofHalo->haloid  == savenode->FofHalo->haloid) {
-		count_mergers--;
-	      } else {
-		/* 							  fprintf(stderr,"*WARNING* hmmm subhalo has more than one child coming from a different fof halo *WARNING*\n"); */
-		if (savenode->haloid == thisnode->haloid)	{
-		  /* Figure out the tag */
-		  savethisnode = thisnode;
-		  thisnode=thisnode->Parent; /*come back down to current snapshot*/
-		  
-		  destructionz=-1.0;
-		  destructionradius=-1.0;
-		  destruction_subtmot=-1.0;
-		  destruction_parentmtot=-1.0;
-		  destruction_snapshot=-1;
-		  destruction_parentmstar=-1.0;
-
-		  /* 								  tag = get_tag(thisnode,savenode->FofHalo,&destructionz,&destructionradius); */
-		  //MS 7th Dec, 2011 - updated to use the new tagging system that accounts for 
-		  //subhalos missing snapshots
-
-		  //MS 30th Sep, 2013 - no longer necessary. ensure_same_snapshot() accounts for missing snasphots
-		  tag = get_tag(thisnode,savenode->FofHalo,&destructionz,&destructionradius,&destruction_snapshot,&destruction_subtmot,&destruction_parentmtot,&destruction_parentmstar);
-		  if (tag == -1 && thisnode->Parent == NULL)
-		    tag = 99;
-		  
-		  if (tag == 3 || tag == 5) {
-		    thisnode->NFlybys++;
-		    savenode->FofHalo->NFlybys++;
-		    fprintf(fp2,"%e %e %e %e %e %e %e %e %e %"STR_FMT" %"STR_FMT"\n",
-			    savenode->z,
-			    savenode->FofHalo->BoundFofMtot,
-			    thisnode->InfallMass,
-			    get_scalefactor(thisnode->z)*periodic(savenode->FofHalo->xcen-thisnode->xcen),
-			    get_scalefactor(thisnode->z)*periodic(savenode->FofHalo->ycen-thisnode->ycen),
-			    get_scalefactor(thisnode->z)*periodic(savenode->FofHalo->zcen-thisnode->zcen),
-			    savenode->FofHalo->meanvel[0]-thisnode->meanvel[0],
-			    savenode->FofHalo->meanvel[1]-thisnode->meanvel[1],
-			    savenode->FofHalo->meanvel[2]-thisnode->meanvel[2],
-			    savenode->FofHalo->haloid,
-			    thisnode->haloid);
-
-		  }
-		  
-		  
-		  check_if_halo_disappears(thisnode,NUM_SNAPSHOTS_TO_CHECK,PARAMS.OUTPUT_DIR,tag);
-		  
-		  rsep = get_separation_between_centres(thisnode,savenode->FofHalo);
-		  vsep = 0.0;
-		  for(int i=0;i<3;i++)
-		    vsep += pow( (thisnode->meanvel[i] - savenode->FofHalo->meanvel[i]),2.0);
-		  
-		  vsep = sqrt(vsep);
-		  
-		  Impulse=get_impulse(thisnode,savenode->FofHalo,rsep,vsep);
-		  DelPotPrim=get_external_delpot_prim(thisnode,savenode->FofHalo,rsep,vsep);
-		  DelPotSec=get_external_delpot_sec(thisnode,savenode->FofHalo,rsep,vsep);
-		  
-		  /* Find the max delta phi created -> smallest rsep while subhalo is still inside this same fof */
-		  minrsep=rsep;
-		  minrsep_snap=thisnode->snapshot;
-		  rvir_at_minrsep=thisnode->Rvir;
-		  fof_rvir_at_minrsep=savenode->FofHalo->Rvir;
-		  
-		  tmpnode=thisnode;
-		  MaxDelPotSec = DelPotSec;
-		  MaxDelPotPrim = DelPotPrim;
-		  /* 								  while(tmpnode->Parent !=NULL && tmpnode->Parent->haloid==thisnode->haloid && tmpnode->FofHalo->haloid==thisnode->FofHalo->haloid) */
-		  while(tmpnode->Parent !=NULL && tmpnode->Parent->haloid==thisnode->haloid && tmpnode->Parent->FofHalo->haloid==thisnode->FofHalo->haloid ) {
-		    tmpnode=tmpnode->Parent;
-		    tmprsep = get_separation_between_centres(tmpnode,tmpnode->FofHalo);;
-		    if (tmprsep < minrsep) {
-		      minrsep=tmprsep;
-		      minrsep_snap = tmpnode->snapshot;
-		      rvir_at_minrsep=tmpnode->Rvir;
-		      fof_rvir_at_minrsep=tmpnode->FofHalo->Rvir;
-		      
-		    }
-		    
-		    if (float_almost_equal(minrsep,0.0,5) == 1  && (tag==3 || tag==5)) {
-		      fprintf(stderr,"WARNING (UPPER): This should not happen\n Min. rsep is 0.0 for a flyby\n");
-		      fprintf(stderr,"thisnode->haloid = %"STR_FMT" snapshot= %d  tmpnode->haloid=%"STR_FMT" tmpnode->snap=%d savenode->Fofid = %"STR_FMT" \n",
-			      thisnode->haloid,thisnode->snapshot,tmpnode->haloid,tmpnode->snapshot,savenode->FofHalo->haloid);
-		      fprintf(stderr,"thisnode->fofhaloid = %"STR_FMT" tmpnode->id = %"STR_FMT" tmpnode->Fofhaloid = %"STR_FMT" \n",
-			      thisnode->FofHalo->haloid,tmpnode->haloid,tmpnode->FofHalo->haloid);
-		      
-		      fprintf(stderr,"tmpnode->xcen =%f tmpnode->ycen = %f tmpnode->zcen =%f\n",
-			      tmpnode->xcen,tmpnode->ycen,tmpnode->zcen);
-		      fprintf(stderr,"tmpfof->xcen =%f tmpfof->ycen = %f tmpfof->zcen =%f\n",
-			      tmpnode->FofHalo->xcen,tmpnode->FofHalo->ycen,tmpnode->FofHalo->zcen);
-		      
-		    }
-		    
-		    
-		    tmpvsep = 0.0;
-		    for(int i=0;i<3;i++)
-		      tmpvsep += pow( (tmpnode->meanvel[i] - tmpnode->FofHalo->meanvel[i]),2.0);
-		    
-		    tmpvsep = sqrt(tmpvsep);
-		    
-		    tmpmaxdelpotprim = get_internal_delpot_prim(tmpnode,tmpnode->FofHalo,minrsep,tmpvsep);
-		    MaxDelPotPrim = tmpmaxdelpotprim > MaxDelPotPrim ? tmpmaxdelpotprim:MaxDelPotPrim; 
-		    
-		    tmpmaxdelpotsec = get_internal_delpot_sec(tmpnode,tmpnode->FofHalo,minrsep,tmpvsep);
-		    MaxDelPotSec  = tmpmaxdelpotsec > MaxDelPotSec ?  tmpmaxdelpotsec:MaxDelPotSec;
-		    
-		  }
-		  //MS 08/24/2011 -- Changed Submtot to InfallMass
-		  
-		  /* 								  fprintf(fp," %10d     %12"STR_FMT"   %12"STR_FMT"      %12.4g    %12"STR_FMT"   %12"STR_FMT"    %12.6g   %10.4f   %10.4f  %12.4g  %12.4g  %12.4g   %6d  %18.4f   %12.4f   %12.4g %12.4g       %12.6e       %12.4g      %10d       %12.4g         %12.4g \n", */
-		  /* 										  savenode->FofHalo->snapshot,savenode->FofHalo->nodeloc,savenode->FofHalo->haloid,savenode->FofHalo->Mtot, */
-		  /* 										  thisnode->nodeloc,thisnode->haloid,thisnode->Mtot,rsep, vsep,Impulse,DelPotPrim,DelPotSec,tag,destructionz, */
-		  /* 										  minrsep,MaxDelPotPrim,MaxDelPotSec,destructionradius,savenode->FofHalo->Rvir,minrsep_snap, rvir_at_minrsep,fof_rvir_at_minrsep); */
+				thisnode = &BaseNode[igroup];
+				haloid = thisnode->haloid;
+				lastmergerz  = -1.0;
+				totnmergers  = 0;
+				totndissolve = 0;
+				totndisrupt  = 0;
+				
+				if(thisnode->Nchild > 1) {
+					/* Disruptions and Dissolutions */
+					if(thisnode->isFof == 1) {
+						savenode = thisnode;
+						thisnode = thisnode->BigChild;
+						while(thisnode->Sibling != NULL) {
+							thisnode = thisnode->Sibling;
+							if(thisnode->FofHalo->haloid == haloid) {
+								savenode->NDisruptions +=1;
+								totndisrupt +=1;
+								lastmergerz = savenode->z;
+							} else {
+								savenode->NDissolutions +=1;
+								totndissolve +=1;
+								lastmergerz = savenode->z;
+							}
+							
+						}
+						
+						thisnode = savenode; /* reset thisnode to actual node that we are dealing with */
+						assert(thisnode->haloid == haloid);
+					} else {
+						/*thisnode is a subhalo*/
+						
+						/* 
+							 Subhalo merging. Its possible that a FOF halo falls in and directly points into 
+							 this subhalo. In principle that could be the same as a `dissolution' event but
+							 I am treating it as a `merger' event.
+						*/
+						
+						savenode = thisnode;
+						count_mergers=thisnode->Nchild-1;
+						thisnode->Nmergers = count_mergers;
+						totnmergers += count_mergers;
+						lastmergerz = thisnode->z;
+						
+						thisnode = thisnode->BigChild;
+						while(thisnode !=NULL && count_mergers > 0) {
+							if (thisnode->FofHalo->haloid  == savenode->FofHalo->haloid) {
+								count_mergers--;
+							} else {
+								/* 							  fprintf(stderr,"*WARNING* hmmm subhalo has more than one child coming from a different fof halo *WARNING*\n"); */
+								if (savenode->haloid == thisnode->haloid)	{
+									/* Figure out the tag */
+									savethisnode = thisnode;
+									thisnode=thisnode->Parent; /*come back down to current snapshot*/
+									
+									destructionz=-1.0;
+									destructionradius=-1.0;
+									destruction_subtmot=-1.0;
+									destruction_parentmtot=-1.0;
+									destruction_snapshot=-1;
+									destruction_parentmstar=-1.0;
+									
+									/* 								  tag = get_tag(thisnode,savenode->FofHalo,&destructionz,&destructionradius); */
+									//MS 7th Dec, 2011 - updated to use the new tagging system that accounts for 
+									//subhalos missing snapshots
+									
+									//MS 30th Sep, 2013 - no longer necessary. ensure_same_snapshot() accounts for missing snasphots
+									tag = get_tag(thisnode,savenode->FofHalo,&destructionz,&destructionradius,&destruction_snapshot,&destruction_subtmot,&destruction_parentmtot,&destruction_parentmstar);
+									if (tag == -1 && thisnode->Parent == NULL)
+										tag = 99;
+									
+									if (tag == 3 || tag == 5) {
+										thisnode->NFlybys++;
+										savenode->FofHalo->NFlybys++;
+										fprintf(fp2,"%e %e %e %e %e %e %e %e %e %"STR_FMT" %"STR_FMT"\n",
+														savenode->z,
+														savenode->FofHalo->BoundFofMtot,
+														thisnode->InfallMass,
+														get_scalefactor(thisnode->z)*periodic(savenode->FofHalo->xcen-thisnode->xcen),
+														get_scalefactor(thisnode->z)*periodic(savenode->FofHalo->ycen-thisnode->ycen),
+														get_scalefactor(thisnode->z)*periodic(savenode->FofHalo->zcen-thisnode->zcen),
+														savenode->FofHalo->meanvel[0]-thisnode->meanvel[0],
+														savenode->FofHalo->meanvel[1]-thisnode->meanvel[1],
+														savenode->FofHalo->meanvel[2]-thisnode->meanvel[2],
+														savenode->FofHalo->haloid,
+														thisnode->haloid);
+										
+									}
 		  
 		  
+									check_if_halo_disappears(thisnode,NUM_SNAPSHOTS_TO_CHECK,PARAMS.OUTPUT_DIR,tag);
 		  
-		  fprintf(fp," %10d     %12"STR_FMT"   %12"STR_FMT"      %12.4g    %12"STR_FMT"   %12"STR_FMT"    %12.6g   %10.4f   %10.4f  %12.4g  %12.4g  %12.4g   %6d  %18.4f   %12.4f   %12.4g %12.4g       %12.6e       %12.4g      %10d       %12.4g         %12.4g  %10d %12.4g %12.4g  %16.4g  %16.4g\n",
-			  savenode->FofHalo->snapshot,savenode->FofHalo->nodeloc,savenode->FofHalo->haloid,savenode->FofHalo->Mtot,
-			  thisnode->nodeloc,thisnode->haloid,thisnode->InfallMass,rsep, vsep,Impulse,DelPotPrim,DelPotSec,tag,destructionz,
-			  minrsep,MaxDelPotPrim,MaxDelPotSec,destructionradius,savenode->FofHalo->Rvir,minrsep_snap, rvir_at_minrsep,fof_rvir_at_minrsep,
-			  destruction_snapshot,
-			  destruction_subtmot,
-			  destruction_parentmtot,
-			  thisnode->Mstar,
-			  destruction_parentmstar);
+									rsep = get_separation_between_centres(thisnode,savenode->FofHalo);
+									vsep = 0.0;
+									for(int i=0;i<3;i++)
+										vsep += pow( (thisnode->meanvel[i] - savenode->FofHalo->meanvel[i]),2.0);
+									
+									vsep = sqrt(vsep);
+									
+									Impulse=get_impulse(thisnode,savenode->FofHalo,rsep,vsep);
+									DelPotPrim=get_external_delpot_prim(thisnode,savenode->FofHalo,rsep,vsep);
+									DelPotSec=get_external_delpot_sec(thisnode,savenode->FofHalo,rsep,vsep);
+									
+									/* Find the max delta phi created -> smallest rsep while subhalo is still inside this same fof */
+									minrsep=rsep;
+									minrsep_snap=thisnode->snapshot;
+									rvir_at_minrsep=thisnode->Rvir;
+									fof_rvir_at_minrsep=savenode->FofHalo->Rvir;
+									
+									tmpnode=thisnode;
+									MaxDelPotSec = DelPotSec;
+									MaxDelPotPrim = DelPotPrim;
+									/* 								  while(tmpnode->Parent !=NULL && tmpnode->Parent->haloid==thisnode->haloid && tmpnode->FofHalo->haloid==thisnode->FofHalo->haloid) */
+									while(tmpnode->Parent !=NULL && tmpnode->Parent->haloid==thisnode->haloid && tmpnode->Parent->FofHalo->haloid==thisnode->FofHalo->haloid ) {
+										tmpnode=tmpnode->Parent;
+										tmprsep = get_separation_between_centres(tmpnode,tmpnode->FofHalo);;
+										if (tmprsep < minrsep) {
+											minrsep=tmprsep;
+											minrsep_snap = tmpnode->snapshot;
+											rvir_at_minrsep=tmpnode->Rvir;
+											fof_rvir_at_minrsep=tmpnode->FofHalo->Rvir;
+											
+										}
+										
+										if (float_almost_equal(minrsep,0.0,5) == 1  && (tag==3 || tag==5)) {
+											fprintf(stderr,"WARNING (UPPER): This should not happen\n Min. rsep is 0.0 for a flyby\n");
+											fprintf(stderr,"thisnode->haloid = %"STR_FMT" snapshot= %d  tmpnode->haloid=%"STR_FMT" tmpnode->snap=%d savenode->Fofid = %"STR_FMT" \n",
+															thisnode->haloid,thisnode->snapshot,tmpnode->haloid,tmpnode->snapshot,savenode->FofHalo->haloid);
+											fprintf(stderr,"thisnode->fofhaloid = %"STR_FMT" tmpnode->id = %"STR_FMT" tmpnode->Fofhaloid = %"STR_FMT" \n",
+															thisnode->FofHalo->haloid,tmpnode->haloid,tmpnode->FofHalo->haloid);
+											
+											fprintf(stderr,"tmpnode->xcen =%f tmpnode->ycen = %f tmpnode->zcen =%f\n",
+															tmpnode->xcen,tmpnode->ycen,tmpnode->zcen);
+											fprintf(stderr,"tmpfof->xcen =%f tmpfof->ycen = %f tmpfof->zcen =%f\n",
+															tmpnode->FofHalo->xcen,tmpnode->FofHalo->ycen,tmpnode->FofHalo->zcen);
+											
+										}
+										
+										
+										tmpvsep = 0.0;
+										for(int i=0;i<3;i++)
+											tmpvsep += pow( (tmpnode->meanvel[i] - tmpnode->FofHalo->meanvel[i]),2.0);
+										
+										tmpvsep = sqrt(tmpvsep);
+										
+										tmpmaxdelpotprim = get_internal_delpot_prim(tmpnode,tmpnode->FofHalo,minrsep,tmpvsep);
+										MaxDelPotPrim = tmpmaxdelpotprim > MaxDelPotPrim ? tmpmaxdelpotprim:MaxDelPotPrim; 
+										
+										tmpmaxdelpotsec = get_internal_delpot_sec(tmpnode,tmpnode->FofHalo,minrsep,tmpvsep);
+										MaxDelPotSec  = tmpmaxdelpotsec > MaxDelPotSec ?  tmpmaxdelpotsec:MaxDelPotSec;
+										
+									}
+									//MS 08/24/2011 -- Changed Submtot to InfallMass
 		  
+									/* 								  fprintf(fp," %10d     %12"STR_FMT"   %12"STR_FMT"      %12.4g    %12"STR_FMT"   %12"STR_FMT"    %12.6g   %10.4f   %10.4f  %12.4g  %12.4g  %12.4g   %6d  %18.4f   %12.4f   %12.4g %12.4g       %12.6e       %12.4g      %10d       %12.4g         %12.4g \n", */
+									/* 										  savenode->FofHalo->snapshot,savenode->FofHalo->nodeloc,savenode->FofHalo->haloid,savenode->FofHalo->Mtot, */
+									/* 										  thisnode->nodeloc,thisnode->haloid,thisnode->Mtot,rsep, vsep,Impulse,DelPotPrim,DelPotSec,tag,destructionz, */
+									/* 										  minrsep,MaxDelPotPrim,MaxDelPotSec,destructionradius,savenode->FofHalo->Rvir,minrsep_snap, rvir_at_minrsep,fof_rvir_at_minrsep); */
+									
+									
+									
+									fprintf(fp," %10d     %12"STR_FMT"   %12"STR_FMT"      %12.4g    %12"STR_FMT"   %12"STR_FMT"    %12.6g   %10.4f   %10.4f  %12.4g  %12.4g  %12.4g   %6d  %18.4f   %12.4f   %12.4g %12.4g       %12.6e       %12.4g      %10d       %12.4g         %12.4g  %10d %12.4g %12.4g  %16.4g  %16.4g\n",
+													savenode->FofHalo->snapshot,savenode->FofHalo->nodeloc,savenode->FofHalo->haloid,savenode->FofHalo->Mtot,
+													thisnode->nodeloc,thisnode->haloid,thisnode->InfallMass,rsep, vsep,Impulse,DelPotPrim,DelPotSec,tag,destructionz,
+													minrsep,MaxDelPotPrim,MaxDelPotSec,destructionradius,savenode->FofHalo->Rvir,minrsep_snap, rvir_at_minrsep,fof_rvir_at_minrsep,
+													destruction_snapshot,
+													destruction_subtmot,
+													destruction_parentmtot,
+													thisnode->Mstar,
+													destruction_parentmstar);
+									
 		  
 		  thisnode = savethisnode; /* go back to previous snapshot */
 		} else {

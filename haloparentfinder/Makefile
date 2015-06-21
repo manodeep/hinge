@@ -13,7 +13,7 @@ all = $(EXEC) $(SRC) $(INCL)
 $(EXEC): $(OBJS) 
 	$(CC) $(OBJS) $(CLINK)   -o  $@
 
-$(OBJS): %.o: %.c $(INCL) 
+%.o: %.c $(INCL) 
 	$(CC) $(CFLAGS) $(OPT) $(INCLUDE)  -c $< -o $@
 
 clean:

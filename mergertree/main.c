@@ -912,18 +912,18 @@ void writeids(struct node_data * tree[],int64 *Ngroups)
     fp = my_fopen(outfname,"w");
     fprintf(fp,"# Mass is in %e Msun. Redshift = %f  \n",ActualMassUnits,REDSHIFT[isnapshot]);
     fprintf(fp,"#  \n");
-    fprintf(fp,"# Snapshot        GroupNum        Haloid           Mtot         LastMergerRed     Formationz      Nmergers    TotNmergers     ParentLev       Nsub     FofHaloid    ContainerNum       Rvir          Rvir_anyl         Rhalf       Nflybys       TotNflybys     Mstar    InfallMass \n");
-    fprintf(fp,"#   i                l               l               d                 f               f               l           l              i              l         l             l                d             d                 d           l               l            d          d     \n");
-    fprintf(fp,"####################################################################################################################################################################################################################################################################################\n");
+    fprintf(fp,"# Snapshot        GroupNum        Haloid           Mtot         LastMergerRed     Formationz      Nmergers    TotNmergers     ParentLev       Nsub     FofHaloid    ContainerNum       Rvir          Rvir_anyl         Rhalf       Nflybys       TotNflybys     Mstar    InfallMass       xcen \n");
+    fprintf(fp,"#   i                l               l               d                 f               f               l           l              i              l         l             l                d             d                 d           l               l            d          d            f   \n");
+    fprintf(fp,"###############################################################################################################################################################################################################################################################################################\n");
     
     for(int64 igroup=0;igroup<Ngroups[isnapshot];igroup++) {
       thisnode = &BaseNode[igroup];
-      fprintf(fp,"%4d     %12"STR_FMT "     %12"STR_FMT"    %13.4f    %12.3f      %12.3f    %10"STR_FMT"    %10"STR_FMT"  %10d  %12"STR_FMT"  %12"STR_FMT"    %12"STR_FMT "   %12.4g    %12.4g    %12.4g     %12"STR_FMT"    %12"STR_FMT"   %14.4lf   %14.4lf\n",
+      fprintf(fp,"%4d     %12"STR_FMT "     %12"STR_FMT"    %13.4f    %12.3f      %12.3f    %10"STR_FMT"    %10"STR_FMT"  %10d  %12"STR_FMT"  %12"STR_FMT"    %12"STR_FMT "   %12.4g    %12.4g    %12.4g     %12"STR_FMT"    %12"STR_FMT"   %14.4lf   %14.4lf %14.6g \n",
 	      isnapshot,igroup,thisnode->haloid,
 	      thisnode->Mtot,thisnode->RedshiftofLastMerger,thisnode->FormationRedshift,thisnode->Nmergers,
 	      thisnode->TotNmergers,thisnode->ParentLevel,thisnode->Nsub,thisnode->FofHalo->haloid,thisnode->ContainerId,
 	      thisnode->Rvir,thisnode->Rvir_anyl,thisnode->Rhalf,thisnode->NFlybys,thisnode->TotNFlybys,thisnode->Mstar,
-	      thisnode->InfallMass);
+							thisnode->InfallMass,thisnode->xcen);
     }
     
     fclose(fp);
