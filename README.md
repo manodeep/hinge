@@ -5,7 +5,7 @@
 
 # Description
 
-This repo contains a set of 3 tools (written in C) to create a
+HINGE (**H**alo **I**nteraction **N**etwork and **G**alaxy **E**volution) contains a set of 3 tools (written in C) to create a
 full interaction network from a cosmological simulation. The code
 is divided into 3 stages:
 
