@@ -54,7 +54,7 @@ double behroozi_fx(const double x, const double alpha, const double delta, const
     double second_term = delta * second_term_numerator/second_term_denom;
     return first_term + second_term;
   }
-}  
+}
 
 
 double assign_stellar_mass_from_mvir(struct node_data * const thisnode,int model)
@@ -79,7 +79,7 @@ double assign_stellar_mass_from_mvir(struct node_data * const thisnode,int model
 	  M2 = pow(10.0,  0.320*z*z + 0.018*z + 11.2);
 	  alpha = 0.021*pow(z,4.86) + 3.39;
 	  beta  = 0.085*z + 0.36;
-	  
+
 	  mstar = M1*pow(Mvir,alpha)*pow(M2,-beta)*pow(0.5*(M2+Mvir),  beta-alpha);
 	  break;
 	}
@@ -89,7 +89,7 @@ double assign_stellar_mass_from_mvir(struct node_data * const thisnode,int model
 	  M1 = pow(10.0, 11.884*pow(1.0+z, 0.019));
 	  beta  = 0.17*z + 1.06;
 	  gamma = 0.556*pow(1.0+z, -0.26);
-	
+
 	  mstar = 2.0*Mvir*m/( pow(Mvir/M1, -beta) + pow(Mvir/M1,gamma) );
 	  break;
 	}
@@ -98,8 +98,8 @@ double assign_stellar_mass_from_mvir(struct node_data * const thisnode,int model
 	  M1 = pow(10.0,0.03500*z*z - 0.19200*z + 10.199);
 	  M2 = pow(10.0,0.00509*z*z + 0.00299*z + 11.824);
 	  alpha =       -0.20760*z*z + 0.75200*z + 2.423;
-	  beta  =        0.12000*z*z - 0.09940*z + 0.206;  
-	  
+	  beta  =        0.12000*z*z - 0.09940*z + 0.206;
+
 	  mstar = M1*pow(Mvir,alpha)*pow(M2,-beta)*pow(0.5*(M2+Mvir),  beta-alpha);
 	  break;
 	}
@@ -109,17 +109,17 @@ double assign_stellar_mass_from_mvir(struct node_data * const thisnode,int model
 	  double nu = exp(-4.0*scale_factor*scale_factor);
 	  double log10_epsilon = -1.777 + (-0.006*(scale_factor-1.0) + (-0.0)*z ) * nu +
 	    (-0.119 * (scale_factor-1.0));
-	  
+
 	  double log10M1 = 11.514 + (-1.793*(scale_factor-1.0) + (-0.251)*z ) * nu ;
 	  alpha = -1.412 + (0.731*(scale_factor-1.0))*nu;
 	  double delta = 3.508 + (2.608 *(scale_factor-1.0) + (-0.043)*z )*nu;
-	  gamma = 0.316 + (1.319 *(scale_factor-1.0) + (0.279 )*z )*nu; 
-	  
+	  gamma = 0.316 + (1.319 *(scale_factor-1.0) + (0.279 )*z )*nu;
+
 	  double first_term  = log10_epsilon + log10M1;
 	  double log10Mh_over_M1 = log10(Mvir)-log10M1;
 	  double second_term = behroozi_fx(log10Mh_over_M1,alpha,delta,gamma);
 	  double third_term  = behroozi_fx(0.0, alpha,delta,gamma);
-	  
+
 	  mstar = pow(10.0,first_term + second_term - third_term);
 	  break;
 	}
@@ -186,12 +186,12 @@ void check_if_halo_disappears(struct node_data *node,const int numsnaps,const ch
     }
     count = thisnode->snapshot - node->snapshot;
   }
-  
+
   if(thisnode != NULL && count < numsnaps && thisnode->snapshot < PARAMS.MAX_SNAPSHOT_NUM) {
-    /* so after the encounter, the halo actaully vanished from the simulation. 
+    /* so after the encounter, the halo actaully vanished from the simulation.
        let's output data for this halo.
     */
-    
+
     thisnode = node;
     while(thisnode != NULL && thisnode->haloid == node->haloid) {
       fprintf(fp,"%8d    %14"STR_FMT"    %14"STR_FMT"   %14.4g   %8d\n",thisnode->snapshot,thisnode->nodeloc,
@@ -199,13 +199,13 @@ void check_if_halo_disappears(struct node_data *node,const int numsnaps,const ch
       thisnode = thisnode->Parent;
     }
   }
-  
+
   fclose(fp);
-  
+
 }
 
 
-void assign_parent(struct node_data *halo,int64 haloid, struct node_data *parenthalo,int64 parentid) 
+void assign_parent(struct node_data *halo,int64 haloid, struct node_data *parenthalo,int64 parentid)
 {
   struct node_data *tmp_loc=NULL;
 
@@ -214,17 +214,17 @@ void assign_parent(struct node_data *halo,int64 haloid, struct node_data *parent
     parenthalo[parentid].BigChild = &halo[haloid];
     halo[haloid].Sibling = NULL;
   } else {
-    /* 
-       sort the children halos by mass by changing the pointers. DO NOT change the order 
+    /*
+       sort the children halos by mass by changing the pointers. DO NOT change the order
        in which they appear in the node structure. Make sure that the biggest appear first.
        reset all the sibling pointers (they point toward less massive halos)
     */
-    
-    
+
+
     tmp_loc = parenthalo[parentid].BigChild;
     while(tmp_loc->Mtot > halo[haloid].Mtot && tmp_loc->Sibling !=NULL)
       tmp_loc = tmp_loc->Sibling;
-    
+
     /* Is the new halo going to be the BigChild ? */
     if(tmp_loc == parenthalo[parentid].BigChild) {
       if(tmp_loc->Mtot < halo[haloid].Mtot) {
@@ -265,8 +265,8 @@ void maketree(struct parent_data* allparents[],int64 *Ngroups,struct node_data *
   for(int isnapshot=PARAMS.MIN_SNAPSHOT_NUM;isnapshot<PARAMS.MAX_SNAPSHOT_NUM;isnapshot++) {
     my_progressbar(isnapshot-PARAMS.MIN_SNAPSHOT_NUM,&interrupted);
     p = allparents[isnapshot];
-    BaseNode = tree[isnapshot];		  
-    
+    BaseNode = tree[isnapshot];
+
     for(int64 igroup=0;igroup<Ngroups[isnapshot];igroup++) {
       parentsnapshot = p[igroup].parentsnapshot;
       parentid       = p[igroup].parentid;
@@ -276,7 +276,7 @@ void maketree(struct parent_data* allparents[],int64 *Ngroups,struct node_data *
       }
     }
   }
-  
+
   /* fprintf(stderr,"..done\n"); */
   finish_myprogressbar(&interrupted);
 }
@@ -303,7 +303,7 @@ void assign_haloid(struct node_data *tree[],int64 *Ngroups)
       for(int64 igroup=0;igroup<Ngroups[isnapshot];igroup++) {
 	thisnode = &BaseNode[igroup];
 	thisnode->haloid = -1;
-	
+
 	/* Make sure that thisnode->Nchild is correct */
 	if(thisnode->BigChild != NULL) {
 	  thisnode->Nchild = 1;
@@ -325,7 +325,7 @@ void assign_haloid(struct node_data *tree[],int64 *Ngroups)
 	if (thisnode->haloid < 0) {
 	  destructionz = thisnode->z;
 	  thisnode->haloid = haloid;
-	  
+
 	  while(thisnode->BigChild != NULL) {
 	    thisnode = thisnode->BigChild;
 	    if (thisnode->haloid >= 0) {
@@ -334,7 +334,7 @@ void assign_haloid(struct node_data *tree[],int64 *Ngroups)
 		      thisnode->snapshot,thisnode->haloid,thisnode->nodeloc,thisnode->Parent->haloid,thisnode->Parent->nodeloc,thisnode->Parent->snapshot);
 	      fprintf(stderr,"thisnode->parent->nchild = %"STR_FMT"   thisnode->parent->bigchild->haloid = %"STR_FMT" at snapshot = %d \n",
 		      thisnode->Parent->Nchild,thisnode->Parent->BigChild->haloid,thisnode->Parent->BigChild->snapshot);
-	      
+
 	      exit(EXIT_FAILURE);
 	    } else {
 	      thisnode->haloid = haloid;
@@ -342,7 +342,7 @@ void assign_haloid(struct node_data *tree[],int64 *Ngroups)
 	      formationz = thisnode->z;
 	    }
 	  }
-	  
+
 	  infallmass = thisnode->Mtot;
 	  infallsnap    = thisnode->snapshot;
 	  while(thisnode != NULL) {
@@ -350,17 +350,17 @@ void assign_haloid(struct node_data *tree[],int64 *Ngroups)
 	      infallmass = thisnode->Mtot;//BoundFofMtot could also be used in principle (however, that would double count the total stellar mass)
 	      infallsnap    = thisnode->snapshot;
 	    }
-	    
+
 	    if(thisnode->haloid == haloid) {
 	      thisnode->FormationRedshift = formationz;
 	      thisnode->InfallMass = infallmass;
 	      thisnode->InfallSnapshot = infallsnap;
 	      thisnode->Mstar = assign_stellar_mass_from_mvir(thisnode,model);
-	      
-	      //ensure that the stellar mass does not reduce. 
+
+	      //ensure that the stellar mass does not reduce.
 	      if(thisnode->BigChild != NULL && thisnode->BigChild->Mstar > thisnode->Mstar)
 		thisnode->Mstar = thisnode->BigChild->Mstar;
-	      
+
 	    } else {
 	      break;
 	    }
@@ -378,10 +378,10 @@ void increment_fof_nmergers(struct node_data *FofHalo,int incr)
 {
   int64 haloid = FofHalo->haloid;
   struct node_data *thisnode;
-  
+
   FofHalo->Nmergers += incr;
   FofHalo->TotNmergers += incr;
-  
+
   thisnode=FofHalo->Parent;
   while(thisnode!=NULL && thisnode->haloid == haloid)
 	{
@@ -444,24 +444,24 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
   fprintf(fp2,"# redshift   BoundPrimMass SubInfallMass   xcen        ycen         zcen          vxcen        vycen        vzcen      PrimHaloId    SubHaloId \n");
   fprintf(fp2,"#   f               d            d           f           f           f              f            f            f            l            l      \n");
   fprintf(fp2,"###############################################################################################################################################\n");
-  
-  
+
+
   /*
 	Tag:  0 -- Fof halo falls in. becomes its own subhalo and then disrupts at some later time inside the same container Fof halo
 	Tag:  1 -- The subhalo disappears because the FOF container has now merged with some other FOF halo.
 	Tag:  2 -- the subhalo remains a subhalo inside that same FOF container until z=0
 	Tag:  3 -- Fof halo falls in, but later becomes a fof halo on its own again. Possible flyby. Destructionz then represents
 	the z at which *this* subhalo becomes a FOF halo again. (Multiple flybys by the same object should show up as another
-	entry at a later time -- with the possibility of a tag 0. 
+	entry at a later time -- with the possibility of a tag 0.
 
   */
-  
+
 
   /*Before anything else: merge all the Mstar masses for subhalos with Nchild > 1.
-	For FOF halos, the mass used to assign Mstar increases (mostly) with `a' but the 
+	For FOF halos, the mass used to assign Mstar increases (mostly) with `a' but the
 	subhalos only use the infallmass to get their Mstar. If the subhalo merges with
 	another subhalo, then that stellar mass content needs to be added in as well.
-	Also, this has to proceed from high-z to low-z so that all the masses are 
+	Also, this has to proceed from high-z to low-z so that all the masses are
 	propagated to z=0.
   */
 
@@ -491,7 +491,7 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 				totnmergers  = 0;
 				totndissolve = 0;
 				totndisrupt  = 0;
-				
+
 				if(thisnode->Nchild > 1) {
 					/* Disruptions and Dissolutions */
 					if(thisnode->isFof == 1) {
@@ -508,26 +508,26 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 								totndissolve +=1;
 								lastmergerz = savenode->z;
 							}
-							
+
 						}
-						
+
 						thisnode = savenode; /* reset thisnode to actual node that we are dealing with */
 						assert(thisnode->haloid == haloid);
 					} else {
 						/*thisnode is a subhalo*/
-						
-						/* 
-							 Subhalo merging. Its possible that a FOF halo falls in and directly points into 
+
+						/*
+							 Subhalo merging. Its possible that a FOF halo falls in and directly points into
 							 this subhalo. In principle that could be the same as a `dissolution' event but
 							 I am treating it as a `merger' event.
 						*/
-						
+
 						savenode = thisnode;
 						count_mergers=thisnode->Nchild-1;
 						thisnode->Nmergers = count_mergers;
 						totnmergers += count_mergers;
 						lastmergerz = thisnode->z;
-						
+
 						thisnode = thisnode->BigChild;
 						while(thisnode !=NULL && count_mergers > 0) {
 							if (thisnode->FofHalo->haloid  == savenode->FofHalo->haloid) {
@@ -538,23 +538,23 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 									/* Figure out the tag */
 									savethisnode = thisnode;
 									thisnode=thisnode->Parent; /*come back down to current snapshot*/
-									
+
 									destructionz=-1.0;
 									destructionradius=-1.0;
 									destruction_subtmot=-1.0;
 									destruction_parentmtot=-1.0;
 									destruction_snapshot=-1;
 									destruction_parentmstar=-1.0;
-									
+
 									/* 								  tag = get_tag(thisnode,savenode->FofHalo,&destructionz,&destructionradius); */
-									//MS 7th Dec, 2011 - updated to use the new tagging system that accounts for 
+									//MS 7th Dec, 2011 - updated to use the new tagging system that accounts for
 									//subhalos missing snapshots
-									
+
 									//MS 30th Sep, 2013 - no longer necessary. ensure_same_snapshot() accounts for missing snasphots
 									tag = get_tag(thisnode,savenode->FofHalo,&destructionz,&destructionradius,&destruction_snapshot,&destruction_subtmot,&destruction_parentmtot,&destruction_parentmstar);
 									if (tag == -1 && thisnode->Parent == NULL)
 										tag = 99;
-									
+
 									if (tag == 3 || tag == 5) {
 										thisnode->NFlybys++;
 										savenode->FofHalo->NFlybys++;
@@ -570,29 +570,29 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 														savenode->FofHalo->meanvel[2]-thisnode->meanvel[2],
 														savenode->FofHalo->haloid,
 														thisnode->haloid);
-										
+
 									}
-		  
-		  
+
+
 									check_if_halo_disappears(thisnode,NUM_SNAPSHOTS_TO_CHECK,PARAMS.OUTPUT_DIR,tag);
-		  
+
 									rsep = get_separation_between_centres(thisnode,savenode->FofHalo);
 									vsep = 0.0;
 									for(int i=0;i<3;i++)
 										vsep += pow( (thisnode->meanvel[i] - savenode->FofHalo->meanvel[i]),2.0);
-									
+
 									vsep = sqrt(vsep);
-									
+
 									Impulse=get_impulse(thisnode,savenode->FofHalo,rsep,vsep);
 									DelPotPrim=get_external_delpot_prim(thisnode,savenode->FofHalo,rsep,vsep);
 									DelPotSec=get_external_delpot_sec(thisnode,savenode->FofHalo,rsep,vsep);
-									
+
 									/* Find the max delta phi created -> smallest rsep while subhalo is still inside this same fof */
 									minrsep=rsep;
 									minrsep_snap=thisnode->snapshot;
 									rvir_at_minrsep=thisnode->Rvir;
 									fof_rvir_at_minrsep=savenode->FofHalo->Rvir;
-									
+
 									tmpnode=thisnode;
 									MaxDelPotSec = DelPotSec;
 									MaxDelPotPrim = DelPotPrim;
@@ -605,46 +605,46 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 											minrsep_snap = tmpnode->snapshot;
 											rvir_at_minrsep=tmpnode->Rvir;
 											fof_rvir_at_minrsep=tmpnode->FofHalo->Rvir;
-											
+
 										}
-										
+
 										if (float_almost_equal(minrsep,0.0,5) == 1  && (tag==3 || tag==5)) {
 											fprintf(stderr,"WARNING (UPPER): This should not happen\n Min. rsep is 0.0 for a flyby\n");
 											fprintf(stderr,"thisnode->haloid = %"STR_FMT" snapshot= %d  tmpnode->haloid=%"STR_FMT" tmpnode->snap=%d savenode->Fofid = %"STR_FMT" \n",
 															thisnode->haloid,thisnode->snapshot,tmpnode->haloid,tmpnode->snapshot,savenode->FofHalo->haloid);
 											fprintf(stderr,"thisnode->fofhaloid = %"STR_FMT" tmpnode->id = %"STR_FMT" tmpnode->Fofhaloid = %"STR_FMT" \n",
 															thisnode->FofHalo->haloid,tmpnode->haloid,tmpnode->FofHalo->haloid);
-											
+
 											fprintf(stderr,"tmpnode->xcen =%f tmpnode->ycen = %f tmpnode->zcen =%f\n",
 															tmpnode->xcen,tmpnode->ycen,tmpnode->zcen);
 											fprintf(stderr,"tmpfof->xcen =%f tmpfof->ycen = %f tmpfof->zcen =%f\n",
 															tmpnode->FofHalo->xcen,tmpnode->FofHalo->ycen,tmpnode->FofHalo->zcen);
-											
+
 										}
-										
-										
+
+
 										tmpvsep = 0.0;
 										for(int i=0;i<3;i++)
 											tmpvsep += pow( (tmpnode->meanvel[i] - tmpnode->FofHalo->meanvel[i]),2.0);
-										
+
 										tmpvsep = sqrt(tmpvsep);
-										
+
 										tmpmaxdelpotprim = get_internal_delpot_prim(tmpnode,tmpnode->FofHalo,minrsep,tmpvsep);
-										MaxDelPotPrim = tmpmaxdelpotprim > MaxDelPotPrim ? tmpmaxdelpotprim:MaxDelPotPrim; 
-										
+										MaxDelPotPrim = tmpmaxdelpotprim > MaxDelPotPrim ? tmpmaxdelpotprim:MaxDelPotPrim;
+
 										tmpmaxdelpotsec = get_internal_delpot_sec(tmpnode,tmpnode->FofHalo,minrsep,tmpvsep);
 										MaxDelPotSec  = tmpmaxdelpotsec > MaxDelPotSec ?  tmpmaxdelpotsec:MaxDelPotSec;
-										
+
 									}
 									//MS 08/24/2011 -- Changed Submtot to InfallMass
-		  
+
 									/* 								  fprintf(fp," %10d     %12"STR_FMT"   %12"STR_FMT"      %12.4g    %12"STR_FMT"   %12"STR_FMT"    %12.6g   %10.4f   %10.4f  %12.4g  %12.4g  %12.4g   %6d  %18.4f   %12.4f   %12.4g %12.4g       %12.6e       %12.4g      %10d       %12.4g         %12.4g \n", */
 									/* 										  savenode->FofHalo->snapshot,savenode->FofHalo->nodeloc,savenode->FofHalo->haloid,savenode->FofHalo->Mtot, */
 									/* 										  thisnode->nodeloc,thisnode->haloid,thisnode->Mtot,rsep, vsep,Impulse,DelPotPrim,DelPotSec,tag,destructionz, */
 									/* 										  minrsep,MaxDelPotPrim,MaxDelPotSec,destructionradius,savenode->FofHalo->Rvir,minrsep_snap, rvir_at_minrsep,fof_rvir_at_minrsep); */
-									
-									
-									
+
+
+
 									fprintf(fp," %10d     %12"STR_FMT"   %12"STR_FMT"      %12.4g    %12"STR_FMT"   %12"STR_FMT"    %12.6g   %10.4f   %10.4f  %12.4g  %12.4g  %12.4g   %6d  %18.4f   %12.4f   %12.4g %12.4g       %12.6e       %12.4g      %10d       %12.4g         %12.4g  %10d %12.4g %12.4g  %16.4g  %16.4g\n",
 													savenode->FofHalo->snapshot,savenode->FofHalo->nodeloc,savenode->FofHalo->haloid,savenode->FofHalo->Mtot,
 													thisnode->nodeloc,thisnode->haloid,thisnode->InfallMass,rsep, vsep,Impulse,DelPotPrim,DelPotSec,tag,destructionz,
@@ -654,8 +654,8 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 													destruction_parentmtot,
 													thisnode->Mstar,
 													destruction_parentmstar);
-									
-		  
+
+
 		  thisnode = savethisnode; /* go back to previous snapshot */
 		} else {
 		  /*so something fell from the outside and has now disappeared inside this subhalo*/
@@ -676,14 +676,14 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 		  destructionradius=-1.0;
 		  destruction_parentmtot=-1.0;
 		  destruction_parentmstar=-1.0;
-		  
+
 		  //MS -- 08/24/2011 - changed Submtot to Infallmass
 		  /* 								  fprintf(fp," %10d     %12"STR_FMT"   %12"STR_FMT"      %12.4g    %12"STR_FMT"   %12"STR_FMT"    %12.6g   %10.4f   %10.4f  %12.4g  %12.4g  %12.4g   %6d  %18.4f  %12.4f   %12.4g %12.4g       %12.6e        %12.4g      %10d       %12.4g         %12.4g \n", */
 		  /* 										  savenode->FofHalo->snapshot,savenode->FofHalo->nodeloc,savenode->FofHalo->haloid,savenode->FofHalo->Mtot, */
 		  /* 										  thisnode->nodeloc,thisnode->haloid,thisnode->Mtot,rsep, vsep,Impulse,DelPotPrim,DelPotSec,tag,destructionz, */
 		  /* 										  minrsep,MaxDelPotPrim,MaxDelPotSec,destructionradius,savenode->FofHalo->Rvir,minrsep_snap, rvir_at_minrsep,fof_rvir_at_minrsep); */
-		  
-		  
+
+
 		  fprintf(fp," %10d     %12"STR_FMT"   %12"STR_FMT"      %12.4g    %12"STR_FMT"   %12"STR_FMT"    %12.6g   %10.4f   %10.4f  %12.4g  %12.4g  %12.4g   %6d  %18.4f  %12.4f   %12.4g %12.4g       %12.6e        %12.4g      %10d       %12.4g         %12.4g  %10d  %12.4g  %12.4g  %16.4g  %16.4g \n",
 			  savenode->FofHalo->snapshot,savenode->FofHalo->nodeloc,savenode->FofHalo->haloid,savenode->FofHalo->Mtot,
 			  thisnode->nodeloc,thisnode->haloid,thisnode->InfallMass,rsep, vsep,Impulse,DelPotPrim,DelPotSec,tag,destructionz,
@@ -694,14 +694,14 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 			  thisnode->Mstar,
 			  destruction_parentmstar);
 
-		  
-		  
+
+
 		}
-		
+
 	      }
 	      thisnode = thisnode->Sibling;
 	    }
-	    
+
 	    thisnode  = savenode;
 	    assert(thisnode->haloid == haloid);
 	    increment_fof_nmergers(thisnode->FofHalo,count_mergers);
@@ -711,11 +711,11 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 	    normal growth (without mergers. However, if the FofHalo is different, then this subhalo has
 	    been created by an infalling FOFHalo.
 	  */
-	  
+
 	  if(thisnode->Nchild == 1) { /*Nchild could be 0 as well at this section in the code -> hence choose Nchild==1*/
 	    savenode = thisnode;//MS Dec 8, 2011 - this line was not there. However, that was
 	    //causing incorrect merger tags to appear. And looking at how the tags are done
-	    //I believe this line is correct/required. 
+	    //I believe this line is correct/required.
 	    if(thisnode->isFof==0) {
 	      if(thisnode->FofHalo->haloid != thisnode->BigChild->FofHalo->haloid) {
 		count_mergers = 1;
@@ -723,17 +723,17 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 		totnmergers +=count_mergers;
 		lastmergerz = thisnode->z;
 		increment_fof_nmergers(thisnode->FofHalo,count_mergers);
-		
+
 		destructionz=-1.0;
 		destructionradius=-1.0;
 		destruction_subtmot=-1.0;
 		destruction_parentmtot=-1.0;
 		destruction_snapshot=-1;
 		destruction_parentmstar=-1.0;
-		
+
 		/* Figure out the tag */
 		/* 							  tag = get_tag(thisnode,thisnode->FofHalo,&destructionz,&destructionradius); */
-		//MS 7th Dec, 2011 - updated to use the new tagging system that accounts for 
+		//MS 7th Dec, 2011 - updated to use the new tagging system that accounts for
 		//subhalos missing snapshots
 
 		//MS 30th Sep, 2013 - no longer necessary. ensure_same_snapshot() accounts for missing snasphots
@@ -741,15 +741,15 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 		if (tag == -1 && thisnode->Parent == NULL)
 		  tag = 99;
 
-		
+
 		rsep = get_separation_between_centres(thisnode,thisnode->FofHalo);
 		vsep = 0.0;
 		for(int i=0;i<3;i++)
 		  vsep += pow( (thisnode->meanvel[i] - thisnode->FofHalo->meanvel[i]),2.0);
-		
+
 		vsep = sqrt(vsep);
-		
-		
+
+
 		if (tag == 3 || tag == 5) {
 		  thisnode->NFlybys++;
 		  thisnode->FofHalo->NFlybys++;
@@ -766,18 +766,18 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 			  thisnode->FofHalo->meanvel[2]-thisnode->meanvel[2],
 			  thisnode->FofHalo->haloid,
 			  thisnode->haloid);
-		  
+
 		}
-		
-		
+
+
 		/* 							  if (tag == 3 || tag == 5) */
 		check_if_halo_disappears(thisnode,NUM_SNAPSHOTS_TO_CHECK,PARAMS.OUTPUT_DIR,tag);
-		
-		
+
+
 		Impulse=get_impulse(thisnode,thisnode->FofHalo,rsep,vsep);
 		DelPotPrim=get_external_delpot_prim(thisnode,thisnode->FofHalo,rsep,vsep);
 		DelPotSec=get_external_delpot_sec(thisnode,thisnode->FofHalo,rsep,vsep);
-		
+
 		minrsep=rsep;
 		minrsep_snap=thisnode->snapshot;
 		tmpnode=thisnode;
@@ -791,9 +791,9 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 		    minrsep_snap = tmpnode->snapshot;
 		    rvir_at_minrsep=tmpnode->Rvir;
 		    fof_rvir_at_minrsep=tmpnode->FofHalo->Rvir;
-		    
+
 		  }
-		  
+
 		  if (float_almost_equal(minrsep,0.0,5) == 1  && (tag==3 || tag==5)) {
 		    fprintf(stderr,"WARNING (LOWER): This should not happen\n Min. rsep is 0.0 for a flyby\n");
 		    fprintf(stderr,"thisnode->haloid = %"STR_FMT" snapshot= %d  Fofid = %"STR_FMT" \n",
@@ -804,33 +804,33 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 			    tmpnode->xcen,tmpnode->ycen,tmpnode->zcen);
 		    fprintf(stderr,"tmpfof->xcen =%f tmpfof->ycen = %f tmpfof->zcen =%f\n",
 			    tmpnode->FofHalo->xcen,tmpnode->FofHalo->ycen,tmpnode->FofHalo->zcen);
-		    
+
 		  }
-		  
-		  
-		  
+
+
+
 		  tmpvsep = 0.0;
 		  for(int i=0;i<3;i++)
 		    tmpvsep += pow( (tmpnode->meanvel[i] - tmpnode->FofHalo->meanvel[i]),2.0);
-		  
+
 		  tmpvsep = sqrt(tmpvsep);
-		  
+
 		  tmpmaxdelpotprim = get_internal_delpot_prim(tmpnode,tmpnode->FofHalo,minrsep,tmpvsep);
-		  MaxDelPotPrim = tmpmaxdelpotprim > MaxDelPotPrim ? tmpmaxdelpotprim:MaxDelPotPrim; 
-		  
+		  MaxDelPotPrim = tmpmaxdelpotprim > MaxDelPotPrim ? tmpmaxdelpotprim:MaxDelPotPrim;
+
 		  tmpmaxdelpotsec = get_internal_delpot_sec(tmpnode,tmpnode->FofHalo,minrsep,tmpvsep);
 		  MaxDelPotSec  = tmpmaxdelpotsec > MaxDelPotSec ?  tmpmaxdelpotsec:MaxDelPotSec;
 		}
-		
-		
+
+
 		//MS -- 08/24/2011 - Changed submtot to Infallmass
-		
+
 		/* 							  fprintf(fp," %10d     %12"STR_FMT"   %12"STR_FMT"      %12.4g    %12"STR_FMT"   %12"STR_FMT"    %12.6g   %10.4f   %10.4f  %12.4g  %12.4g  %12.4g   %6d  %18.4f  %12.4f   %12.4g %12.4g       %12.6e         %12.4g      %10d       %12.4g         %12.4g \n", */
 					/* 									  savenode->FofHalo->snapshot,savenode->FofHalo->nodeloc,savenode->FofHalo->haloid,savenode->FofHalo->Mtot, */
 					/* 									  thisnode->nodeloc,thisnode->haloid,thisnode->Mtot,rsep, vsep,Impulse,DelPotPrim,DelPotSec,tag,destructionz, */
 					/* 									  minrsep,MaxDelPotPrim,MaxDelPotSec,destructionradius,savenode->FofHalo->Rvir,minrsep_snap, rvir_at_minrsep,fof_rvir_at_minrsep); */
-		
-		
+
+
 		fprintf(fp," %10d     %12"STR_FMT"   %12"STR_FMT"      %12.4g    %12"STR_FMT"   %12"STR_FMT"    %12.6g   %10.4f   %10.4f  %12.4g  %12.4g  %12.4g   %6d  %18.4f  %12.4f   %12.4g %12.4g       %12.6e         %12.4g      %10d       %12.4g         %12.4g  %10d  %12.4g  %12.4g   %16.4g  %16.4g\n",
 			savenode->FofHalo->snapshot,savenode->FofHalo->nodeloc,savenode->FofHalo->haloid,savenode->FofHalo->Mtot,
 			thisnode->nodeloc,thisnode->haloid,thisnode->InfallMass,rsep, vsep,Impulse,DelPotPrim,DelPotSec,tag,destructionz,
@@ -840,32 +840,32 @@ void find_mergers(struct node_data *tree[],int64 *Ngroups)
 			destruction_parentmtot,
 			thisnode->Mstar,
 			destruction_parentmstar);
-		
+
 	      }
 	    }
 	  }
-			
+
 	}
-	
+
 	if (lastmergerz >= 0.0)
 	  thisnode->RedshiftofLastMerger = lastmergerz;
-	
+
 	thisnode->TotNDissolutions = totndissolve;
 	thisnode->TotNDisruptions  = totndisrupt;
-	
+
 	/*explicitly showing that TotNmergers might have already been updated at this point */
 	if(thisnode->TotNmergers == 0)
 	  thisnode->TotNmergers      = totnmergers;
 	else
 	  thisnode->TotNmergers      += totnmergers;/* in case increment_fof_mergers has been called on thisnode */
-	
+
       }
-      
+
     }
   }
   fclose(fp2);
   fclose(fp);
-  
+
 }
 
 
@@ -899,11 +899,11 @@ void find_subsub_mergers(struct node_data *tree[],int64 *Ngroups)
 	   && thisnode->ContainerHalo->haloid != thisnode->Parent->haloid && thisnode->Parent->ContainerHalo->haloid == thisnode->ContainerHalo->haloid) {
 	  //subhalo-subhalo merger; the container halo takes care of the dissolving in the same host (so the
 	  //cases that should trigger here are only the ones which are (sub)-subhalos [i.e., it could be any level
-	  // in the hierarchy] that merge into other (sub)-subhalos within the same containerhalo                                                                                                           
+	  // in the hierarchy] that merge into other (sub)-subhalos within the same containerhalo
 	  fprintf(fp,"%8hd   %14"STR_FMT " %14"STR_FMT"   %14"STR_FMT"          %8hd   %14"STR_FMT "   %14"STR_FMT"     %14"STR_FMT"  \n",
 		  thisnode->snapshot,thisnode->nodeloc,thisnode->haloid,thisnode->ContainerHalo->haloid,
 		  thisnode->Parent->snapshot,thisnode->Parent->nodeloc,thisnode->Parent->haloid,thisnode->Parent->ContainerHalo->haloid);
-	  
+
 	}
       }
     }
@@ -918,16 +918,16 @@ void find_subsub_mergers(struct node_data *tree[],int64 *Ngroups)
   First check that the subhalo is not a FOF halo, because
   if it is, it's irrelevant whether or not it as at the same
   snapshot as it's original FOF container.
-  
+
   Everything that follows has the original FOF and subhalo
   linked together -> so it's important that they be at the
   same snapshot. So the "unknown" tag check is here.
-  
+
   Then check if the FOF has fallen into another FOF because
   in that case the subhalo will lose it's id (unless subs
   of subs are loaded in). Then check for disruption and
   survivors.
-  
+
 */
 
 int get_tag(struct node_data * const node1,struct node_data * const node2,float *z,float *rnorm, int *destruction_snap, double *submtot, double *parentmtot, double *parentmstar)
@@ -946,97 +946,101 @@ int get_tag(struct node_data * const node1,struct node_data * const node2,float 
   tag_haloid = thisnode->haloid;
 
   while(thisnode != NULL && fofnode != NULL) {
-    if(thisnode->isFof == 1 && thisnode->FofHalo->haloid != fofnode->FofHalo->haloid){
-      /*thisnode was a FOF when it fell in*/
-      if(node1->BigChild !=NULL && node1->BigChild->isFof==1) {
+      if(thisnode->isFof == 1 && thisnode->FofHalo->haloid != fofnode->FofHalo->haloid) {
+          /*thisnode was a FOF when it fell in*/
+        if(node1->BigChild !=NULL && node1->BigChild->isFof==1) {
 
-	/* compute the vdotv when the other halo fell in. this should be negative */
-	parentnode = node1->BigChild; /* bad naming. parentnode here is actually in the past..against the convention in the code*/
-	new_fofnode  = node2->BigChild; /* since node1 (subhalo of node2) has a progenitor, node2 must have one too */
-	if(new_fofnode != NULL) {
-	  vxcen = 0.5*(parentnode->meanvel[0]+new_fofnode->meanvel[0]);
-	  vycen = 0.5*(parentnode->meanvel[1]+new_fofnode->meanvel[1]);
-	  vzcen = 0.5*(parentnode->meanvel[2]+new_fofnode->meanvel[2]);
-	  
-	  vdotv = (parentnode->vxcen - vxcen)* (new_fofnode->vxcen - vxcen) + (parentnode->vycen - vycen) * (new_fofnode->vycen - vycen)+
-	    (parentnode->vzcen - vzcen) * (new_fofnode->vzcen - vzcen);
-	  
-	  if (vdotv < 0.0) 
-	    tag = 3;/* fly by */
-	  else
-	    tag = 5;
+            /* compute the vdotv when the other halo fell in. this should be negative */
+            parentnode = node1->BigChild; /* bad naming. parentnode here is actually in the past..against the convention in the code*/
+            new_fofnode  = node2->BigChild; /* since node1 (subhalo of node2) has a progenitor, node2 must have one too */
+            if(new_fofnode != NULL) {
+                vxcen = 0.5*(parentnode->meanvel[0]+new_fofnode->meanvel[0]);
+                vycen = 0.5*(parentnode->meanvel[1]+new_fofnode->meanvel[1]);
+                vzcen = 0.5*(parentnode->meanvel[2]+new_fofnode->meanvel[2]);
 
+                vdotv = (parentnode->vxcen - vxcen)* (new_fofnode->vxcen - vxcen) + (parentnode->vycen - vycen) * (new_fofnode->vycen - vycen)+
+                    (parentnode->vzcen - vzcen) * (new_fofnode->vzcen - vzcen);
 
-	}
-	else
-	  tag = -2; /* so somehow fofnode->BigChild is NULL but thisnode->BigChild is not. 
-                                                         Only way this can happen is if a new Fof (fofnode) formed and thisnode->BigChild (itself a fof)
-                                                         fell into it and became a subhalo (thisnode)
-						  */
-      } else {
-	tag = 4; /* split ..*/
-      }
+                if (vdotv < 0.0)
+                    tag = 3;/* fly by */
+                else
+                    tag = 5;
 
 
-      *z = thisnode->z;
-      *destruction_snap = thisnode->snapshot;
-      *submtot = thisnode->Mtot;
-      *parentmtot = fofnode->Mtot;
-      *parentmstar = fofnode->Mstar;
-      if(thisnode != NULL && thisnode->BigChild != NULL)
-	*rnorm = get_separation_between_centres(thisnode->BigChild,thisnode->BigChild->FofHalo)/thisnode->BigChild->FofHalo->Rvir; /* more like a separation radius*/
-      else
-	*rnorm = -1.0;
+            } else {
+                tag = -2; /* so somehow fofnode->BigChild is NULL but thisnode->BigChild is not.
+                                                            Only way this can happen is if a new Fof (fofnode) formed and thisnode->BigChild (itself a fof)
+                                                            fell into it and became a subhalo (thisnode)
+                            */
+            }
+        } else {
+            tag = 4; /* split ..
+                    Note added 1st Dec, 2023 (MS): Think this means that the original subhalo, after
+                    being followed into  future, is now located in a different FOF halo than the FOF halo
+                    it fell into originally. (basically if this subhalo became a FOF halo,
+                    then it would a classed as a flyby but it is still a subhalo but just in a different FOF halo)
+                    */
+        }
 
-      break;
+        *z = thisnode->z;
+        *destruction_snap = thisnode->snapshot;
+        *submtot = thisnode->Mtot;
+        *parentmtot = fofnode->Mtot;
+        *parentmstar = fofnode->Mstar;
+        if(thisnode != NULL && thisnode->BigChild != NULL)
+            *rnorm = get_separation_between_centres(thisnode->BigChild,thisnode->BigChild->FofHalo)/thisnode->BigChild->FofHalo->Rvir; /* more like a separation radius*/
+        else
+            *rnorm = -1.0;
+
+        break;
     }
-    
-                                                                          
+
+
     if(fofnode->FofHalo->haloid != tag_fofhaloid  && thisnode->FofHalo->haloid == fofnode->FofHalo->haloid) {
       tag = 1; /* the Fof container has now fallen into a different FOF halo-> need subs of subs to proceed */
-      /* With the hierarchy levels, I have that info. 
+      /* With the hierarchy levels, I have that info.
 	 But the algorithm is too complex right now, some day I will figure out how to handle this */
       *z = fofnode->z;
       *rnorm = -1.0;
       break;
     }
-    
+
     if (thisnode->haloid != tag_haloid && thisnode->FofHalo->haloid == tag_fofhaloid) {
       tag = 0; /*the subhalo has disappeared, thisnode is not the same haloid
 		 as the original infalling subhalo */
-      
+
       tmpnode=node1;
       while(tmpnode->Parent != NULL && tmpnode->Parent->haloid == tag_haloid)
 	tmpnode = tmpnode->Parent;
-      
+
       if (tmpnode != NULL && thisnode->FofHalo != NULL && thisnode->FofHalo->BigChild != NULL) {
 	*z = tmpnode->z;
 	*rnorm = get_separation_between_centres(tmpnode,thisnode->FofHalo->BigChild)/thisnode->FofHalo->BigChild->Rvir; /* last known position of the subhalo*/
       }
-      
+
       break;
     }
-    
+
 
     if((thisnode->Parent==NULL || fofnode->Parent==NULL) &&  (thisnode->snapshot == (PARAMS.MAX_SNAPSHOT_NUM))) {
       tag = 2;/* so we have reached the end of the simulation and hence at least one pointer has disappeared */
       *z = REDSHIFT[PARAMS.MAX_SNAPSHOT_NUM];
       *rnorm = get_separation_between_centres(thisnode,thisnode->FofHalo)/thisnode->FofHalo->Rvir;
-      
+
       break;
     }
-    
+
 
     thisnode = thisnode->Parent;
     fofnode  = fofnode->Parent;
-    
+
     //The following part ensures that both the halos are at the snapshot -- which
-    //is non-trivial in the general case. 
+    //is non-trivial in the general case.
     if(thisnode != NULL && fofnode!=NULL && thisnode->snapshot != fofnode->snapshot)
       ensure_same_snapshot_for_halos(&thisnode,&fofnode);
-    
+
   }
-  
+
   return tag;
 }
 
@@ -1046,8 +1050,8 @@ void ensure_same_snapshot_for_halos(struct node_data **node1,struct node_data **
   struct node_data *thisnode;
   struct node_data *fofnode;
   int64 thisnode_haloid,fofnode_haloid;
-  
-  if( (*node1) != NULL && (*node2) !=NULL) {	
+
+  if( (*node1) != NULL && (*node2) !=NULL) {
     if((*node1)->snapshot < (*node2)->snapshot)	{
       fofnode  = *node1;
       thisnode = *node2;
@@ -1058,7 +1062,7 @@ void ensure_same_snapshot_for_halos(struct node_data **node1,struct node_data **
 
     thisnode_haloid = thisnode->haloid;
     fofnode_haloid = fofnode->haloid;
-    
+
 /* 	  fprintf(stderr,"in ensure_same_snapshot: thisnode.snapshot =%8hd fofnode.snapshot = %8hd\n",thisnode->snapshot,fofnode->snapshot); */
 /* 	  fprintf(stderr,"fofnode->haloid = %14"STR_FMT" fofnode->FofHalo->haloid = %14"STR_FMT" fofnode->nodeloc=%14"STR_FMT" \n", */
 /* 			  fofnode->haloid,fofnode->FofHalo->haloid,fofnode->nodeloc); */
@@ -1069,7 +1073,7 @@ void ensure_same_snapshot_for_halos(struct node_data **node1,struct node_data **
     while(1) {
       while(fofnode != NULL && fofnode->snapshot < thisnode->snapshot && fofnode->haloid == fofnode_haloid)
 	fofnode = fofnode->Parent;
-      
+
       if((fofnode == NULL) || (fofnode != NULL && fofnode->haloid != fofnode_haloid)) {
 	fofnode = NULL;
 	break;
@@ -1087,22 +1091,21 @@ void ensure_same_snapshot_for_halos(struct node_data **node1,struct node_data **
 	    thisnode=NULL;
 	    break;
 	  }
-	  
+
 	  if(thisnode != NULL && thisnode->snapshot == fofnode->snapshot)
 	    break;
 	}
       }
-      
+
       if(thisnode == NULL || fofnode == NULL) {
 	fprintf(stderr,"in ensure_same_snapshot: failed to get to same snapshots. (at least) one of the node pointers is now NULL \n");
 	break;
       }
     }
-    
+
     /* 	  if(thisnode != NULL && fofnode != NULL && thisnode->snapshot == fofnode->snapshot) */
     /* 		fprintf(stderr,"success: thisnode.snapshot is equal to fofnode.snapshot  = %8hd\n",thisnode->snapshot); */
-    
-  }
-  
-}
 
+  }
+
+}
