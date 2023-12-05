@@ -1,21 +1,21 @@
-OPT   += -DBIGSIM        # particle load requires 64 bit int
-OPT   += -DLONGIDS       # particle ids are written in 64 bit int
+#OPT   += -DBIGSIM        # particle load requires 64 bit int
+#OPT   += -DLONGIDS       # particle ids are written in 64 bit int
 OPT   += -DMAKE_LEAN
 
-OPT += -DUSE_OMP
+#OPT += -DUSE_OMP
 
 
 #OPT   +=  -DFOF_ONLY     # no subhalos
 OPT   += -DGET_GROUPVEL   # group file contains group velocities
 
 ## Default halo options for Subfind halos
-#OPT   += -DSUBFIND
+OPT   += -DSUBFIND
 
 ##### AHF halos using in SUSSING mergertree comparison. NOT
 ## fully implemented yet -- needs two more steps of removing
 ## the particles in subhalos from the host halo. And the re-ordering
 ## of the particles based on (pseudo-) Binding Energy rank.
-OPT += -DSUSSING_TREES
+#OPT += -DSUSSING_TREES
 
 
 #### For Rockstar halos in bgc2 format. Will enable an additional
@@ -60,8 +60,8 @@ endif
 ifeq (icc,$(findstring icc,$(CC)))
   CFLAGS += -xhost -opt-prefetch #-vec-report6  
   ifeq (USE_OMP,$(findstring USE_OMP,$(OPT)))
-		CFLAGS += -openmp
-		CLINK  += -openmp 
+		CFLAGS += -qopenmp
+		CLINK  += -qopenmp 
   endif
 else
 
