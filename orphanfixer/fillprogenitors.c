@@ -19,7 +19,7 @@ of Ncommon/rank [depending on match_flag]. ]
 
 /* This is to match the ids of all particles in halos that
 do not have a progenitor and return group numbers for all those
-particles that are found in some previous snapshot. 
+particles that are found in some previous snapshot.
 */
 
 int64 get_best_groupnum_wids(int64 *sourceIds,int64 Nids,struct group_data *dest,int64 destNgroups,int flag,double *rank,short *DestPartIds,int64 *DestGroupIds,int64 *DestGroupLoc,
@@ -31,7 +31,7 @@ short load_found_progenitors(struct node_data *tree[],int64 *Ngroups,const char 
   FILE *fp=NULL;
   char comment = '#';
   char str_line[MAXLINESIZE];
-  int64 nlines = 0;  
+  int64 nlines = 0;
   short snapshot,prevsnap,min_snapshot=PARAMS.MAX_SNAPSHOT_NUM;
   int64 groupnum=-1,groupid,groupN,prevnum;
   struct node_data *thisnode=NULL,*BaseNode=NULL,*prevnode=NULL,*tmp_node=NULL;
@@ -42,20 +42,20 @@ short load_found_progenitors(struct node_data *tree[],int64 *Ngroups,const char 
       if(str_line[0] !=comment) {
 				sscanf(str_line,"%hd  %"STR_FMT"  %"STR_FMT"  %"STR_FMT"  %hd  %"STR_FMT"  \n",&snapshot,&groupnum,&groupid,&groupN,&prevsnap,
 							 &prevnum);
-				
+
 				if(snapshot < PARAMS.MIN_SNAPSHOT_NUM || snapshot >PARAMS.MAX_SNAPSHOT_NUM) {
 					fprintf(stderr,"ERROR: I have snapshot = %hd  but max snapshot = %d and min snapshot = %d\n",snapshot,PARAMS.MAX_SNAPSHOT_NUM,PARAMS.MIN_SNAPSHOT_NUM);
 					fprintf(stderr,"exiting..\n");
 					exit(EXIT_FAILURE);
 				}
-				
+
 				if(prevsnap < PARAMS.MIN_SNAPSHOT_NUM || prevsnap > PARAMS.MAX_SNAPSHOT_NUM) {
 					fprintf(stderr,"ERROR: I have prevsnap = %hd  but max snapshot = %d and min snapshot = %d\n",prevsnap,PARAMS.MAX_SNAPSHOT_NUM,PARAMS.MIN_SNAPSHOT_NUM);
 					fprintf(stderr,"exiting..\n");
 					exit(EXIT_FAILURE);
 				}
-				
-				
+
+
 				if(groupnum > Ngroups[snapshot] || prevnum > Ngroups[prevsnap]) {
 					fprintf(stderr,"Inside load_found_progenitors: This should not have happened\n ");
 					fprintf(stderr,"snapshot = %hd   groupnum = %"STR_FMT" prevsnap = %hd prevnum = %"STR_FMT" \n",
@@ -65,32 +65,32 @@ short load_found_progenitors(struct node_data *tree[],int64 *Ngroups,const char 
 					fprintf(stderr,"exiting \n\n");
 					exit(EXIT_FAILURE);
 				}
-			  
-				
+
+
 				/* necessary for partial found_progenitors.txt */
 				if(snapshot < min_snapshot)
 					min_snapshot = snapshot;
-				
+
 				/* now switch prevnode[prevnum] to point to  currnode[groupnum] */
 				BaseNode = tree[snapshot];
 				thisnode = &BaseNode[groupnum];
-				
+
 				BaseNode = tree[prevsnap];
 				prevnode = &BaseNode[prevnum];
-				
-				
+
+
 				if(prevnode->Parent != NULL) {
 					tmp_node = prevnode->Parent->BigChild;
-					
+
 					//BigChild will not be switched -- so prevnode
 					//has to be at least the Sibling of BigChild
 					while(tmp_node->Sibling != prevnode)
 						tmp_node = tmp_node->Sibling;
-					
+
 					tmp_node->Sibling = prevnode->Sibling;
 					prevnode->Parent->Nchild--;
 				}
-				
+
 				prevnode->Sibling = NULL;
 				prevnode->Parent = thisnode;
 				prevnode->ParentSnapshot = thisnode->snapshot;
@@ -100,27 +100,27 @@ short load_found_progenitors(struct node_data *tree[],int64 *Ngroups,const char 
 				thisnode->Nchild = 1;
 				/* 			  thisnode->FormationRedshift = prevnode->FormationRedshift; */
 				/* Need to fix the haloids -- since it could be a partial found_progenitors.txt
-					 so the behaviour of a complete fillprogenitor run is mimicked. 
+					 so the behaviour of a complete fillprogenitor run is mimicked.
 				*/
 				tmp_node = prevnode;
 				while(tmp_node != NULL ) {
 					tmp_node->haloid = thisnode->haloid;
 					tmp_node = tmp_node->BigChild;
 				}
-				
+
 				nlines++;
       }
     } else {
       break;
     }
-    
+
   }
-  
+
   *startgroupnum = groupnum + 1;
-  
+
   fclose(fp);
   fprintf(stderr,"In load_found_progenitors:  Read in %"STR_FMT" lines\n",nlines);
-	
+
   return min_snapshot;
 }
 
@@ -133,7 +133,7 @@ int64 get_best_groupnum_wids(int64 *sourceIds,int64 Nids,struct group_data *dest
   int64 index,grp_index;
   int64 max_ranknum=0;
   double max_rank=0.0;
-  
+
   DestRanks    = my_malloc(sizeof(*DestRanks),destNgroups);
   DestNcommon  = my_calloc(sizeof(*DestNcommon),destNgroups);
 
@@ -142,41 +142,41 @@ int64 get_best_groupnum_wids(int64 *sourceIds,int64 Nids,struct group_data *dest
     DestNcommon[i] = 0;
     DestRanks[i]   = 0.0;
   }
-  
+
   for(int64 i=0;i<Nids;i++) {
     index = sourceIds[i];
     if(destNgroups > 0 && index < DestMaxPartId) {
       if(DestPartIds[index] == 1) {
 				grp_index = DestGroupIds[index];
 				DestNcommon[grp_index]++;
-				
+
 				if(flag == 1) {
 					if(PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && i < PARAMS.MAX_RANK_LOC))
 						DestRanks[grp_index] += compute_rank(i); /* matching based on rank */
-					
+
 					if(PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && DestGroupLoc[index] < PARAMS.MAX_RANK_LOC))
-						DestRanks[grp_index] += compute_rank(DestGroupLoc[index]); 
-					
+						DestRanks[grp_index] += compute_rank(DestGroupLoc[index]);
+
 				} else {
 					DestRanks[grp_index] += 1.0; /* matching based on Ncommon */
 				}
-				
+
 				if(DestRanks[grp_index] > max_rank) {
 					max_rank=DestRanks[grp_index];
 					max_ranknum = grp_index;
 				}
-				
+
       }
     }
   }
-  
+
   my_free((void **) &DestRanks);
   my_free((void **) &DestNcommon);
 
   *rank = max_rank;
   if(max_rank > 0.0)
     return dest[max_ranknum].nodeloc; /* dest might not start at 0 -- use nodeloc to return the actual group number */
-  
+
   return -1;
 }
 
@@ -210,7 +210,7 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
 
   /* This can potentially be optimised. In case
 	 of massive memory requirements, reduce the following to unsigned ints
-	 
+
 	 Yes -1 will wrap to UINT_MAX. So, you will get one less than UINT_MAX number
 	 of particles.
 
@@ -220,7 +220,7 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
 
   if(PARAMS.LOAD_PARTIAL_FOUND_PROGENITORS==1) {
     startsnapshot = load_found_progenitors(tree,Ngroups,fname,&startgroup);
-    fp = my_fopen(fname,"a");	  
+    fp = my_fopen(fname,"a");
     flag = 1; /* so that assign_haloid *will* be called at the end of this function */
   } else {
     fp = my_fopen(fname,"w");
@@ -229,7 +229,7 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
     fprintf(fp,"#    i             l                   l                    l            i               l                l                l                    d                d     \n");
     fprintf(fp,"#######################################################################################################################################################################\n");
   }
-  
+
   for(short isnapshot=PARAMS.MAX_SNAPSHOT_NUM;isnapshot >= PARAMS.MIN_SNAPSHOT_NUM;isnapshot--) {
     allgroups[isnapshot] = NULL;
     DestPartIds[isnapshot] = NULL;
@@ -237,13 +237,13 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
     DestGroupLoc[isnapshot] = NULL;
     DestMaxPartId[isnapshot] = NUMPART + 1;
   }
-  
+
   short snapshot=0;
   for(short isnapshot=startsnapshot;isnapshot >= PARAMS.MIN_SNAPSHOT_NUM;isnapshot--) {
     fprintf(stderr,"\n\nfillprogenitor: Now working on snapshot # %4d Ngroups = %"STR_FMT"\n\n",isnapshot,Ngroups[isnapshot]);
     snapshot = isnapshot+1;
     /* 	  if(snapshot < startsnapshot && allgroups[snapshot] !=NULL && Ngroups[snapshot] > 0) */
-    
+
     if(snapshot <= startsnapshot && allgroups[snapshot] !=NULL && Ngroups[snapshot] > 0) {
       fprintf(stderr,"freed group (inside original for loop) # %d\n",snapshot);
       free_group(allgroups[snapshot],Ngroups[snapshot]);
@@ -255,16 +255,16 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
       DestMaxPartId[snapshot] = -1;
       my_free((void **) &(DestPartIds[snapshot]));
       my_free((void **) &(DestGroupIds[snapshot]));
-      my_free((void **) &(DestGroupLoc[snapshot]));	
+      my_free((void **) &(DestGroupLoc[snapshot]));
     }
-    
+
     if(DestPartIds[isnapshot] != NULL) {
       DestMaxPartId[isnapshot] = -1;
       my_free((void **) &(DestPartIds[isnapshot]));
       my_free((void **) &(DestGroupIds[isnapshot]));
       my_free((void **) &(DestGroupLoc[isnapshot]));
     }
-    
+
     if(Ngroups[isnapshot] > 0) {
       for(short incr=0;incr <= (PARAMS.MAX_DECR_GROUPS+2);incr++) {
 				snapshot = isnapshot - incr;
@@ -288,22 +288,22 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
 						fprintf(stderr,"Replacing DestMaxPartId[%d] = %"STR_ID_FMT" with %"STR_ID_FMT" NUMPART = %"STR_FMT"\n",snapshot,DestMaxPartId[snapshot],max_part_id,NUMPART);
 						DestMaxPartId[snapshot] = max_part_id;
 					}
-					
+
 					fprintf(stderr,"\nIn fillprogenitor: Freeing memory for groups for snapshot  %4d...\n",snapshot);
 					/* 				  /\* free up memory that won't be used. *\/ */
 					for(int64 i=0;i<Ngroups[snapshot];i++) {
 						my_free((void **) &(group0[i].x));
 						my_free((void **) &(group0[i].y));
 						my_free((void **) &(group0[i].z));
-						my_free((void **) &(group0[i].type));
-						
+						// my_free((void **) &(group0[i].type));
+
 #ifdef SUSSING_TREES
 						my_free((void **) &(group0[i].ParticleEnergy));
 						my_free((void **) &(group0[i].vx));
 						my_free((void **) &(group0[i].vy));
 						my_free((void **) &(group0[i].vz));
-#endif	    
-						
+#endif
+
 					}
 					fprintf(stderr,"\nIn fillprogenitor: Freeing memory for groups for snapshot  %4d...done\n",snapshot);
 					allgroups[snapshot] = group0;
@@ -315,7 +315,7 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
 					DestPartIds[snapshot]  = my_calloc(sizeof(*DestPartIds[snapshot]),DestMaxPartId[snapshot]);
 					DestGroupIds[snapshot] = my_malloc(sizeof(*DestGroupIds[snapshot]),DestMaxPartId[snapshot]);
 					DestGroupLoc[snapshot] = my_calloc(sizeof(*DestGroupLoc[snapshot]),DestMaxPartId[snapshot]);
-					
+
 					//new scope tmp and s will disappear outside the closing braces
 					{
 						int64 *tmp=NULL;
@@ -334,48 +334,48 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
 						}
 					}
 				}
-				
+
       }
-			
+
       group0 = allgroups[isnapshot];
       BaseNode = tree[isnapshot];
-			
+
       // start from group 0 for all other snapshots
       if(isnapshot != startsnapshot )
 				startgroup = 0;
 
       for(int64 igroup=startgroup;igroup < Ngroups[isnapshot];igroup++) {
 				thisnode = &BaseNode[igroup];
-				
+
 				/* Does the halo not have a progenitor (while it's Fof has one) */
 				if(thisnode->BigChild == NULL && thisnode->isFof==0 && thisnode->FofHalo->BigChild !=NULL) {
 					Nids =  group0[thisnode->nodeloc].N;
 					TrackIds = my_malloc(sizeof(*TrackIds),Nids);
 					for(int64 j=0;j< Nids;j++)
 						TrackIds[j] = group0[thisnode->nodeloc].id[j];
-					
+
 					max_rank=0.0;
 					for(int64 i=0;i<group0[thisnode->nodeloc].N;i++)
 						max_rank += compute_rank(i);
-					
-					/* the fofmatch code would already have tried to find a good match at the previous snapshot. So, 
+
+					/* the fofmatch code would already have tried to find a good match at the previous snapshot. So,
 						 if thisnode does not have a proper progenitor -- then the good progenitor, if it exists, must
-						 exist at least two snapshots prior -> should start with skip=2. 
-						 
+						 exist at least two snapshots prior -> should start with skip=2.
+
 						 Never mind. Starting with skip = 2. MS 07/18/2011
 					*/
-	  
+
 					for(int skip=2;skip<=PARAMS.MAX_DECR_GROUPS;skip++) {
 						fprintf(stderr,"Inside fillprogenitors: missing haloid = %"STR_FMT" with groupnum = %"STR_FMT" at snapshot = %d skip = %d \n",
 										thisnode->haloid,thisnode->nodeloc,thisnode->snapshot,skip);
 						searchsnapshot = thisnode->snapshot-skip;
 						if(searchsnapshot < PARAMS.MIN_SNAPSHOT_NUM || Ngroups[searchsnapshot] == 0)
 							continue;
-	    
+
 						group1 = allgroups[searchsnapshot];
 						searchnodenum = get_best_groupnum_wids(TrackIds,Nids,group1,Ngroups[searchsnapshot],MATCH_WITH_RANK,&rank,DestPartIds[searchsnapshot],DestGroupIds[searchsnapshot],
 																									 DestGroupLoc[searchsnapshot],DestMaxPartId[searchsnapshot]);
-	    
+
 						if(searchnodenum != -1) {
 							NewBaseNode = tree[searchsnapshot];
 							checknode = &NewBaseNode[searchnodenum];
@@ -388,17 +388,17 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
 								 the main progenitor -- it's fine. (I think) */
 							if(checknode->Parent==NULL || (checknode->Parent->BigChild != checknode
 																						 && (double)ncommon/(double) group0[thisnode->nodeloc].N > PARAMS.MIN_FCOMMON_THRESH )) {
-					
-					
+
+
 								if(checknode->Parent!=NULL && checknode->Parent->Nchild > 1) {
 									tmp_node = checknode->Parent->BigChild;
 									while(tmp_node->Sibling  != checknode)
 										tmp_node = tmp_node->Sibling;
-						
+
 									tmp_node->Sibling = checknode->Sibling;
 									tmp_node->Parent->Nchild--;
 								}
-		  
+
 								checknode->Parent   = thisnode;
 								checknode->ParentID = thisnode->nodeloc;
 								checknode->ParentZ  = thisnode->z;
@@ -406,19 +406,19 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
 								checknode->Sibling = NULL;
 								thisnode->BigChild = checknode;
 								thisnode->Nchild = 1;
-					
+
 								tmp_node = checknode;
 								while(tmp_node != NULL) {
 									tmp_node->haloid = thisnode->haloid;
 									tmp_node = tmp_node->BigChild;
 								}
-					
+
 								fprintf(stderr,"Found a progenitor for node with groupnum %"STR_FMT" at snapshot %d. The progenitor is at snapshot %d, groupnumber = %"STR_FMT" \n",
 												thisnode->nodeloc,thisnode->snapshot,checknode->snapshot,checknode->nodeloc);
 								fprintf(fp,"%6d    %12"STR_FMT"    %14"STR_FMT"     %16"STR_FMT"    %10d   %12"STR_FMT"   %14"STR_FMT"    %14"STR_FMT"      %16.4lf  %16.4lf\n",
 												thisnode->snapshot,thisnode->nodeloc,thisnode->haloid,group0[thisnode->nodeloc].N,checknode->snapshot,checknode->nodeloc,
 												group1[checknode->nodeloc].N,ncommon,rank,max_rank) ;
-					
+
 								fflush(fp);
 								flag=1;
 								break;
@@ -430,14 +430,14 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
       }
     }
   }
-  
+
   for(int isnapshot=PARAMS.MIN_SNAPSHOT_NUM;isnapshot <= startsnapshot;isnapshot++) {
     if(allgroups[isnapshot] !=NULL) {
       fprintf(stderr,"freeing group for snapshot # %d\n",isnapshot);
       free_group(allgroups[isnapshot],Ngroups[isnapshot]);
       allgroups[isnapshot] = NULL;
     }
-    
+
     if(DestPartIds[isnapshot] != NULL) {
       fprintf(stderr,"freeing particle ids for snapshot # %d\n",isnapshot);
       DestMaxPartId[isnapshot] = -1;
@@ -458,13 +458,7 @@ void fillprogenitors(struct node_data *tree[],int64 *Ngroups)
 }
 
 
-#undef MATCH_WITH_RANK  
-#undef MATCH_WITH_NCOMMON 
+#undef MATCH_WITH_RANK
+#undef MATCH_WITH_NCOMMON
 
 #endif
-
-
-
-
-
-

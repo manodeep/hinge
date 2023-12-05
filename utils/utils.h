@@ -12,6 +12,10 @@
 #include<sys/time.h>
 #include<stdarg.h>
 
+#ifndef DM_PART_TYPE
+#define DM_PART_TYPE 1
+#endif
+
 #include "io.h"
 
 int my_snprintf(char *buffer,int len,const char *format, ...) __attribute__((format(printf,3,4)));
@@ -41,7 +45,7 @@ void free_group(struct group_data* g,int64 N);
 void free_group_positions(struct group_data *g,int64 N);
 struct group_data* allocate_group(int64 N);
 
-//utils related to the particle matching 
+//utils related to the particle matching
 void init_all_ranks(double *rank,int64 *ncommon,int64 N);
 int64 find_max_rank(double *NextAllRanks,int64 NextNsub);
 void reset_ncommon(int64 *Ncommon,int64 N);
@@ -49,4 +53,3 @@ int64 find_max_ncommon(int64 *Ncommon,int64 N);
 int64 get_ncommon(struct group_data *prev,struct group_data *next);
 
 short float_almost_equal(float A, float B, int maxUlps);
-	

@@ -70,14 +70,14 @@ double get_age(float z)
 
   F.function = &agefunc;
   F.params = &dummy;
-  gsl_integration_qags (&F, z, RECOMBINATION_REDSHIFT, 0, 1e-7,NWORKSPACE,w,&result, &error); 
+  gsl_integration_qags (&F, z, RECOMBINATION_REDSHIFT, 0, 1e-7,NWORKSPACE,w,&result, &error);
   result *=  9.77813/PARAMS.COSMO->h100;
-  
+
   result += AGE_AT_RECOMBINATION;
 
-  gsl_integration_workspace_free (w);  
+  gsl_integration_workspace_free (w);
   return result;
-  
+
 }
 
 double agefunc(double z,void *params)
@@ -104,9 +104,9 @@ float get_scalefactor(float z)
 
 float get_overdensity(float z,struct cosmology_data *CP)
 {
-  /* 
+  /*
 	 From the Bryan and Norman paper ApJ, 1998, 495, 80
-	 In their notation, Omega_0 is my Omega_m. My Omega_k 
+	 In their notation, Omega_0 is my Omega_m. My Omega_k
 	 is their Omega_R
 
   */
@@ -153,11 +153,11 @@ double getrvir_anyl(const double mvir,const float z,struct cosmology_data *CP)
 float getconc_anyl(const double mvir,const float z)
 {
   float conc=-1.0;
-  
+
   /* Going to follow Maccio et al 2008 mnras 391, 1940 since that actually has data for WMAP5. c_200 and not c_vir
 	 Neglect redshift evolution for the time being.
   */
-  
+
 
 #ifdef WMAP5
   conc = pow(10.0,0.917 - 0.104*log10(mvir/1e2));/*compute pretending to be z=0*/
@@ -170,8 +170,8 @@ float getconc_anyl(const double mvir,const float z)
 #ifdef WMAP1
   conc = pow(10.0,0.769 - 0.083*log10(mvir/1e2));
 #endif
-  
-  
+
+
 
   return conc;
 
@@ -186,9 +186,9 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
 
   /* I am worried about using a constant number of bins. Might be a better idea to get a fixed number
 	 of particles/bin and allowing non-uniform binsizes etc. Or at the very least, vary the binsize
-	 according to the total number of particles. 
+	 according to the total number of particles.
   */
-  
+
   double *r=NULL,*rho=NULL;
   float r_minus1,r1;
   int64  *numberdensity=NULL;
@@ -219,9 +219,9 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
   ycen = group->ycen;
   zcen = group->zcen;
 
-  /* 
+  /*
 	 Needs proper handling of box-wrapping -- taken from Groupfinder.
-	 
+
   */
 
   for(i=0;i<nbins;i++)
@@ -230,9 +230,9 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
 	  numberdensity[i] = 0;
 	}
 
-  /* In principle, I could update xcen's until rho[nbins-1] is the highest. 
-	 But no guarantee for convergence given all the halos and the numerical noise. 
-	 Note that with my convention rho[0] is the outermost particle. 
+  /* In principle, I could update xcen's until rho[nbins-1] is the highest.
+	 But no guarantee for convergence given all the halos and the numerical noise.
+	 Note that with my convention rho[0] is the outermost particle.
 
 	 Switching the convention so that r[0] -> innermost.
    */
@@ -242,12 +242,12 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
 		const float dx = periodic(group->x[i]-xcen);
 		const float dy = periodic(group->y[i]-ycen);
 		const float dz = periodic(group->z[i]-zcen);
-		
-		
+
+
 	  r[i] = sqrt( dx*dx + dy*dy + dz*dz);
 	  if (r[i] > rmax )
 		rmax = r[i];
-	  
+
 	  if(r[i] < rmin && r[i] > 0.0)
 			rmin = r[i];
 
@@ -262,8 +262,8 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
 
   /* particle 0 is in bin 0 */
   numberdensity[0] = 1;
-  rho[0] += PARAMS.MASSARR[group->type[0]];
-
+//   rho[0] += PARAMS.MASSARR[group->type[0]];
+  rho[0] += PARAMS.MASSARR[DM_PART_TYPE];
 
   for(i=1;i<Npart;i++)
 	{
@@ -276,7 +276,8 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
 
 /* 	  fprintf(stderr,"in get rvir from overdensity. nbins = %4d index = %4d  rmax = %10.3f r[%d] = %10.3f rbinsize  = %10.4f \n",nbins,index,rmax,i,r[i],rbinsize); */
 	  numberdensity[index] += 1; /* Should be used as error estimation for fitting */
-	  rho[index] +=  PARAMS.MASSARR[group->type[i]];
+	//   rho[index] +=  PARAMS.MASSARR[group->type[i]];
+	  rho[index] +=  PARAMS.MASSARR[DM_PART_TYPE];
 	}
 
   /* Now get the cumulative mass, i.e. M( < r) */
@@ -300,7 +301,7 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
   else
 	group->Rhalf = (rmax+rmin)*0.5;
 
-  
+
   for(i=0;i<nbins;i++)
 	{
 	  rbin = pow(10.0,i*rbinsize + log10(rmin));
@@ -310,10 +311,10 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
 
   /*
 	Now lets first search through the entire density profile and see if we are
-	actually crossing the overdensity limit. Its subject to numerical noise as well. 
+	actually crossing the overdensity limit. Its subject to numerical noise as well.
    */
 
-  /* 
+  /*
 	 Should also check that drho/dr < 0 for all r. However, that is just the
 	 best case scenario -- might not be valid for unrelaxed halos.
   */
@@ -326,14 +327,14 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
 		maxoverdensity = rho[i];
 	  i++;
 	}
-  
+
   group->MaxOverDensity = maxoverdensity;
   group->OverDensityThresh = OverDensity;
-  group->Conc = getconc_anyl(group->Mtot,REDSHIFT[group->snapshot]); 
+  group->Conc = getconc_anyl(group->Mtot,REDSHIFT[group->snapshot]);
 
   if (i> 0 && i < nbins)
 	{
-	  group->Rvir = pow(10.0,i*rbinsize + log10(rmin)); 
+	  group->Rvir = pow(10.0,i*rbinsize + log10(rmin));
 	}
   else
 	{
@@ -346,7 +347,7 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
 		  group->Rvir  = 0.0;
 		}
 	}
-  
+
   //this can not happen really
   if (group->Rvir > 0.0 && group->Rhalf > group->Rvir)
 	group->Rhalf = 0.5*group->Rvir;
@@ -359,7 +360,3 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
   free(rho);
   free(numberdensity);
 }
-
-
-
-

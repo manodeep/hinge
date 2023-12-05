@@ -95,7 +95,7 @@ void move_existing_file(const char *fname)
 	  fprintf(stderr,"executing command `%s'\n",commandstring);
 	  system(commandstring);//probably should check for exit status..
 	}
-}  
+}
 
 
 
@@ -256,7 +256,7 @@ int get_gadget_nfiles(const char *fname)
 
 	fp = fopen(buf,"r");
 	if(fp == NULL) {
-		fp = fopen(buf1,"r"); 
+		fp = fopen(buf1,"r");
 		if(fp == NULL) {
 			fprintf(stderr,"ERROR: Could not find snapshot file.\n neither as `%s' nor as `%s'\n",buf,buf1);
 			fprintf(stderr,"exiting..\n");
@@ -301,9 +301,9 @@ void free_group(struct group_data* g,int64 N)
 		my_free((void **) &(g[i].x));
 		my_free((void **) &(g[i].y));
 		my_free((void **) &(g[i].z));
-#endif	  
+#endif
       my_free((void **) &(g[i].id));
-      my_free((void **) &(g[i].type));
+    //   my_free((void **) &(g[i].type));
       my_free((void **) &(g[i].parentgroupforparticle));
       my_free((void **) &(g[i].parentsnapshotforparticle));
 
@@ -312,8 +312,8 @@ void free_group(struct group_data* g,int64 N)
 			my_free((void **) &(g[i].vx));
 			my_free((void **) &(g[i].vy));
 			my_free((void **) &(g[i].vz));
-#endif      
-      
+#endif
+
 
     }
     my_free((void **) &(g));
@@ -371,7 +371,7 @@ float periodic(float dx)
 
   if(dx<-0.5*PARAMS.BOXSIZE)
     dx+= PARAMS.BOXSIZE;
-  
+
   return dx;
 }
 
@@ -414,7 +414,7 @@ int64 find_max_rank(double *NextAllRanks,int64 NextNsub)
 {
   double max_rank = 0.0;
   int64 max_rankid = -1; /* Note it is a  signed int/long long*/
-  
+
   for(int64 k=0;k<NextNsub;k++)
 	{
 	  if(NextAllRanks[k] > max_rank)
@@ -459,7 +459,7 @@ int64 get_ncommon(struct group_data *prev,struct group_data *next)
 
 	assert(prev != NULL && "prev group pointer can not be NULL");
 	assert(next != NULL && "next group pointer can not be NULL");
-	
+
 	PrevMaxPartId = 0;
 	for(int64 i=0;i<prev->N;i++)
 		if(prev->id[i] > PrevMaxPartId)
