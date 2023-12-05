@@ -59,8 +59,8 @@
 #define MAXLINESIZE (10000)
 
 
-#ifdef SUSSING_TREES
+/* #ifdef SUSSING_TREES */
 extern float *REDSHIFT;
-#endif
+/* #endif */
 
 #endif
