@@ -14,17 +14,19 @@
 #define    FOFMINLEN        (32)
 #define    SUBHALOMINLEN    (20)
 
+#define SQR_PERIODIC(dx)      (periodic(dx) * periodic(dx))
+
 
 void reorder_groups_on_array(const int64 Ngroups,struct group_data *group)
 {
   // The last two fields, viz., parentgroupforparticle and parentsnapshotforparticle,  are also particle level information but they do not
-  // contain any info at this point. But I will swap them as well, since I might (inadvertently) call this function from elsewhere. 
+  // contain any info at this point. But I will swap them as well, since I might (inadvertently) call this function from elsewhere.
 
   int64 Nallocated = Ngroups;//some "reasonable" estimate of the max. number of particles in a halo. Tune to suit your needs
   float *sqr_radius=NULL;
 
 	for(int64 igroup=0;igroup<Ngroups;igroup++) {
-  
+
     if(group[igroup].N > Nallocated) {
       free(sqr_radius);
       sqr_radius = NULL;
@@ -46,7 +48,7 @@ void reorder_groups_on_array(const int64 Ngroups,struct group_data *group)
 
 #define MULTIPLE_ARRAY_EXCHANGER(vartype,a,i,j) { SGLIB_ARRAY_ELEMENTS_EXCHANGER(float,sqr_radius,i,j); \
     SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, thisgroup->id,i,j);		\
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int, thisgroup->type,i,j);		\
+    /* SGLIB_ARRAY_ELEMENTS_EXCHANGER(int, thisgroup->type,i,j);		*/ \
     SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->x,i,j);		\
     SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->y,i,j);		\
     SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->z,i,j);		\
@@ -64,7 +66,7 @@ void reorder_groups_on_array(const int64 Ngroups,struct group_data *group)
       SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->x,i,j);		\
       SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->y,i,j);		\
       SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->z,i,j);		\
-      SGLIB_ARRAY_ELEMENTS_EXCHANGER(int, thisgroup->type,i,j);		\
+    /*   SGLIB_ARRAY_ELEMENTS_EXCHANGER(int, thisgroup->type,i,j);	*/	\
       SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, thisgroup->parentgroupforparticle,i,j); \
       SGLIB_ARRAY_ELEMENTS_EXCHANGER(int, thisgroup->parentsnapshotforparticle,i,j); }
 #endif
@@ -103,11 +105,11 @@ void remove_particles_from_all_groups(struct group_data *groups, const int Ngrou
 	for(int64 igroup=0;igroup<Ngroups;igroup++) {
 		struct group_data *this_group = &(groups[igroup]);
 		id64 *id = this_group->id;
-		int *type = this_group->type;
+		// int *type = this_group->type;
 		float *x = this_group->x;
 		float *y = this_group->y;
 		float *z = this_group->z;
-		
+
 #ifdef SUSSING_TREES
 		float *ParticleEnergy = this_group->ParticleEnergy;
 		float *vx = this_group->vx;
@@ -128,7 +130,7 @@ void remove_particles_from_all_groups(struct group_data *groups, const int Ngrou
 			}
 			const int64 source=this_group->N-1;
 			id[j] = id[source];
-			type[j] = type[source];
+			// type[j] = type[source];
 			x[j] = x[source];
 			y[j] = y[source];
 			z[j] = z[source];
@@ -168,7 +170,7 @@ void remove_particles_from_all_groups(struct group_data *groups, const int Ngrou
 }
 
 /* This function should be called after the halos have been
-	 sorted such that fofs and subs are contiguous. 
+	 sorted such that fofs and subs are contiguous.
  */
 void remove_duplicate_particles(const int64 Ngroups, struct group_data *groups)
 {
@@ -200,15 +202,15 @@ void remove_duplicate_particles(const int64 Ngroups, struct group_data *groups)
 					halolevel = my_realloc(halolevel,sizeof(*halolevel),max_npart,"halolevel");
 					haloindex = my_realloc(haloindex,sizeof(*haloindex),max_npart,"haloindex");
 					partloc_in_halo = my_realloc(partloc_in_halo, sizeof(*partloc_in_halo), max_npart, "partloc_in_halo");
-				} 
+				}
 
 				/* if(this_id == 2047766) { */
 				/* 	fprintf(stderr,"this_id = %ld igroup = %"STR_FMT" j = %"STR_FMT" halolevel = %d group->N = %"STR_FMT" containerindex = %"STR_FMT" groupnum = %"STR_FMT"\n", */
 				/* 					this_id,igroup,j,groups[igroup].ParentLevel,groups[igroup].N,groups[igroup].ContainerIndex,groups[igroup].groupnum); */
 				/* } */
-				
+
 				partids[location]   = this_id;
-				//Make sure that Parentlevel is set up before 
+				//Make sure that Parentlevel is set up before
 				assert(groups[igroup].ParentLevel >= 1 && "ParentLevels need to have been initialized already");
 				halolevel[location] = groups[igroup].ParentLevel;
 				haloindex[location] = igroup;
@@ -218,16 +220,16 @@ void remove_duplicate_particles(const int64 Ngroups, struct group_data *groups)
 		}
 		/* fprintf(stderr,"haloindex[%"STR_FMT"-1] = %"STR_FMT"\n",location,haloindex[location-1]); */
 		const int64 Npart = location;
-		
+
 #define MULTIPLE_ARRAY_EXCHANGER(vartype,a,i,j) { \
 			SGLIB_ARRAY_ELEMENTS_EXCHANGER(short,halolevel,i,j);						\
 			SGLIB_ARRAY_ELEMENTS_EXCHANGER(long, partids,i,j);							\
 			SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64,haloindex,i,j);						\
 			SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partloc_in_halo,i,j);		}
-		
+
 		SGLIB_ARRAY_QUICK_SORT(id64, partids, Npart, SGLIB_NUMERIC_COMPARATOR , MULTIPLE_ARRAY_EXCHANGER);
 #undef MULTIPLE_ARRAY_EXCHANGER
-		
+
 		int64 ipart=0;
 		while(ipart < Npart) {
 			const long this_partid = partids[ipart];
@@ -256,7 +258,7 @@ void remove_duplicate_particles(const int64 Ngroups, struct group_data *groups)
 				/* fprintf(stderr,"partids[%"STR_FMT"] = %"STR_ID" this_partid = %"STR_ID"\n",i,partids[i],this_partid); */
 				assert(partids[i] == this_partid && "Particle ids must be identical");
 				//Check that the same particle does not belong to two different subhalos at the same parentlevel
-				//MS 3rd Mar, 2015 - this condition does not hold. Two different subhalos may contain the same particle. 
+				//MS 3rd Mar, 2015 - this condition does not hold. Two different subhalos may contain the same particle.
 				/* if(halolevel[i] == maxparentlevel) { */
 				/* 	if( !(haloindex_maxparentlevel == haloindex[i])) { */
 				/* 		fprintf(stderr,"ERROR: About to crash: partid = %"STR_ID" haloindex[%"STR_FMT"] = %"STR_FMT"  haloindex_maxparentlevel = %"STR_FMT"  halolevel[%"STR_FMT"] = %d maxparentlevel = %d\n", */
@@ -280,7 +282,7 @@ void remove_duplicate_particles(const int64 Ngroups, struct group_data *groups)
 			}
 			ipart = ipart + nmatches + 1;
 		}
-		
+
 		assert(groups[FofIndex].Nsub >=1 && "Number of subhalos must be at least 1");
 		FofIndex += groups[FofIndex].Nsub;
 	}
@@ -312,10 +314,10 @@ void assign_parentlevel(struct group_data *this_group, const int64 Ngroups, stru
 		assign_parentlevel(containerhalo, Ngroups, groups);
 	}
 
-	
+
 	assert(containerhalo->ParentLevel >=1 && "ParentLevels must be at least 1 (for FOFs) and larger for sub/sub-subs etc");
 	this_group->ParentLevel = containerhalo->ParentLevel + 1;
-}	
+}
 #endif
 
 
@@ -326,9 +328,8 @@ int64 returnNhalo(const char* buf)
 {
   FILE* fsub=NULL;
   int64 Nsub;
-  size_t one=1;
   fsub = my_fopen(buf,"r");
-  fread(&Nsub,sizeof(int64),one,fsub);
+  my_fread(&Nsub,sizeof(int64), 1,fsub);
   fclose(fsub);
   return Nsub;
 
@@ -340,8 +341,8 @@ int64 returnNhalo(const char* buf)
 #ifdef BGC2
 int64 returnNhalo(const char *buf, const int fof_only)
 {
-  
-  
+
+
 }
 #endif
 
@@ -383,12 +384,12 @@ int64 returnNhalo_AHF(const char* buf,const int fof_only)
 
 void loadgroups(int num, struct group_data *group)
 {
-  
+
   char catalogue_fname[MAXLEN];
   char partids_fname[MAXLEN];
 	char substruct_fname[MAXLEN];
   FILE *fp=NULL;
-  
+
   long Ngroups;
   long haloid;
   char buffer[MAXLINESIZE];
@@ -409,7 +410,7 @@ void loadgroups(int num, struct group_data *group)
 				group[i].groupnum = i;
 				group[i].NParents = 0;
 				group[i].Switched = 0;
-				
+
 				group[i].N_per_wedge = 0;
 				/* initialise the parent finding variables*/
 				group[i].ParentId =-1;
@@ -417,7 +418,7 @@ void loadgroups(int num, struct group_data *group)
 				group[i].Ncommon = 0;
 				group[i].Rank = 0.0;
 				group[i].snapshot = (short) num;
-				
+
 				group[i].ParentLevel = -1;
 				const int nread  = sscanf(buffer,"%ld %"STR_FMT" %"STR_FMT" %lf %"STR_FMT" %f %f %f %f %f %f" ,
 																	&group[i].haloID,
@@ -431,18 +432,18 @@ void loadgroups(int num, struct group_data *group)
 																	&group[i].vxcen,
 																	&group[i].vycen,
 																	&group[i].vzcen);
-				
+
 				/* fprintf(stderr,"group[%"STR_FMT"].haloid = %ld \n",i,group[i].haloID); */
 				assert(nread == 11 && "Could not read 11 fields as expected");
-				
+
 				if(group[i].FOFHalo == -1) {
 					group[i].isFof = 1;
 					group[i].FOFHalo = i;
 					group[i].ParentLevel = 1;
-					group[i].ContainerIndex = i;      
+					group[i].ContainerIndex = i;
 				} else {
 					group[i].isFof = 0;
-					group[i].ContainerIndex = group[i].FOFHalo;      
+					group[i].ContainerIndex = group[i].FOFHalo;
 				}
 				i++;
       }
@@ -456,17 +457,17 @@ void loadgroups(int num, struct group_data *group)
 		 Easiest way to do this is to sort on FofHalo field of the group struct using sglib
 
 		 -MS 23rd Feb, 2015.
-		 
+
 	 */
 
- 
-#error Not implemented. 
-	
+
+#error Not implemented.
 
 
-	
-	
-  
+
+
+
+
   fp = my_fopen(partids_fname,"r");
   fgets(buffer,MAXLINESIZE,fp);
   sscanf(buffer,"%ld",&Ngroups);
@@ -479,9 +480,9 @@ void loadgroups(int num, struct group_data *group)
 				int nread = sscanf(buffer, "%ld %ld",&(group[i].N),&haloid);
 				assert(nread == 2);
 				assert(haloid == group[i].haloID);
-				
+
 				group[i].id             = my_malloc(sizeof(*group[i].id) ,group[i].N);
-				group[i].type           = my_malloc(sizeof(*group[i].type) ,group[i].N);
+				// group[i].type           = my_malloc(sizeof(*group[i].type) ,group[i].N);
 				group[i].ParticleEnergy = my_malloc(sizeof(*group[i].ParticleEnergy),group[i].N);
 				group[i].x              = my_malloc(sizeof(*group[i].x),group[i].N);
 				group[i].y              = my_malloc(sizeof(*group[i].y),group[i].N);
@@ -489,13 +490,13 @@ void loadgroups(int num, struct group_data *group)
 				group[i].vx             = my_malloc(sizeof(*group[i].vx),group[i].N);
 				group[i].vy             = my_malloc(sizeof(*group[i].vy),group[i].N);
 				group[i].vz             = my_malloc(sizeof(*group[i].vz),group[i].N);
-				
+
 				group[i].parentgroupforparticle    = my_malloc(sizeof(*group[i].parentgroupforparticle),group[i].N);
 				group[i].parentsnapshotforparticle = my_malloc(sizeof(*group[i].parentsnapshotforparticle),group[i].N);
-				
+
 				for(int64 j=0; j<group[i].N; j++) {
 					if(fgets(buffer,MAXLINESIZE,fp) != NULL ) {
-						group[i].type[j] = 1;
+						// group[i].type[j] = 1;
 						sscanf(buffer, "%ld %f %f %f %f %f %f %f",
 									 &(group[i].id[j]),
 									 &(group[i].ParticleEnergy[j]),       // [Msun/h (km/sec)^2]
@@ -549,7 +550,7 @@ int64 returnNhalo_SUSSING(const char* buf,const int fof_only)
 						Nhalos++;
 					}
 				}
-				
+
       } else {
 				fprintf(stderr,"ERROR: Could not parse the halo file `%s' for %ld values\n",buf,Ngroups);
 				exit(EXIT_FAILURE);
@@ -564,13 +565,13 @@ int64 returnNhalo_SUSSING(const char* buf,const int fof_only)
 
 void loadgroups(int num,struct group_data *group)
 {
-  //Loads in the ID data only for the SUSSING mergertrees  
-  
+  //Loads in the ID data only for the SUSSING mergertrees
+
   char catalogue_fname[MAXLEN];
   char partids_fname[MAXLEN];
 	/* char substruct_fname[MAXLEN]; */
   FILE *fp=NULL;
-  
+
 /* #ifndef ASCII_DATA */
 /*   my_snprintf(catalogue_fname,MAXLEN,  "%s/%s_%03d/subhalo_tab_%03d.0", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,num,num); */
 /*   my_snprintf(partids_fname,MAXLEN,  "%s/%s_%03d/subhalo_ids_%03d.0", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,num,num); */
@@ -580,7 +581,7 @@ void loadgroups(int num,struct group_data *group)
 	my_snprintf(catalogue_fname,MAXLEN,"%s/%s%05d.z%5.3f.AHF_halos", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,num,REDSHIFT[num]);
   my_snprintf(partids_fname  ,MAXLEN,"%s/%s%05d.z%5.3f.AHF_particles"   , PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,num,REDSHIFT[num]);
 	/* my_snprintf(substruct_fname,MAXLEN,"%s/%s%05d.z%5.3f.AHF_substructure"   , PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,num,REDSHIFT[num]); */
-	
+
   fp = my_fopen(partids_fname,"r");
   fscanf(fp,"%ld",&Ngroups);
   fclose(fp);
@@ -594,7 +595,7 @@ void loadgroups(int num,struct group_data *group)
 				group[i].groupnum = i;
 				group[i].NParents = 0;
 				group[i].Switched = 0;
-				
+
 				group[i].N_per_wedge = 0;
 				/* initialise the parent finding variables*/
 				group[i].ParentId =-1;
@@ -602,7 +603,7 @@ void loadgroups(int num,struct group_data *group)
 				group[i].Ncommon = 0;
 				group[i].Rank = 0.0;
 				group[i].snapshot = (short) num;
-				
+
 				group[i].ParentLevel = -1;
 				int nread;
 
@@ -619,7 +620,7 @@ void loadgroups(int num,struct group_data *group)
 												&group[i].vycen,
 												&group[i].vzcen
 					);
-				
+
 				/* fprintf(stderr,"group[%"STR_FMT"].haloid = %ld \n",i,group[i].haloID); */
 				assert(nread == 11 && "Could not read 11 fields as expected");
 
@@ -627,7 +628,7 @@ void loadgroups(int num,struct group_data *group)
 				/* Increment the number of subhalos since we need to count the halo
 					 itself as one subhalo. This way, even if the halo has no other subhalos,
 					 the halo itself is counted. There are numerous loops scattered around
-					 in the code that depend on Nsub>=1. 
+					 in the code that depend on Nsub>=1.
 				 */
 
 				if(group[i].FOFHalo == 0) {
@@ -646,7 +647,7 @@ void loadgroups(int num,struct group_data *group)
 					if(group[i].Nsub > 0) {
 						group[i].Nsub++;
 					}
-					
+
 					/* This might not be true -- since the host halo might actually not be the FOF we are after
 						 and it might be true that the actual FOF halo has not been read-in yet ( I don't think
 						 that's the case but I will assume that to be safe).
@@ -676,7 +677,7 @@ void loadgroups(int num,struct group_data *group)
 				assert(nread == 2 && "Parsed both numpart and haloid");
 
 				/* fprintf(stderr,"haloid = %ld \n",haloid); */
-				
+
 				//Since I have re-ordered the groups before, this check will not be valid any longer
 				/* assert(haloid == group[i].haloID); */
 
@@ -700,7 +701,7 @@ void loadgroups(int num,struct group_data *group)
 
 				/* Now allocate memory and prepare to parse the particles file for the particle positions in the group */
 				group[haloindex].id             = my_malloc(sizeof(*group[haloindex].id) ,group[haloindex].N);
-				group[haloindex].type           = my_malloc(sizeof(*group[haloindex].type) ,group[haloindex].N);
+				// group[haloindex].type           = my_malloc(sizeof(*group[haloindex].type) ,group[haloindex].N);
 				group[haloindex].ParticleEnergy = my_malloc(sizeof(*group[haloindex].ParticleEnergy),group[haloindex].N);
 				group[haloindex].x              = my_malloc(sizeof(*group[haloindex].x),group[haloindex].N);
 				group[haloindex].y              = my_malloc(sizeof(*group[haloindex].y),group[haloindex].N);
@@ -708,13 +709,13 @@ void loadgroups(int num,struct group_data *group)
 				group[haloindex].vx             = my_malloc(sizeof(*group[haloindex].vx),group[haloindex].N);
 				group[haloindex].vy             = my_malloc(sizeof(*group[haloindex].vy),group[haloindex].N);
 				group[haloindex].vz             = my_malloc(sizeof(*group[haloindex].vz),group[haloindex].N);
-				
+
 				group[haloindex].parentgroupforparticle    = my_malloc(sizeof(*group[haloindex].parentgroupforparticle),group[haloindex].N);
 				group[haloindex].parentsnapshotforparticle = my_malloc(sizeof(*group[haloindex].parentsnapshotforparticle),group[haloindex].N);
-				
+
 				for(int64 j=0; j<group[haloindex].N; j++) {
 					if(fgets(buffer,MAXLINESIZE,fp) != NULL ) {
-						group[haloindex].type[j] = 1;//This is incorrect because particles might of various types
+						// group[haloindex].type[j] = 1;//This is incorrect because particles might of various types
 						nread = sscanf(buffer, "%ld %f %f %f %f %f %f %f",
 													 &(group[haloindex].id[j]),
 													 &(group[haloindex].ParticleEnergy[j]),       // [Msun/h (km/sec)^2]
@@ -751,14 +752,14 @@ void loadgroups(int num,struct group_data *group)
 		assign_parentlevel(this_group, Ngroups, group);
 	}
 
-	
+
 /* fprintf(stderr,"BEFORE sorting \n"); */
 	/* for(int64 igroup=0;igroup<Ngroups;igroup++) { */
 	/* 	fprintf(stderr,"igroup %07"STR_FMT" group->haloID = %10"STR_FMT" group->N = %10"STR_FMT" group->FOFHalo = %10"STR_FMT" group->ContainerIndex = %10"STR_FMT" group->parentlevel = %d group->Nsub=%"STR_FMT"\n" , */
 	/* 					igroup,group[igroup].haloID, group[igroup].N,group[igroup].FOFHalo,group[igroup].ContainerIndex,group[igroup].ParentLevel,group[igroup].Nsub); */
 	/* } */
 
-	
+
 	//I am creating a linear array to help sort the group struct in the next step
 	long *allfofhaloids    = my_malloc(sizeof(*allfofhaloids), Ngroups);
 	int64 *containerindices = my_malloc(sizeof(*containerindices), Ngroups);
@@ -825,9 +826,9 @@ void loadgroups(int num,struct group_data *group)
 	free(allfofhaloids);
 	fprintf(stderr,"...done\n");
 
-	
+
 	fprintf(stderr,"Fixing the FOFHalo and ContainerIndices...");
-	//Now fix the fofindex and containerindices 
+	//Now fix the fofindex and containerindices
 	for(int64 fofindex=0;fofindex<Ngroups;fofindex+=group[fofindex].Nsub) {
 		if( ! (group[fofindex].isFof == 1) ) {
 			fprintf(stderr,"ERROR: About to crash - Fof halo doesn't have fof flag set. fofindex = %"STR_FMT" Nsub = %"STR_FMT" haloid = %"STR_FMT" Parentlevel = %d ContainerIndex = %"STR_FMT"\n",
@@ -863,7 +864,7 @@ void loadgroups(int num,struct group_data *group)
 	free(containerindices);
 	free(currentindices);
 	fprintf(stderr,"...done\n");
-	
+
 	/* fprintf(stderr,"AFTER: sorting\n"); */
 	/* for(int64 igroup=0;igroup<Ngroups;igroup++) { */
 	/* 	fprintf(stderr,"igroup %07"STR_FMT" group->haloID = %10"STR_FMT" group->N = %10"STR_FMT" group->FOFHalo = %10"STR_FMT" group->ContainerIndex = %10"STR_FMT" group->parentlevel = %d group->Nsub=%"STR_FMT"\n" , */
@@ -883,493 +884,414 @@ void loadgroups(int num,struct group_data *group)
 	fprintf(stderr,"....done\n");
 	time_t t_sectionend=time(NULL);
 	print_time(t_sectionstart,t_sectionend,"Re-ordering particles inside groups");
-}  
+}
 #endif //SUSSING
 
-
 #ifdef SUBFIND
-void loadgroups(int num,struct group_data* group)
+void loadgroups(int num, struct group_data *group)
 {
-  int64 Ngroups = 0;
-  int64 NumPart = 0;
+    char catalogue_fname[MAXLEN];
+    char particles_fname[MAXLEN];
+    // char parttypes_fname[MAXLEN];
+    char partids_fname[MAXLEN];
+    my_snprintf(particles_fname, MAXLEN, "%s/%s_%03d.pos", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE, num);
+    // my_snprintf(parttypes_fname, MAXLEN, "%s/%s_%03d.types", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE, num);
+    my_snprintf(partids_fname, MAXLEN, "%s/%s_%03d.ids", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE, num);
+    my_snprintf(catalogue_fname, MAXLEN, "%s/%s_%03d.fofcat", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE, num);
 
-  FILE *fpos=NULL;
-  FILE *ftype=NULL;
-  FILE *fid=NULL;
-  FILE *fcat=NULL;
-  size_t one=1;
+    FILE *fcat = my_fopen(catalogue_fname, "r");
 
-  int64 i,j;
-  float rmax,temp_rmax;
+    int64 Ngroups;
+    my_fread(&Ngroups, sizeof(int64), 1, fcat);
+    if (Ngroups == 0)
+    {
+        fclose(fcat);
+        fprintf(stderr, "No groups found in file..freeing the group pointer \n");
+        my_free((void **)&(group));
+        return;
+    }
 
-  int64 *GroupLen=NULL;
-  int64 *GroupOffset=NULL;
-  float *xpos=NULL;
-  float *ypos=NULL;
-  float *zpos=NULL;
-  char *type=NULL;
-  id64 *id=NULL;
-  float tmp_pos[3];
+    if (Ngroups < 0)
+    {
+        fprintf(stderr, "Error: Ngroups = %" STR_FMT " must be >= 0\n", Ngroups);
+        exit(EXIT_FAILURE);
+    }
 
-  char catalogue_fname[MAXLEN];
-  char particles_fname[MAXLEN];
-  char parttypes_fname[MAXLEN];
-  char partids_fname[MAXLEN];
-  int64 FOF_Parent;
+    // If we have reached here, then Ngroups > 0. MS 20th Nov, 2023
+    FILE *fpos = my_fopen(particles_fname, "r");
+    // FILE *ftype = my_fopen(parttypes_fname, "r");
+    FILE *fid = my_fopen(partids_fname, "r");
 
-  float *GroupCM[3];
-#ifdef GET_GROUPVEL
-  float *GroupCMV[3];
-#endif
+    /* Read in the positions  */
+    int64 NumPart;
+    my_fread(&NumPart, sizeof(int64), 1, fpos);
+    /* 	  fprintf(stderr,"There are " STR_FMT " particles in the groups file `%s'\n",NumPart,particles_fname); */
+    // int64 xx;
+    // my_fread(&xx, sizeof(int64), 1, ftype);
+    // assert(xx == NumPart && "Numpart in types file should be equal to NumPart in positions file");
+    // my_fread(&xx, sizeof(int64), 1, fid);
+    // assert(xx == NumPart && "Numpart in ids file should be equal to NumPart in positions file");
+
+    float *xyzpos = my_malloc(sizeof(*xyzpos), 3*NumPart);
+    float *xpos = my_malloc(sizeof(*xpos), NumPart);
+    float *ypos = my_malloc(sizeof(*ypos), NumPart);
+    float *zpos = my_malloc(sizeof(*zpos), NumPart);
+    // char *type = my_malloc(sizeof(*type), NumPart);
+    id64* id = my_malloc(sizeof(*id), NumPart);
+
+    /* read positions */
+    my_fread(xyzpos, sizeof(*xyzpos), 3*NumPart, fpos);
+    for (int64 i = 0; i < NumPart; i++)
+    {
+        xpos[i] = xyzpos[3*i + 0];
+        ypos[i] = xyzpos[3*i + 1];
+        zpos[i] = xyzpos[3*i + 2];
+    }
+    free(xyzpos);
+
+    /* read types */
+    // my_fread(type, sizeof(char), NumPart, ftype);
+
+    /* read ids */
+    my_fread(id, sizeof(id64), NumPart, fid);
+
+    fclose(fpos);
+    // fclose(ftype);
+    fclose(fid);
 
 #ifndef FOF_ONLY
-  FILE* fprop=NULL;
-  FILE* fsubcat=NULL;
-  FILE* fsubprop=NULL;
-  int64 Nsub = 0;
-  char subhalos_fname[MAXLEN];
-  char subprop_fname[MAXLEN];
-  char fofprop_fname[MAXLEN];
-  int64 *GroupSubs=NULL;
-  float *GroupMtot=NULL;
-  float *GroupMgas=NULL;
-  int64 *SubLen=NULL;
-  int64 *SubOffset=NULL;
-  int64 *SubParent=NULL;
-  float *SubMtot=NULL;
-  float *SubMgas=NULL;
-  int64 sumgroups;
-  int64 *tempindex=NULL;
-  float *SubCM[3];
-#ifdef GET_GROUPVEL
-  float *SubCMV[3];
-#endif 
+    char subhalos_fname[MAXLEN];
+    char subprop_fname[MAXLEN];
 
+    my_snprintf(subhalos_fname, MAXLEN, "%s/%s_%03d.subcat", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE, num);
+    my_snprintf(subprop_fname, MAXLEN, "%s/%s_%03d.subprop", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE, num);
+
+    FILE *fsubcat = my_fopen(subhalos_fname, "r");
+    FILE *fsubprop = my_fopen(subprop_fname, "r");
+
+    int64 *GroupSubs = my_malloc(sizeof(*GroupSubs), Ngroups); // not recasting to (int64 *) -> should be automatic
+    my_fread(GroupSubs, sizeof(int64), Ngroups, fcat);
+
+    /* Read in from subhalo catalogue*/
+    int64 Nsub;
+    my_fread(&Nsub, sizeof(int64), 1, fsubcat);
+    int64 *SubLen = my_malloc(sizeof(*SubLen), Nsub);
+    int64 *SubOffset = my_malloc(sizeof(*SubOffset), Nsub);
+
+    my_fread(SubLen, sizeof(int64), Nsub, fsubcat);
+    my_fread(SubOffset, sizeof(int64), Nsub, fsubcat);
+    fclose(fsubcat);
+
+    /* read in from the subprop file*/
+    my_fread(&Nsub, sizeof(int64), 1, fsubprop);
+    float *SubMtot = my_malloc(sizeof(*SubMtot), Nsub);
+    // float *SubMgas = my_malloc(sizeof(*SubMgas), Nsub);
+
+    float *SubCM[3];
+#ifdef GET_GROUPVEL
+    float *SubCMV[3];
+#endif
+    for (int i = 0; i < 3; i++)
+    {
+        SubCM[i] = my_malloc(sizeof(*SubCM[i]), Nsub);
+        my_fread(&SubCM[i], sizeof(float), Nsub, fsubprop);
+
+#ifdef GET_GROUPVEL
+        SubCMV[i] = my_malloc(sizeof(*SubCMV[i]), Nsub);
+        my_fread(&SubCMV[i], sizeof(float), Nsub, fsubprop);
+#endif
+    }
+
+    my_fread(SubMtot, sizeof(float), Nsub, fsubprop);
+    // my_fread(SubMgas, sizeof(float), Nsub, fsubprop);
+
+    fclose(fsubprop);
 
 #else
 
-  //FOF_ONLY
-  double mtot,mgas;
-#endif
-
-  my_snprintf(particles_fname,MAXLEN,  "%s/%s_%03d.pos", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,num);
-  my_snprintf(parttypes_fname,MAXLEN,  "%s/%s_%03d.types", PARAMS.GROUP_DIR,PARAMS.GROUP_BASE,num);
-  my_snprintf(partids_fname,  MAXLEN,  "%s/%s_%03d.ids", PARAMS.GROUP_DIR,PARAMS.GROUP_BASE,num);
-  my_snprintf(catalogue_fname,MAXLEN,  "%s/%s_%03d.fofcat", PARAMS.GROUP_DIR,PARAMS.GROUP_BASE,num);
-#ifndef FOF_ONLY
-  my_snprintf(fofprop_fname,  MAXLEN,  "%s/%s_%03d.fofprop", PARAMS.GROUP_DIR,PARAMS.GROUP_BASE,num);
-  my_snprintf(subhalos_fname, MAXLEN,  "%s/%s_%03d.subcat", PARAMS.GROUP_DIR,PARAMS.GROUP_BASE,num);
-  my_snprintf(subprop_fname,  MAXLEN,  "%s/%s_%03d.subprop", PARAMS.GROUP_DIR,PARAMS.GROUP_BASE,num);
-#endif
-  
-  
-  fcat = my_fopen(catalogue_fname, "r");
-  my_fread(&Ngroups, sizeof(int64), one, fcat);
-
-  if (Ngroups > 0) 
-	{
-
-		fpos  = my_fopen(particles_fname,"r");
-		ftype = my_fopen(parttypes_fname, "r");
-		fid   = my_fopen(partids_fname, "r");
-
-#ifndef FOF_ONLY
-
-		fprop    = my_fopen(fofprop_fname, "r");
-		fsubcat  = my_fopen(subhalos_fname, "r");
-		fsubprop = my_fopen(subprop_fname, "r");
-#endif
-
-		GroupLen    = my_malloc(sizeof(*GroupLen),Ngroups);
-		GroupOffset = my_malloc(sizeof(*GroupOffset),Ngroups);
-
-		my_fread(GroupLen   ,sizeof(int64),(size_t) Ngroups,fcat);
-		my_fread(GroupOffset,sizeof(int64),(size_t) Ngroups,fcat);
-	  
-#ifndef FOF_ONLY
-	  
-		GroupSubs   = my_malloc(sizeof(*GroupSubs),Ngroups);//not recasting to (int64 *) -> should be automatic
-		GroupMtot   = my_malloc(sizeof(*GroupMtot),Ngroups);
-		GroupMgas   = my_malloc(sizeof(*GroupMgas),Ngroups);
-
-		for(i=0;i<Ngroups;i++)
-			my_fread(&GroupSubs[i],sizeof(int64),one,fcat);
-
-		/* Read in from fof_prop file*/
-
-		my_fread(&Ngroups,sizeof(int64),one,fprop);
-		for(i=0;i<3;i++)
-		{
-			GroupCM[i]  = my_malloc(sizeof(*GroupCM[i]),Ngroups);
+    //Output comes from FOF-only
+    float *GroupCM[3];
 #ifdef GET_GROUPVEL
-			GroupCMV[i] = my_malloc(sizeof(*GroupCMV[i]),Ngroups);
+    float *GroupCMV[3];
 #endif
+    int64 *GroupLen = my_malloc(sizeof(*GroupLen), Ngroups);
+    int64 *GroupOffset = my_malloc(sizeof(*GroupOffset), Ngroups);
 
-		}
+    fseek(fcat, sizeof(int64)*Ngroups, SEEK_CUR);//Seek over GroupSubs which are not required for FOF-ONLY
+    my_fread(GroupLen, sizeof(int64), (size_t)Ngroups, fcat);
+    my_fread(GroupOffset, sizeof(int64), (size_t)Ngroups, fcat);
 
-		for(i=0;i<Ngroups;i++)
-			for(j=0;j<3;j++)
-				my_fread(&GroupCM[j][i],sizeof(float),one,fprop); /* Warning: This was written directly as a block of 3. I am reading it back in as 3 sets of 1. */
+    float *GroupMtot = my_malloc(sizeof(*GroupMtot), Ngroups);
+    float *GroupMgas = my_malloc(sizeof(*GroupMgas), Ngroups);
 
+    char fofprop_fname[MAXLEN];
+    my_snprintf(fofprop_fname, MAXLEN, "%s/%s_%03d.fofprop", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE, num);
+    /* Read in from fof_prop file*/
+    FILE *fprop = my_fopen(fofprop_fname, "r");
+    int64 yy = 0;
+    my_fread(&yy, sizeof(int64), 1, fprop);
+    assert(yy == Ngroups && "Ngroups should be equal between fofprop and fofcat");
+    for (int i = 0; i < 3; i++)
+    {
+        GroupCM[i] = my_malloc(sizeof(*GroupCM[i]), Ngroups);
+        my_fread(&GroupCM[i], sizeof(float), Ngroups, fprop);
 #ifdef GET_GROUPVEL
-		for(i=0;i<Ngroups;i++)
-			for(j=0;j<3;j++)
-				my_fread(&GroupCMV[j][i],sizeof(float),one,fprop); /* Warning: This was written directly as a block of 3. I am reading it back in as 3 sets of 1. */
+        GroupCMV[i] = my_malloc(sizeof(*GroupCMV[i]), Ngroups);
+        my_fread(&GroupCMV[i], sizeof(float), Ngroups, fprop); /* Warning: This was written directly as a block of 3. I am reading it back in as 3 sets of 1. */
 #endif
+    }
 
 
-		for(i=0;i<Ngroups;i++)
-			my_fread(&GroupMtot[i],sizeof(float),one,fprop);
+    my_fread(GroupMtot, sizeof(float), Ngroups, fprop);
+    my_fread(GroupMgas, sizeof(float), Ngroups, fprop);
 
-		for(i=0;i<Ngroups;i++)
-			my_fread(&GroupMgas[i],sizeof(float),one,fprop);
+    fclose(fprop);
+#endif // end of #ifndef FOF-ONLY
 
-		fclose(fprop);
+    fclose(fcat);
+    /* So everything has been read and all the files have been closed
+         Now, lets insert the subhalos into the proper places in the structure
+         If we are reading FOF only halos then pretty much nothing needs to be done.
 
-		/* Read in from subhalo catalogue*/
-	  
-		my_fread(&Nsub,sizeof(int64),one,fsubcat);
-		SubLen    = my_malloc(sizeof(*SubLen),Nsub);
-		SubOffset = my_malloc(sizeof(*SubOffset),Nsub);
-		SubParent = my_malloc(sizeof(*SubParent),Nsub);
+         Keep in mind that the subfind does return the FOF halos, all the particles
+         present in the subhalos will add up to be <= the original FOF halo, i.e., the
+         position array will probably contain elements that do not belong to any subhalo.
 
-		for(i=0;i<Nsub;i++)
-			my_fread(&SubLen[i],sizeof(int64),one,fsubcat);
-
-		for(i=0;i<Nsub;i++)
-			my_fread(&SubOffset[i],sizeof(int64),one,fsubcat);
-
-		for(i=0;i<Nsub;i++)
-			my_fread(&SubParent[i],sizeof(int64),one,fsubcat);
-
-		fclose(fsubcat);
-
-
-		/* read in from the subprop file*/
-		my_fread(&Nsub,sizeof(int64),one,fsubprop);
-		SubMtot = my_malloc(sizeof(*SubMtot),Nsub);
-		SubMgas = my_malloc(sizeof(*SubMgas),Nsub);
-		for(i=0;i<3;i++)
-		{
-			SubCM[i]  = my_malloc(sizeof(*SubCM[i]),Nsub);
-#ifdef GET_GROUPVEL
-			SubCMV[i] = my_malloc(sizeof(*SubCMV[i]),Nsub);
-#endif
-		}
-
-
-		for(i=0;i<Nsub;i++)
-			for(j=0;j<3;j++)
-				my_fread(&SubCM[j][i],sizeof(float),one,fsubprop);
-
-#ifdef GET_GROUPVEL
-		for(i=0;i<Nsub;i++)
-			for(j=0;j<3;j++)
-				my_fread(&SubCMV[j][i],sizeof(float),one,fsubprop);
-#endif
-
-
-		for(i=0;i<Nsub;i++)
-			my_fread(&SubMtot[i],sizeof(float),one,fsubprop);
-	  
-		for(i=0;i<Nsub;i++)
-			my_fread(&SubMgas[i],sizeof(float),one,fsubprop);
-	  
-		fclose(fsubprop);
-
-#endif	  
-
-		/* Read in the positions  */
-		my_fread(&NumPart,sizeof(int64),one,fpos);
-		/* 	  fprintf(stderr,"There are " STR_FMT " particles in the groups file `%s'\n",NumPart,particles_fname); */
-		my_fread(&NumPart,sizeof(int64),one,ftype);
-		my_fread(&NumPart,sizeof(int64),one,fid);
-
-	  
-		xpos = my_malloc(sizeof(*xpos),NumPart);
-		ypos = my_malloc(sizeof(*ypos),NumPart);
-		zpos = my_malloc(sizeof(*zpos),NumPart);
-		type = my_malloc(sizeof(*type),NumPart);
-		id   = my_malloc(sizeof(*id),NumPart);
-
-		for(i=0;i<NumPart;i++)
-		{
-			/* read positions */
-			my_fread(&tmp_pos[0],sizeof(float),(size_t) 3,fpos);
-
-			xpos[i] = tmp_pos[0];
-			ypos[i] = tmp_pos[1];
-			zpos[i] = tmp_pos[2];
-
-			/* read types */
-			my_fread(&type[i],sizeof(char),one,ftype);
-
-			/* read ids */
-			my_fread(&id[i],sizeof(id64),one,fid);
-		}
-
-		fclose(fcat);
-		fclose(fpos);
-		fclose(ftype);
-		fclose(fid);
-	  
-
-		/* So everything has been read and all the files have been closed
-			 Now, lets insert the subhalos into the proper places in the structure 
-			 If we are reading FOF only halos then pretty much nothing needs to be done.
-	  
-			 Keep in mind that the subfind does return the FOF halos, all the particles 
-			 present in the subhalos will add up to be <= the original FOF halo, i.e., the
-			 position array will probably contain elements that do not belong to any subhalo.
-	  
-		*/
-
+    */
 
 #ifndef FOF_ONLY
 
-		/* output came from subfind */
+    /* output came from subfind */
 
-		/* Decide which are the parent halos.
-			 Notice that the loop below goes to Ngroups and NOT Nsub.
-		*/
+    /* Decide which are the parent halos.
+         Notice that the loop below goes to Ngroups and NOT Nsub.
+    */
 
+    int64 *tempindex = my_malloc(sizeof(*tempindex), Ngroups);
 
-		tempindex = my_malloc(sizeof(*tempindex),Ngroups);
-	  
-		for(i=0;i<Nsub;i++)
-		{
-			group[i].isFof=0;
-			group[i].Nsub = 0;
-		}
-	  
-		sumgroups=0;
-		for(i=0;i<Ngroups;i++)
-		{
-			tempindex[i] = sumgroups;
-			sumgroups += GroupSubs[i];
-		  
-		}
-	  
-		for(i=0;i<Ngroups;i++) {
-			if(tempindex[i] >= Nsub ) {
-				fprintf(stderr,"WARNING: Possible case of FOF group falling below resolution limit \n");
-				fprintf(stderr,"WARNING: i = %"STR_FMT" tempindex = %"STR_FMT" is greater than Nsub = %"STR_FMT" with Ngroups = %"STR_FMT"  \n",i,tempindex[i],Nsub,Ngroups);
-			} else {
-				group[tempindex[i]].isFof = 1;
-				group[tempindex[i]].Nsub = GroupSubs[i];
-			}
-		}
-		free(tempindex);
+    for (int64 i = 0; i < Nsub; i++)
+    {
+        group[i].isFof = 0;
+        group[i].Nsub = 0;
+    }
 
-		FOF_Parent=0;
-		for(i=0;i<Nsub;i++) {
-			/* only the fof's have a definite
-				 parentlevel at this point. all
-				 others (subhalos) need to be assigned
-				 one at a later stage.
-			*/
-	
-			group[i].ParentLevel = -1;
-			if(group[i].isFof==1) {
-				group[i].ParentLevel = 1;
-				FOF_Parent = i;
-			}
-	
-			group[i].N = SubLen[i];
-      group[i].nodeloc = i;
-			group[i].snapshot = num;
-			group[i].redshift = REDSHIFT[num];
-			
-			group[i].Mtot = SubMtot[i];
-			group[i].Mgas = SubMgas[i];
-			group[i].xcen  = xpos[SubOffset[i]];
-			group[i].ycen  = ypos[SubOffset[i]];
-			group[i].zcen  = zpos[SubOffset[i]];
-	
+    int64 sumgroups = 0;
+    for (int64 i = 0; i < Ngroups; i++)
+    {
+        tempindex[i] = sumgroups;
+        sumgroups += GroupSubs[i];
+    }
+
+    for (int64 i = 0; i < Ngroups; i++)
+    {
+        if (tempindex[i] >= Nsub)
+        {
+            fprintf(stderr, "WARNING: Possible case of FOF group falling below resolution limit \n");
+            fprintf(stderr, "WARNING: i = %" STR_FMT " tempindex = %" STR_FMT " is greater than Nsub = %" STR_FMT " with Ngroups = %" STR_FMT "  \n", i, tempindex[i], Nsub, Ngroups);
+        }
+        else
+        {
+            group[tempindex[i]].isFof = 1;
+            group[tempindex[i]].Nsub = GroupSubs[i];
+        }
+    }
+    free(tempindex);
+
+    int64 FOF_Parent = 0;
+    for (int64 i = 0; i < Nsub; i++)
+    {
+        /* only the fof's have a definite
+             parentlevel at this point. all
+             others (subhalos) need to be assigned
+             one at a later stage.
+        */
+
+        group[i].ParentLevel = -1;
+        if (group[i].isFof == 1)
+        {
+            group[i].ParentLevel = 1;
+            FOF_Parent = i;
+        }
+
+        group[i].N = SubLen[i];
+        group[i].nodeloc = i;
+        group[i].snapshot = num;
+        group[i].redshift = REDSHIFT[num];
+
+        group[i].Mtot = SubMtot[i];
+        // group[i].Mgas = SubMgas[i];
+        group[i].xcen = xpos[SubOffset[i]];
+        group[i].ycen = ypos[SubOffset[i]];
+        group[i].zcen = zpos[SubOffset[i]];
+
 #ifdef GET_GROUPVEL
-			group[i].vxcen = SubCMV[0][i];
-			group[i].vycen = SubCMV[1][i];
-			group[i].vzcen = SubCMV[2][i];
+        group[i].vxcen = SubCMV[0][i];
+        group[i].vycen = SubCMV[1][i];
+        group[i].vzcen = SubCMV[2][i];
 #endif
-			group[i].groupnum = i;
-			group[i].N_per_wedge = 0;
-			/* initialise the parent finding variables*/
-			group[i].ParentId =-1;
-			group[i].NParents = 0;
-			group[i].Switched = 0;
-			group[i].ParentSnapshot = -1;
-			group[i].Ncommon = 0;
-			group[i].Rank = 0.0;
-			group[i].NpartinParent = 0;
-			group[i].snapshot = (short) num;
-			group[i].FOFHalo = FOF_Parent;
-			group[i].ContainerIndex = FOF_Parent;
-	
-	
-			group[i].x    =  my_malloc(sizeof(*group[i].x),SubLen[i]);
-			group[i].y    =  my_malloc(sizeof(*group[i].y),SubLen[i]);
-			group[i].z    =  my_malloc(sizeof(*group[i].z),SubLen[i]);
-			group[i].id   =  my_malloc(sizeof(*group[i].id),SubLen[i]);
-			group[i].type =  my_malloc(sizeof(*group[i].type),SubLen[i]);
-	
-			group[i].parentgroupforparticle    = my_malloc(sizeof(*group[i].parentgroupforparticle),SubLen[i]);
-			group[i].parentsnapshotforparticle = my_malloc(sizeof(*group[i].parentsnapshotforparticle),SubLen[i]);
-	
-			rmax = 0.0;
-	
-			for(j=0;j<SubLen[i];j++) {
-				group[i].x[j] = xpos[SubOffset[i]+j];
-				group[i].y[j] = ypos[SubOffset[i]+j];
-				group[i].z[j] = zpos[SubOffset[i]+j];
-				group[i].id[j] = id[SubOffset[i]+j];
-				group[i].type[j] = (int) type[SubOffset[i]+j];
-	  
-				/* 			  fprintf(stderr,"group[%d].id[%d]=%ld\n",i,j,group[i].id[j]); */
-	  
-				temp_rmax = sqrt(SQR_PERIODIC(group[i].x[j],group[i].xcen) + SQR_PERIODIC(group[i].y[j],group[i].ycen) + SQR_PERIODIC(group[i].z[j],group[i].zcen) );
-				if( temp_rmax > rmax)
-					rmax = temp_rmax;
-	  
-				/* initialise the parent finding variables*/
-				group[i].parentgroupforparticle[j]    = -1;
-				group[i].parentsnapshotforparticle[j] = -1;
-	  
-			}
-			group[i].Rmax = rmax;
-		}
-      
+        group[i].groupnum = i;
+        group[i].N_per_wedge = 0;
+        /* initialise the parent finding variables*/
+        group[i].ParentId = -1;
+        group[i].NParents = 0;
+        group[i].Switched = 0;
+        group[i].ParentSnapshot = -1;
+        group[i].Ncommon = 0;
+        group[i].Rank = 0.0;
+        group[i].NpartinParent = 0;
+        group[i].snapshot = (short)num;
+        group[i].FOFHalo = FOF_Parent;
+        group[i].ContainerIndex = FOF_Parent;
+
+        group[i].x = my_malloc(sizeof(*group[i].x), SubLen[i]);
+        group[i].y = my_malloc(sizeof(*group[i].y), SubLen[i]);
+        group[i].z = my_malloc(sizeof(*group[i].z), SubLen[i]);
+        group[i].id = my_malloc(sizeof(*group[i].id), SubLen[i]);
+        // group[i].type = my_malloc(sizeof(*group[i].type), SubLen[i]);
+
+        group[i].parentgroupforparticle = my_malloc(sizeof(*group[i].parentgroupforparticle), SubLen[i]);
+        group[i].parentsnapshotforparticle = my_malloc(sizeof(*group[i].parentsnapshotforparticle), SubLen[i]);
+
+        float rmax = 0.0;
+        for (int64 j = 0; j < SubLen[i]; j++)
+        {
+            group[i].x[j] = xpos[SubOffset[i] + j];
+            group[i].y[j] = ypos[SubOffset[i] + j];
+            group[i].z[j] = zpos[SubOffset[i] + j];
+            group[i].id[j] = id[SubOffset[i] + j];
+            // group[i].type[j] = (int)type[SubOffset[i] + j];
+
+            /* 			  fprintf(stderr,"group[%d].id[%d]=%ld\n",i,j,group[i].id[j]); */
+
+            float temp_rmax = sqrt(SQR_PERIODIC(group[i].x[j] - group[i].xcen) + SQR_PERIODIC(group[i].y[j] - group[i].ycen) + SQR_PERIODIC(group[i].z[j] - group[i].zcen));
+            if (temp_rmax > rmax)
+                rmax = temp_rmax;
+
+            /* initialise the parent finding variables*/
+            group[i].parentgroupforparticle[j] = -1;
+            group[i].parentsnapshotforparticle[j] = -1;
+        }
+        group[i].Rmax = rmax;
+    }
+
 #else
-		/* output came from fof groups */
+    /* output came from fof groups */
 
-		for(i=0;i<Ngroups;i++) {
-			group[i].N = GroupLen[i];
-			group[i].NpartinParent = 0;
-			group[i].nodeloc = i;
-			group[i].snapshot = num;
-			group[i].redshift = REDSHIFT[num];
-			
-			group[i].x    = my_malloc(sizeof(*group[i].x),GroupLen[i]);
-			group[i].y    = my_malloc(sizeof(*group[i].y),GroupLen[i]);
-			group[i].z    = my_malloc(sizeof(*group[i].z),GroupLen[i]);
-			group[i].id   = my_malloc(sizeof(*group[i].id),GroupLen[i]);
-			group[i].type = my_malloc(sizeof(*group[i].type),GroupLen[i]);
-	
-			group[i].parentgroupforparticle    = my_malloc(sizeof(*group[i].parentgroupforparticle),GroupLen[i]);
-			group[i].parentsnapshotforparticle = my_malloc(sizeof(*group[i].parentsnapshotforparticle),GroupLen[i]);
-	
-			/* Fake value since all the FOF are considered parents. Almost */ 
-			group[i].groupnum = i;
-			group[i].NParents = 0;
-			group[i].Switched = 0;
-			group[i].isFof = 1;
-			group[i].Nsub = 0;
-			group[i].FOFHalo = i;
-			group[i].ParentLevel = 1;
-			group[i].ContainerIndex = i;
-	
-			group[i].N_per_wedge = 0;
-			/* initialise the parent finding variables*/
-			group[i].ParentId =-1;
-			group[i].ParentSnapshot = -1;
-			group[i].Ncommon = 0;
-			group[i].Rank = 0.0;
-			group[i].snapshot = (short) num;
-	
-			/*WARNING: Place-holder for future computation of actual cm in FOF_ONLY case*/
-			group[i].xcen  = xpos[GroupOffset[i]];
-			group[i].ycen  = ypos[GroupOffset[i]];
-			group[i].zcen  = zpos[GroupOffset[i]];
-	
+    for (int64 i = 0; i < Ngroups; i++)
+    {
+        group[i].N = GroupLen[i];
+        group[i].NpartinParent = 0;
+        group[i].nodeloc = i;
+        group[i].snapshot = num;
+        group[i].redshift = REDSHIFT[num];
+
+        group[i].x = my_malloc(sizeof(*group[i].x), GroupLen[i]);
+        group[i].y = my_malloc(sizeof(*group[i].y), GroupLen[i]);
+        group[i].z = my_malloc(sizeof(*group[i].z), GroupLen[i]);
+        group[i].id = my_malloc(sizeof(*group[i].id), GroupLen[i]);
+        // group[i].type = my_malloc(sizeof(*group[i].type), GroupLen[i]);
+
+        group[i].parentgroupforparticle = my_malloc(sizeof(*group[i].parentgroupforparticle), GroupLen[i]);
+        group[i].parentsnapshotforparticle = my_malloc(sizeof(*group[i].parentsnapshotforparticle), GroupLen[i]);
+
+        /* Fake value since all the FOF are considered parents. Almost */
+        group[i].groupnum = i;
+        group[i].NParents = 0;
+        group[i].Switched = 0;
+        group[i].isFof = 1;
+        group[i].Nsub = 0;
+        group[i].FOFHalo = i;
+        group[i].ParentLevel = 1;
+        group[i].ContainerIndex = i;
+
+        group[i].N_per_wedge = 0;
+        /* initialise the parent finding variables*/
+        group[i].ParentId = -1;
+        group[i].ParentSnapshot = -1;
+        group[i].Ncommon = 0;
+        group[i].Rank = 0.0;
+        group[i].snapshot = (short)num;
+
+        /*WARNING: Place-holder for future computation of actual cm in FOF_ONLY case*/
+        group[i].xcen = xpos[GroupOffset[i]];
+        group[i].ycen = ypos[GroupOffset[i]];
+        group[i].zcen = zpos[GroupOffset[i]];
+
 #ifdef GET_GROUPVEL
-			group[i].vxcen = GroupCMV[0][i];
-			group[i].vycen = GroupCMV[1][i];
-			group[i].vzcen = GroupCMV[2][i];
-#endif 
-			mtot=0.0;
-			mgas=0.0;
-	
-			/* This rmax should not be taken too seriously for FOF groups. The center needs to be re-calculated */
-			rmax = 0.0;
-	
-			for(j=0;j<GroupLen[i];j++) {
-				group[i].x[j]    = xpos[GroupOffset[i]+j]; 
-				group[i].y[j]    = ypos[GroupOffset[i]+j]; 
-				group[i].z[j]    = zpos[GroupOffset[i]+j]; 
-				group[i].id[j]   = id[GroupOffset[i]+j]; 
-				group[i].type[j] = (int) type[GroupOffset[i]+j]; 
-	  
-				/* 			  mtot+=PARAMS.MASSARR[group[i].type[j]]; */
-				/* 			  if (group[i].type[j] == 0) */
-				/* 				mgas+=PARAMS.MASSARR[0]; */
-	  
-				temp_rmax = sqrt(SQR_PERIODIC(group[i].x[j],group[i].xcen) + SQR_PERIODIC(group[i].y[j],group[i].ycen) + SQR_PERIODIC(group[i].z[j],group[i].zcen) );
-				if( temp_rmax > rmax)
-					rmax = temp_rmax;
-	  
-				group[i].parentgroupforparticle[j]    = -1;
-				group[i].parentsnapshotforparticle[j] = -1;
-	  
-			}
-			/* 		  group[i].Mtot = mtot; */
-			/* 		  group[i].Mgas = mgas; */
-			group[i].Mtot = GroupMtot[i];
-			group[i].Mgas = GroupMgas[i];
-			group[i].Rmax = rmax;
-		}
-#endif	  
-
-
-		/*free up memory*/
-		free(xpos);
-		free(ypos);
-		free(zpos);
-		free(type);
-		free(id);
-		free(GroupLen);
-		free(GroupOffset);
-	  
-#ifdef GET_GROUPVEL
-		for(i=0;i<3;i++) {
-			free(GroupCM[i]);
-			free(GroupCMV[i]);
-		}
+        group[i].vxcen = GroupCMV[0][i];
+        group[i].vycen = GroupCMV[1][i];
+        group[i].vzcen = GroupCMV[2][i];
 #endif
-	  
+        // mtot = 0.0;
+        // mgas = 0.0;
+
+        /* This rmax should not be taken too seriously for FOF groups. The center needs to be re-calculated */
+        float rmax = 0.0;
+
+        for (int64 j = 0; j < GroupLen[i]; j++)
+        {
+            group[i].x[j] = xpos[GroupOffset[i] + j];
+            group[i].y[j] = ypos[GroupOffset[i] + j];
+            group[i].z[j] = zpos[GroupOffset[i] + j];
+            group[i].id[j] = id[GroupOffset[i] + j];
+            // group[i].type[j] = (int)type[GroupOffset[i] + j];
+
+            /* 			  mtot+=PARAMS.MASSARR[group[i].type[j]]; */
+            /* 			  if (group[i].type[j] == 0) */
+            /* 				mgas+=PARAMS.MASSARR[0]; */
+
+            float temp_rmax = sqrt(SQR_PERIODIC(group[i].x[j] - group[i].xcen) + SQR_PERIODIC(group[i].y[j] - group[i].ycen) + SQR_PERIODIC(group[i].z[j] - group[i].zcen));
+            if (temp_rmax > rmax)
+                rmax = temp_rmax;
+
+            group[i].parentgroupforparticle[j] = -1;
+            group[i].parentsnapshotforparticle[j] = -1;
+        }
+        /* 		  group[i].Mtot = mtot; */
+        /* 		  group[i].Mgas = mgas; */
+        group[i].Mtot = GroupMtot[i];
+        group[i].Mgas = GroupMgas[i];
+        group[i].Rmax = rmax;
+    }
+#endif
+
+    /*free up memory*/
+    free(xpos);
+    free(ypos);
+    free(zpos);
+    // free(type);
+    free(id);
+
 #ifndef FOF_ONLY
-			  
-		free(SubMtot);
-		free(SubMgas);
-		free(SubLen);
-		free(SubOffset);
-		free(SubParent);
-		free(GroupSubs);
-		free(GroupMtot);
-		free(GroupMgas);
-	  
+    free(SubMtot);
+    // free(SubMgas);
+    free(SubLen);
+    free(SubOffset);
+    free(GroupSubs);
 #ifdef GET_GROUPVEL
-		for(i=0;i<3;i++) {
-			free(SubCM[i]);
-			free(SubCMV[i]);
-		}
+    for (int i = 0; i < 3; i++)
+    {
+        free(SubCM[i]);
+        free(SubCMV[i]);
+    }
 #endif
-
-
+#else
+    free(GroupLen);
+    free(GroupOffset);
+    free(GroupMtot);
+    free(GroupMgas);
+#ifdef GET_GROUPVEL
+    for (int i = 0; i < 3; i++)
+    {
+        free(GroupCM[i]);
+        free(GroupCMV[i]);
+    }
 #endif
-	  
-	} else {
-		fclose(fcat);
-		fprintf(stderr,"No groups found in file..freeing the group pointer \n");
-		my_free((void **) &(group));
-	}
+#endif
 }
-
-
-
 #endif
 
 
 
 #undef    FOFMINLEN
 #undef    SUBHALOMINLEN
-
-

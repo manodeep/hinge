@@ -5,7 +5,6 @@
 struct group_data
 {
   id64 *id; // the exact data type depends on Makefile option -DLONGIDS
-  int *type;
   float *x;
   float *y;
   float *z;
@@ -19,7 +18,7 @@ struct group_data
   float *vz;
   long haloID;
 #endif
-  
+
 /*   float minpos[3]; */
 /*   float maxpos[3]; */
   int64 groupnum;// the exact data type depends on Makefile option -DBIGSIM
@@ -30,7 +29,7 @@ struct group_data
 	short snapshot;
 	float redshift;
 	int64 nodeloc;
-	
+
 /*   short is_wrapped[3]; */
 /*   short is_straddled[3]; */
 /*   short is_lower[3]; */
@@ -42,12 +41,11 @@ struct group_data
   double Rvir;
   double Rvir_anyl;
   double Rmax;
-  double Mgas;
 
-  short isFof; /* Originally here to show FOF halo or subhalo. 
+  short isFof; /* Originally here to show FOF halo or subhalo.
 					  superceded by the next two fields. */
 
-  /* 
+  /*
 	 the following two fields store the hierarchy for substructure.
 	 ParentLevel is 1 for FOF halo, 2 for subhalo, 3 for sub-sub halo
 	 and so on. ContainerIndex contains the index for the container
@@ -82,9 +80,9 @@ struct group_data
   /* Variables for parent matching at the particle level */
   int64 *parentgroupforparticle;
   int *parentsnapshotforparticle;
-  short N_per_wedge; 
+  short N_per_wedge;
 
-	
+
 #ifndef FOF_ONLY
 	double Xoffset; /*offset between potential center  and density center*/
 	double Yoffset;
@@ -97,7 +95,7 @@ struct group_data
 	float  OverDensityThresh;
 	float  Conc;
 	double Rs;
-	
+
   double RVmax;
 	double Vmax;//kms/s
 
@@ -126,5 +124,4 @@ struct io_header
   uint32_t npartTotalHighWord[6];      /*!< High word of the total number of particles of each type */
   int32_t  flag_entropy_instead_u;     /*!< flags that IC-file contains entropy instead of u */
   char fill[60];                       /*!< fills to 256 Bytes */
-};  
-
+};
