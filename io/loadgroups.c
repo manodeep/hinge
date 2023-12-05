@@ -926,11 +926,11 @@ void loadgroups(int num, struct group_data *group)
     int64 NumPart;
     my_fread(&NumPart, sizeof(int64), 1, fpos);
     /* 	  fprintf(stderr,"There are " STR_FMT " particles in the groups file `%s'\n",NumPart,particles_fname); */
-    // int64 xx;
+    int64 xx;
     // my_fread(&xx, sizeof(int64), 1, ftype);
     // assert(xx == NumPart && "Numpart in types file should be equal to NumPart in positions file");
-    // my_fread(&xx, sizeof(int64), 1, fid);
-    // assert(xx == NumPart && "Numpart in ids file should be equal to NumPart in positions file");
+    my_fread(&xx, sizeof(int64), 1, fid);
+    assert(xx == NumPart && "Numpart in ids file should be equal to NumPart in positions file");
 
     float *xyzpos = my_malloc(sizeof(*xyzpos), 3*NumPart);
     float *xpos = my_malloc(sizeof(*xpos), NumPart);
