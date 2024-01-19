@@ -218,6 +218,9 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
   xcen = group->xcen;// or use group->x[0]??
   ycen = group->ycen;
   zcen = group->zcen;
+  assert(xcen >= 0 && xcen <= PARAMS.BOXSIZE && "xcen must be in [0.0, BoxSize]");
+  assert(ycen >= 0 && ycen <= PARAMS.BOXSIZE && "ycen must be in [0.0, BoxSize]");
+  assert(zcen >= 0 && zcen <= PARAMS.BOXSIZE && "zcen must be in [0.0, BoxSize]");
 
   /*
 	 Needs proper handling of box-wrapping -- taken from Groupfinder.
@@ -256,7 +259,7 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
 	assert(rmin > 0 && "Min. radius must be non-zero");
 	assert(rmax > rmin && "Max. radius must be greater than minimum radius");
 	assert(nbins > 0 && "Number of bins must be non-zero");
-  rbinsize = (log10(rmax)-log10(rmin))/nbins;
+    rbinsize = (log10(rmax)-log10(rmin))/nbins;
 /*   for(i=0;i<nbins;i++) */
 /* 	fprintf(stderr,"rmax = %f nbins = %d rbin[%d] = %f \n",rmax,nbins,i,rmin*pow(10.0,i*rbinsize)); */
 
