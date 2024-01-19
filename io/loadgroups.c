@@ -907,7 +907,7 @@ void loadgroups(int num, struct group_data *group)
     {
         fclose(fcat);
         fprintf(stderr, "No groups found in file..freeing the group pointer \n");
-        my_free((void **)&(group));
+        free(group);
         return;
     }
 
@@ -1018,7 +1018,6 @@ void loadgroups(int num, struct group_data *group)
     int64 *GroupLen = my_malloc(sizeof(*GroupLen), Ngroups);
     int64 *GroupOffset = my_malloc(sizeof(*GroupOffset), Ngroups);
 
-    fseek(fcat, sizeof(int64)*Ngroups, SEEK_CUR);//Seek over GroupSubs which are not required for FOF-ONLY
     my_fread(GroupLen, sizeof(int64), (size_t)Ngroups, fcat);
     my_fread(GroupOffset, sizeof(int64), (size_t)Ngroups, fcat);
 
@@ -1059,6 +1058,7 @@ void loadgroups(int num, struct group_data *group)
          position array will probably contain elements that do not belong to any subhalo.
 
     */
+
 
 #ifndef FOF_ONLY
 
