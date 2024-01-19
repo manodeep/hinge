@@ -52,8 +52,6 @@ void set_cosmology(struct cosmology_data *CP)
 #endif
   CP->h100 = CP->H0/(100/1e3);/*little h  = H0/(100 km/s/Mpc)*/
 
-
-
 	fprintf(stderr,"....done\n");
 }
 
@@ -211,9 +209,21 @@ void getrvir_from_overdensity(struct group_data *group,int NBINS,const double Rh
 	if (Npart <= 100)
 	  nbins = 20;
 
+
+    //Setting the global massarr variable (if not already set)
+    if(PARAMS.MASSARR[DM_PART_TYPE] <= 0.0 && group->Mtot > 0.0 && Npart > 0) {
+        PARAMS.MASSARR[DM_PART_TYPE] = group->Mtot/Npart;
+    }
+
   r             = (double *) my_malloc(sizeof(*r),Npart);
   numberdensity = (int64   *) my_malloc(sizeof(*numberdensity),nbins);
   rho           = (double *) my_malloc(sizeof(*rho),nbins);
+
+  if(group->Mtot > 0 && fabs(PARAMS.MASSARR[DM_PART_TYPE]*Npart - group->Mtot)/group->Mtot > 0.01) {
+    fprintf(stderr,"Particle masses may not be set correctly. Npart = %d Mtot = %e Mpart*Npart = %e Mpart = %e \n",
+                   Npart,group->Mtot, PARAMS.MASSARR[DM_PART_TYPE]*Npart,PARAMS.MASSARR[DM_PART_TYPE]);
+    exit(EXIT_FAILURE);
+  }
 
   xcen = group->xcen;// or use group->x[0]??
   ycen = group->ycen;
