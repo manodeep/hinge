@@ -970,6 +970,7 @@ void loadgroups(int num, struct group_data *group)
     FILE *fsubprop = my_fopen(subprop_fname, "r");
 
     int64 *GroupSubs = my_malloc(sizeof(*GroupSubs), Ngroups); // not recasting to (int64 *) -> should be automatic
+    fseek(fcat, sizeof(int64)*2*Ngroups, SEEK_CUR);//Seek over GroupLen and GroupOffset which are not required for Subfind + subhalos
     my_fread(GroupSubs, sizeof(int64), Ngroups, fcat);
 
     /* Read in from subhalo catalogue*/
@@ -994,11 +995,11 @@ void loadgroups(int num, struct group_data *group)
     for (int i = 0; i < 3; i++)
     {
         SubCM[i] = my_malloc(sizeof(*SubCM[i]), Nsub);
-        my_fread(&SubCM[i], sizeof(float), Nsub, fsubprop);
+        my_fread(SubCM[i], sizeof(float), Nsub, fsubprop);
 
 #ifdef GET_GROUPVEL
-        SubCMV[i] = my_malloc(sizeof(*SubCMV[i]), Nsub);
-        my_fread(&SubCMV[i], sizeof(float), Nsub, fsubprop);
+        SubCMV[i] = my_malloc(sizeof(*(SubCMV[i])), Nsub);
+        my_fread(SubCMV[i], sizeof(float), Nsub, fsubprop);
 #endif
     }
 
@@ -1034,10 +1035,10 @@ void loadgroups(int num, struct group_data *group)
     for (int i = 0; i < 3; i++)
     {
         GroupCM[i] = my_malloc(sizeof(*GroupCM[i]), Ngroups);
-        my_fread(&GroupCM[i], sizeof(float), Ngroups, fprop);
+        my_fread(GroupCM[i], sizeof(float), Ngroups, fprop);
 #ifdef GET_GROUPVEL
         GroupCMV[i] = my_malloc(sizeof(*GroupCMV[i]), Ngroups);
-        my_fread(&GroupCMV[i], sizeof(float), Ngroups, fprop); /* Warning: This was written directly as a block of 3. I am reading it back in as 3 sets of 1. */
+        my_fread(GroupCMV[i], sizeof(float), Ngroups, fprop); /* Warning: This was written directly as a block of 3. I am reading it back in as 3 sets of 1. */
 #endif
     }
 
@@ -1268,25 +1269,25 @@ void loadgroups(int num, struct group_data *group)
     free(SubLen);
     free(SubOffset);
     free(GroupSubs);
-#ifdef GET_GROUPVEL
     for (int i = 0; i < 3; i++)
     {
         free(SubCM[i]);
+#ifdef GET_GROUPVEL
         free(SubCMV[i]);
-    }
 #endif
+    }
 #else
     free(GroupLen);
     free(GroupOffset);
     free(GroupMtot);
     free(GroupMgas);
-#ifdef GET_GROUPVEL
     for (int i = 0; i < 3; i++)
     {
         free(GroupCM[i]);
+#ifdef GET_GROUPVEL
         free(GroupCMV[i]);
-    }
 #endif
+    }
 #endif
 }
 #endif
