@@ -14,7 +14,7 @@ INCL       = defs.h maketree.h fillprogenitors.h missinghalos.h read_param.h ../
 all: $(SOURCES) $(EXECUTABLE) $(INCL)
 
 $(EXECUTABLE): $(OBJECTS) $(INCL)
-	$(CC) $(CLINK) $(GSL_LINK) $(OBJECTS) -o $@
+	$(CC)  $(GSL_LINK) $(OBJECTS) $(CLINK) -o $@
 
 %.o: %.c $(INCL)
 	$(CC) $(GSL_CFLAGS) $(CFLAGS) $(OPT) $(INCLUDE) -c $< -o $@
