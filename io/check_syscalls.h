@@ -13,13 +13,14 @@ char *check_fgets(char *ptr, size_t size, FILE *stream);
 FILE *check_rw_socket(char *command, pid_t *pid);
 void rw_socket_close(FILE *res, pid_t pid);
 
-#define check_fprintf(file, ...)                                               \
-  {                                                                            \
-    if (fprintf(file, __VA_ARGS__) <= 0) {                                     \
-      fprintf(stderr, "[Error] Failed printf to fileno %d!\n", fileno(file));  \
-      perror("[Error] Reason");                                                \
-      exit(1);                                                                 \
-    }                                                                          \
-  }
+#define check_fprintf(file, ...)                                                                                       \
+    {                                                                                                                  \
+        if (fprintf(file, __VA_ARGS__) <= 0)                                                                           \
+        {                                                                                                              \
+            fprintf(stderr, "[Error] Failed printf to fileno %d!\n", fileno(file));                                    \
+            perror("[Error] Reason");                                                                                  \
+            exit(1);                                                                                                   \
+        }                                                                                                              \
+    }
 
 #endif /* CHECK_SYSCALLS_H */

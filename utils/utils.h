@@ -18,8 +18,7 @@
 
 #include "io.h"
 
-int my_snprintf(char *buffer, int len, const char *format, ...)
-    __attribute__((format(printf, 3, 4)));
+int my_snprintf(char *buffer, int len, const char *format, ...) __attribute__((format(printf, 3, 4)));
 int64 getnumlines(const char *fname, const char comment);
 float periodic(float dx);
 float periodic_wrap(float x);

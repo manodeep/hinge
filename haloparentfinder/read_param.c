@@ -2,104 +2,103 @@
 #include "defs.h"
 #include "utils.h"
 
-void sanity_check_params(struct params_data *params) {
+void sanity_check_params(struct params_data *params)
+{
 
-  if ((params->MAX_SNAPSHOT_NUM <= params->MIN_SNAPSHOT_NUM) ||
-      params->MAX_SNAPSHOT_NUM < 0 || params->MIN_SNAPSHOT_NUM < 0) {
-    fprintf(stderr,
-            "ERROR: [min,max] snapshot numbers = [%d,%d] are not well-behaved "
-            "...exiting\n",
-            params->MIN_SNAPSHOT_NUM, params->MAX_SNAPSHOT_NUM);
-    exit(EXIT_FAILURE);
-  }
+    if ((params->MAX_SNAPSHOT_NUM <= params->MIN_SNAPSHOT_NUM) || params->MAX_SNAPSHOT_NUM < 0 ||
+        params->MIN_SNAPSHOT_NUM < 0)
+    {
+        fprintf(stderr,
+                "ERROR: [min,max] snapshot numbers = [%d,%d] are not well-behaved "
+                "...exiting\n",
+                params->MIN_SNAPSHOT_NUM, params->MAX_SNAPSHOT_NUM);
+        exit(EXIT_FAILURE);
+    }
 }
 
-void fill_config_params(struct params_data *params) {
+void fill_config_params(struct params_data *params)
+{
 
 #ifdef GET_GROUPVEL
-  params->get_groupvel = 1;
+    params->get_groupvel = 1;
 #else
-  params->get_groupvel = 0;
+    params->get_groupvel = 0;
 #endif
 
 #ifdef BIGSIM
-  params->bigsim = 1;
+    params->bigsim = 1;
 #else
-  params->bigsim = 0;
+    params->bigsim = 0;
 #endif
 
 #ifdef LONGIDS
-  params->longids = 1;
+    params->longids = 1;
 #else
-  params->longids = 0;
+    params->longids = 0;
 #endif
 
 #ifdef FOF_ONLY
-  params->fof_only = 1;
+    params->fof_only = 1;
 #else
-  params->fof_only = 0;
+    params->fof_only = 0;
 #endif
 
 #ifdef MAKE_LEAN
-  params->make_lean = 1;
+    params->make_lean = 1;
 #else
-  params->make_lean = 0;
+    params->make_lean = 0;
 #endif
 }
 
-void output_params(const char *fname, struct params_data *params) {
-  FILE *fp = NULL;
-  move_existing_file(fname); // mv old param file if it exists
-  fp = my_fopen(fname, "w");
+void output_params(const char *fname, struct params_data *params)
+{
+    FILE *fp = NULL;
+    move_existing_file(fname); // mv old param file if it exists
+    fp = my_fopen(fname, "w");
 
-  fprintf(fp, "MIN_SNAPSHOT_NUM              %d\n", params->MIN_SNAPSHOT_NUM);
-  fprintf(fp, "MAX_SNAPSHOT_NUM              %d\n", params->MAX_SNAPSHOT_NUM);
+    fprintf(fp, "MIN_SNAPSHOT_NUM              %d\n", params->MIN_SNAPSHOT_NUM);
+    fprintf(fp, "MAX_SNAPSHOT_NUM              %d\n", params->MAX_SNAPSHOT_NUM);
 
-  fprintf(fp, "SNAPSHOT_DIR                  %s\n", params->SNAPSHOT_DIR);
-  fprintf(fp, "SNAPSHOT_BASE                 %s\n", params->SNAPSHOT_BASE);
+    fprintf(fp, "SNAPSHOT_DIR                  %s\n", params->SNAPSHOT_DIR);
+    fprintf(fp, "SNAPSHOT_BASE                 %s\n", params->SNAPSHOT_BASE);
 
-  fprintf(fp, "GROUP_DIR                  %s\n", params->GROUP_DIR);
-  fprintf(fp, "GROUP_BASE                 %s\n", params->GROUP_BASE);
+    fprintf(fp, "GROUP_DIR                  %s\n", params->GROUP_DIR);
+    fprintf(fp, "GROUP_BASE                 %s\n", params->GROUP_BASE);
 
-  fprintf(fp, "OUTPUT_DIR                 %s\n", params->OUTPUT_DIR);
+    fprintf(fp, "OUTPUT_DIR                 %s\n", params->OUTPUT_DIR);
 
-  fprintf(fp, "MAX_INCR                          %d\n", params->MAX_INCR);
-  fprintf(fp, "MAX_RANK_LOC                      %" STR_FMT "\n",
-          params->MAX_RANK_LOC);
+    fprintf(fp, "MAX_INCR                          %d\n", params->MAX_INCR);
+    fprintf(fp, "MAX_RANK_LOC                      %" STR_FMT "\n", params->MAX_RANK_LOC);
 
-  fprintf(fp, "MIN_FCOMMON_FINDPROGENITOR_THRESH                       %lf\n",
-          params->MIN_FCOMMON_FINDPROGENITOR_THRESH);
-  fprintf(fp,
-          "MIN_NUMPART_IN_FINDPROGENITOR_HALO                      %" STR_FMT
-          "\n",
-          params->MIN_NUMPART_IN_FINDPROGENITOR_HALO);
+    fprintf(fp, "MIN_FCOMMON_FINDPROGENITOR_THRESH                       %lf\n",
+            params->MIN_FCOMMON_FINDPROGENITOR_THRESH);
+    fprintf(fp, "MIN_NUMPART_IN_FINDPROGENITOR_HALO                      %" STR_FMT "\n",
+            params->MIN_NUMPART_IN_FINDPROGENITOR_HALO);
 
-  fprintf(fp, "MIN_FCOMMON_SWITCHFOF_THRESH                           %lf\n",
-          params->MIN_FCOMMON_SWITCHFOF_THRESH);
-  fprintf(fp,
-          "MIN_NUMPART_IN_SWITCHFOF_HALO                          %" STR_FMT
-          "\n",
-          params->MIN_NUMPART_IN_SWITCHFOF_HALO);
+    fprintf(fp, "MIN_FCOMMON_SWITCHFOF_THRESH                           %lf\n", params->MIN_FCOMMON_SWITCHFOF_THRESH);
+    fprintf(fp, "MIN_NUMPART_IN_SWITCHFOF_HALO                          %" STR_FMT "\n",
+            params->MIN_NUMPART_IN_SWITCHFOF_HALO);
 
-  fprintf(fp, "\n## config options [from Makefile] ##\n");
-  fprintf(fp, "## FOF_ONLY              %d\n", params->fof_only);
-  fprintf(fp, "## GET_GROUPVEL          %d\n", params->get_groupvel);
-  fprintf(fp, "## BIGSIM                %d\n", params->bigsim);
-  fprintf(fp, "## LONGIDS               %d\n", params->longids);
-  fprintf(fp, "## MAKE_LEAN             %d\n", params->make_lean);
+    fprintf(fp, "\n## config options [from Makefile] ##\n");
+    fprintf(fp, "## FOF_ONLY              %d\n", params->fof_only);
+    fprintf(fp, "## GET_GROUPVEL          %d\n", params->get_groupvel);
+    fprintf(fp, "## BIGSIM                %d\n", params->bigsim);
+    fprintf(fp, "## LONGIDS               %d\n", params->longids);
+    fprintf(fp, "## MAKE_LEAN             %d\n", params->make_lean);
 
-  fprintf(fp, "\n## Parameters read in from Gadget snapshot ##\n");
-  fprintf(fp, "## BOXSIZE               %lf\n", params->BOXSIZE);
-  for (int i = 0; i < 6; i++)
-    fprintf(fp, "## MASSARR[%d]         %e\n", i, params->MASSARR[i]);
-  fclose(fp);
+    fprintf(fp, "\n## Parameters read in from Gadget snapshot ##\n");
+    fprintf(fp, "## BOXSIZE               %lf\n", params->BOXSIZE);
+    for (int i = 0; i < 6; i++)
+        fprintf(fp, "## MASSARR[%d]         %e\n", i, params->MASSARR[i]);
+    fclose(fp);
 }
 
 /*
         The following function is shamelessly taken from Gadget2
 */
 
-void read_params(const char *fname, struct params_data *params) {
+void read_params(const char *fname, struct params_data *params)
+{
 
 #define DOUBLE 1
 #define STRING 2
@@ -107,129 +106,135 @@ void read_params(const char *fname, struct params_data *params) {
 #define INT64 4
 #define MAXTAGS 20
 
-  FILE *fd = NULL;
-  char buf[MAXLINESIZE], buf1[MAXLINESIZE], buf2[MAXLINESIZE],
-      buf3[MAXLINESIZE];
-  int i, j, nt = 0;
-  int id[MAXTAGS];
-  void *addr[MAXTAGS];
-  char tag[MAXTAGS][MAXLEN];
-  int errorFlag = 0;
-  int64 tmp_64_int;
+    FILE *fd = NULL;
+    char buf[MAXLINESIZE], buf1[MAXLINESIZE], buf2[MAXLINESIZE], buf3[MAXLINESIZE];
+    int i, j, nt = 0;
+    int id[MAXTAGS];
+    void *addr[MAXTAGS];
+    char tag[MAXTAGS][MAXLEN];
+    int errorFlag = 0;
+    int64 tmp_64_int;
 
-  nt = 0;
+    nt = 0;
 
-  my_snprintf(tag[nt], MAXLEN, "MIN_SNAPSHOT_NUM");
-  addr[nt] = &(params->MIN_SNAPSHOT_NUM);
-  id[nt++] = INT;
+    my_snprintf(tag[nt], MAXLEN, "MIN_SNAPSHOT_NUM");
+    addr[nt] = &(params->MIN_SNAPSHOT_NUM);
+    id[nt++] = INT;
 
-  my_snprintf(tag[nt], MAXLEN, "MAX_SNAPSHOT_NUM");
-  addr[nt] = &(params->MAX_SNAPSHOT_NUM);
-  id[nt++] = INT;
+    my_snprintf(tag[nt], MAXLEN, "MAX_SNAPSHOT_NUM");
+    addr[nt] = &(params->MAX_SNAPSHOT_NUM);
+    id[nt++] = INT;
 
-  my_snprintf(tag[nt], MAXLEN, "SNAPSHOT_DIR");
-  addr[nt] = params->SNAPSHOT_DIR;
-  id[nt++] = STRING;
+    my_snprintf(tag[nt], MAXLEN, "SNAPSHOT_DIR");
+    addr[nt] = params->SNAPSHOT_DIR;
+    id[nt++] = STRING;
 
-  my_snprintf(tag[nt], MAXLEN, "SNAPSHOT_BASE");
-  addr[nt] = params->SNAPSHOT_BASE;
-  id[nt++] = STRING;
+    my_snprintf(tag[nt], MAXLEN, "SNAPSHOT_BASE");
+    addr[nt] = params->SNAPSHOT_BASE;
+    id[nt++] = STRING;
 
-  my_snprintf(tag[nt], MAXLEN, "GROUP_DIR");
-  addr[nt] = params->GROUP_DIR;
-  id[nt++] = STRING;
+    my_snprintf(tag[nt], MAXLEN, "GROUP_DIR");
+    addr[nt] = params->GROUP_DIR;
+    id[nt++] = STRING;
 
-  my_snprintf(tag[nt], MAXLEN, "GROUP_BASE");
-  addr[nt] = params->GROUP_BASE;
-  id[nt++] = STRING;
+    my_snprintf(tag[nt], MAXLEN, "GROUP_BASE");
+    addr[nt] = params->GROUP_BASE;
+    id[nt++] = STRING;
 
-  my_snprintf(tag[nt], MAXLEN, "OUTPUT_DIR");
-  addr[nt] = params->OUTPUT_DIR;
-  id[nt++] = STRING;
+    my_snprintf(tag[nt], MAXLEN, "OUTPUT_DIR");
+    addr[nt] = params->OUTPUT_DIR;
+    id[nt++] = STRING;
 
-  my_snprintf(tag[nt], MAXLEN, "MAX_INCR");
-  addr[nt] = &(params->MAX_INCR);
-  id[nt++] = INT;
+    my_snprintf(tag[nt], MAXLEN, "MAX_INCR");
+    addr[nt] = &(params->MAX_INCR);
+    id[nt++] = INT;
 
-  my_snprintf(tag[nt], MAXLEN, "MAX_RANK_LOC");
-  addr[nt] = &(params->MAX_RANK_LOC);
-  id[nt++] = INT64;
+    my_snprintf(tag[nt], MAXLEN, "MAX_RANK_LOC");
+    addr[nt] = &(params->MAX_RANK_LOC);
+    id[nt++] = INT64;
 
-  my_snprintf(tag[nt], MAXLEN, "MIN_FCOMMON_FINDPROGENITOR_THRESH");
-  addr[nt] = &(params->MIN_FCOMMON_FINDPROGENITOR_THRESH);
-  id[nt++] = DOUBLE;
+    my_snprintf(tag[nt], MAXLEN, "MIN_FCOMMON_FINDPROGENITOR_THRESH");
+    addr[nt] = &(params->MIN_FCOMMON_FINDPROGENITOR_THRESH);
+    id[nt++] = DOUBLE;
 
-  my_snprintf(tag[nt], MAXLEN, "MIN_NUMPART_IN_FINDPROGENITOR_HALO");
-  addr[nt] = &(params->MIN_NUMPART_IN_FINDPROGENITOR_HALO);
-  id[nt++] = INT64;
+    my_snprintf(tag[nt], MAXLEN, "MIN_NUMPART_IN_FINDPROGENITOR_HALO");
+    addr[nt] = &(params->MIN_NUMPART_IN_FINDPROGENITOR_HALO);
+    id[nt++] = INT64;
 
-  my_snprintf(tag[nt], MAXLEN, "MIN_FCOMMON_SWITCHFOF_THRESH");
-  addr[nt] = &(params->MIN_FCOMMON_SWITCHFOF_THRESH);
-  id[nt++] = DOUBLE;
+    my_snprintf(tag[nt], MAXLEN, "MIN_FCOMMON_SWITCHFOF_THRESH");
+    addr[nt] = &(params->MIN_FCOMMON_SWITCHFOF_THRESH);
+    id[nt++] = DOUBLE;
 
-  my_snprintf(tag[nt], MAXLEN, "MIN_NUMPART_IN_SWITCHFOF_HALO");
-  addr[nt] = &(params->MIN_NUMPART_IN_SWITCHFOF_HALO);
-  id[nt++] = INT64;
+    my_snprintf(tag[nt], MAXLEN, "MIN_NUMPART_IN_SWITCHFOF_HALO");
+    addr[nt] = &(params->MIN_NUMPART_IN_SWITCHFOF_HALO);
+    id[nt++] = INT64;
 
-  fd = my_fopen(fname, "r");
-  while (!feof(fd)) {
-    *buf = 0;
-    fgets(buf, MAXLEN, fd);
-    if (sscanf(buf, "%s%s%s", buf1, buf2, buf3) < 2)
-      continue;
+    fd = my_fopen(fname, "r");
+    while (!feof(fd))
+    {
+        *buf = 0;
+        fgets(buf, MAXLEN, fd);
+        if (sscanf(buf, "%s%s%s", buf1, buf2, buf3) < 2)
+            continue;
 
-    if (buf1[0] == '%' || buf1[0] == '#')
-      continue;
+        if (buf1[0] == '%' || buf1[0] == '#')
+            continue;
 
-    for (i = 0, j = -1; i < nt; i++) {
-      if (strcmp(buf1, tag[i]) == 0) {
-        j = i;
-        tag[i][0] = '0';
-        break;
-      }
+        for (i = 0, j = -1; i < nt; i++)
+        {
+            if (strcmp(buf1, tag[i]) == 0)
+            {
+                j = i;
+                tag[i][0] = '0';
+                break;
+            }
+        }
+
+        if (j >= 0)
+        {
+            switch (id[j])
+            {
+            case DOUBLE:
+                *((double *)addr[j]) = atof(buf2);
+                break;
+            case STRING:
+                strcpy(addr[j], buf2);
+                break;
+            case INT:
+                *((int *)addr[j]) = atoi(buf2);
+                break;
+
+            case INT64:
+                sscanf(buf2, "%" STR_FMT, &tmp_64_int);
+                *((int64 *)addr[j]) = tmp_64_int;
+                break;
+            }
+        }
+        else
+        {
+            fprintf(stderr, "Error in file %s:   Tag '%s' not allowed or multiple defined.\n", fname, buf1);
+            errorFlag = 1;
+        }
+    }
+    fclose(fd);
+
+    if (errorFlag != 2)
+    {
+        for (i = 0; i < nt; i++)
+        {
+            if (tag[i][0] != '0')
+            {
+                fprintf(stderr, "Error. I miss a value for tag '%s' in parameter file '%s'.\n", tag[i], fname);
+                errorFlag = 1;
+            }
+        }
     }
 
-    if (j >= 0) {
-      switch (id[j]) {
-      case DOUBLE:
-        *((double *)addr[j]) = atof(buf2);
-        break;
-      case STRING:
-        strcpy(addr[j], buf2);
-        break;
-      case INT:
-        *((int *)addr[j]) = atoi(buf2);
-        break;
-
-      case INT64:
-        sscanf(buf2, "%" STR_FMT, &tmp_64_int);
-        *((int64 *)addr[j]) = tmp_64_int;
-        break;
-      }
-    } else {
-      fprintf(stderr,
-              "Error in file %s:   Tag '%s' not allowed or multiple defined.\n",
-              fname, buf1);
-      errorFlag = 1;
+    if (errorFlag != 0)
+    {
+        fprintf(stderr, "Error: Parameter file not as expected..bailing\n");
+        exit(EXIT_FAILURE);
     }
-  }
-  fclose(fd);
-
-  if (errorFlag != 2) {
-    for (i = 0; i < nt; i++) {
-      if (tag[i][0] != '0') {
-        fprintf(stderr,
-                "Error. I miss a value for tag '%s' in parameter file '%s'.\n",
-                tag[i], fname);
-        errorFlag = 1;
-      }
-    }
-  }
-
-  if (errorFlag != 0) {
-    fprintf(stderr, "Error: Parameter file not as expected..bailing\n");
-    exit(EXIT_FAILURE);
-  }
 
 #undef DOUBLE
 #undef STRING
