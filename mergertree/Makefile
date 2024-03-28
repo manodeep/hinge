@@ -15,7 +15,7 @@ INCL       = defs.h read_param.h impulse.h maketree.h loadfillprogenitors.h ../i
 all: $(SOURCES) $(EXECUTABLE) $(INCL)
 
 $(EXECUTABLE): $(OBJECTS) $(INCL)
-	$(CC) $(CLINK) $(GSL_LINK) $(OBJECTS) -o $@
+	$(CC) $(GSL_LINK) $(OBJECTS) $(CLINK) -o $@
 
 %.o: %.c $(INCL)
 	$(CC) $(GSL_CFLAGS) $(CFLAGS) $(OPT) $(INCLUDE) -c $< -o $@
