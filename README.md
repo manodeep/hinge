@@ -3,6 +3,8 @@
    LICENSE: MIT
 */
 
+![compile CI](https://github.com/manodeep/hinge/actions/workflows/compile.yml/badge.svg)
+
 # Description
 
 HINGE (**H**alo **I**nteraction **N**etwork and **G**alaxy **E**volution) contains a set of 3 tools (written in C) to create a
