@@ -15,6 +15,7 @@ jobs:
         extensions: 'h,cpp,c'
         clangFormatVersion: 16
         inplace: True
+        style: Microsoft
     - uses: EndBug/add-and-commit@v9
       with:
         author_name: clang-format Action
