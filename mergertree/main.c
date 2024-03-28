@@ -1,12 +1,12 @@
 /*
 
-Log started: July 2009: MS. 
+Log started: July 2009: MS.
 
 07/01/2009:   started writing the codes. Complete with a Makefile.
 
 07/19/2009:   loadgroups now written and compiles. Needs to be cross-matched
-              with known-good IDL routines to make sure that the data is read 
-			  in correctly. 
+              with known-good IDL routines to make sure that the data is read
+			  in correctly.
 
 08/24/2009:   No more parent checking. Just read in the parents_xxx.txt and
               assign them. Added 3 categories for mergers:
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
   /* char str_line[MAXLEN]; */
   /* int line=0; */
   time_t t_codestart,t_codeend,t_sectionstart,t_sectionend,t_bigsectionstart;
-  
+
   t_codestart = time(NULL);
 
   /* Check compilation options */
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 
 #ifdef BIGSIM
   if(sizeof(size_t) != 8)
-    { 
+    {
       fprintf(stderr,"Error: Code needs to be compiled in 64 bit mode \n");
       fprintf(stderr,"Please add -m64 to the options in the Makefile ..(or find a 64 bit compiler)\n");
       fprintf(stderr,"Exiting..\n");
@@ -84,13 +84,13 @@ int main(int argc, char **argv)
 
   // Check command line for the parameter file name.
   if (argc !=2)
-    { 
+    {
       fprintf(stderr,"Usage: %s <parameterfile>\n", argv[0]);
       fprintf(stderr,"Code was compiled with \n\n");
       print_makefile_options();
       exit(EXIT_FAILURE);
     }
-  
+
   my_snprintf(outfname,MAXLEN,"%s",argv[1]);//parameter file
 
   //read in the parameter file
@@ -107,35 +107,16 @@ int main(int argc, char **argv)
 
   //the declarations that depend on MAX_SNAPSHOT_NUM
   //If MAX_SNAPSHOT_NUM is too large, consider mallocing these
-  NUM_SNAPSHOTS = PARAMS.MAX_SNAPSHOT_NUM+1;    
+  NUM_SNAPSHOTS = PARAMS.MAX_SNAPSHOT_NUM+1;
   int64 Ngroups[NUM_SNAPSHOTS];//there are groups corresponding to MAX_SNAPSHOT_NUM
   struct parent_data *  allparents[PARAMS.MAX_SNAPSHOT_NUM];//parents_??? files only go up to MAX_SNAPSHOT_NUM-1
   struct node_data *    tree[NUM_SNAPSHOTS];//there are groups in MAX_SNAPSHOT_NUM
 
-  //read in boxsize and massarr from Gadget header
-#ifdef SUBFIND
-  my_snprintf(snapshotname,MAXLEN,"%s/%s_%03d",PARAMS.SNAPSHOT_DIR,PARAMS.SNAPSHOT_BASE,PARAMS.MAX_SNAPSHOT_NUM);
-  struct io_header header = get_gadget_header(snapshotname);
-  NUMPART = get_Numpart(&header);
-  //copy Boxsize and massarr to the params structure
-  PARAMS.BOXSIZE = header.BoxSize;
-  for(int i=0;i<6;i++) {
-		if(header.npart[i] > 0 && header.mass[i] <= 0.0) { //needed to make Rvir calculation
-			fprintf(stderr,"ERROR: Gadget snapshot has individual masses. This code can not handle that yet\n");//loadgroups with fof_only will not be able to handle this.
-			exit(EXIT_FAILURE);
-		}
-		PARAMS.MASSARR[i] = header.mass[i];
-	}
-#endif
-
-	NUMPART = 1536*(int64_t) 1536 * (int64_t) 1536;
-	
-  // output the parameter file 
+  // output the parameter file
   my_snprintf(outfname,MAXLEN,"%s/complete_mergertree.params",PARAMS.OUTPUT_DIR);
   fprintf(stderr,"output parameter file to `%s'...",outfname);
   output_params(outfname,&PARAMS);
   fprintf(stderr,"..done\n");
-
 
   REDSHIFT = my_malloc(sizeof(*REDSHIFT),NUM_SNAPSHOTS);
 
@@ -175,13 +156,13 @@ int main(int argc, char **argv)
 
 
   /* WARNING: the definition of Ngroups changes with compilation option FOF_ONLY */
-  for(int isnapshot = PARAMS.MIN_SNAPSHOT_NUM;isnapshot <= PARAMS.MAX_SNAPSHOT_NUM;isnapshot++)	
+  for(int isnapshot = PARAMS.MIN_SNAPSHOT_NUM;isnapshot <= PARAMS.MAX_SNAPSHOT_NUM;isnapshot++)
     {
       t_bigsectionstart = time(NULL);
       fprintf(stderr,"\n\n Now working on snapshot# %4d \n",isnapshot);
 			/* read in Ngroups.  */
 #ifdef SUBFIND
-			my_snprintf(outfname, MAXLEN,"%s/groups_%03d.fofcat", PARAMS.GROUP_DIR,isnapshot);
+			my_snprintf(outfname, MAXLEN,"%s/groups_%03d.subcat", PARAMS.GROUP_DIR,isnapshot);
 			Ngroups0 = returnNhalo(outfname);
 #endif
 
@@ -199,53 +180,53 @@ int main(int argc, char **argv)
 #define RETURN_ONLY_FOFS 0
 			my_snprintf(outfname,MAXLEN,"%s/halos_%03d.0.bgc2",  PARAMS.GROUP_DIR, isnapshot);
 			Ngroups0 = returnNhalo_bgc2(outfname,RETURN_ONLY_FOFS);
-#undef RETURN_ONLY_FOFS			
+#undef RETURN_ONLY_FOFS
 #endif
-			
+
       if (Ngroups0 > 0)
 	{
 
           if(isnapshot < PARAMS.MAX_SNAPSHOT_NUM)
-            { 
-	      parent = (struct parent_data *)my_malloc(sizeof(*parent),Ngroups0);
-	      my_snprintf(outfname,MAXLEN,"%s/%s_%03d%s",PARAMS.GROUP_DIR,"parents",isnapshot,".txt");
-	      fprintf(stderr,"Reading in %s Ngroups0 = %"STR_FMT"\n",outfname,Ngroups0);
-	      t_sectionstart = time(NULL);
-	      parent  = loadparents(outfname,parent,Ngroups0);
-	      t_sectionend = time(NULL);
-	      fprintf(stderr," done ...\n\n");
-	      print_time(t_sectionstart,t_sectionend,"loadparents");
-	      allparents[isnapshot] = parent;
-	    }
-	  
+            {
+                parent = (struct parent_data *)my_malloc(sizeof(*parent),Ngroups0);
+                my_snprintf(outfname, MAXLEN,"%s/parents_%03d.txt",PARAMS.OUTPUT_DIR,isnapshot);
+                fprintf(stderr,"Reading in %s Ngroups0 = %"STR_FMT"\n",outfname,Ngroups0);
+                t_sectionstart = time(NULL);
+                parent  = loadparents(outfname,parent,Ngroups0);
+                t_sectionend = time(NULL);
+                fprintf(stderr," done ...\n\n");
+                print_time(t_sectionstart,t_sectionend,"loadparents");
+                allparents[isnapshot] = parent;
+    	    }
+
 	  group0=allocate_group(Ngroups0);
 	  fprintf(stderr,"loading group for snapshot # %d with %"STR_FMT" halos ",isnapshot,Ngroups0);
 	  group_init(group0,Ngroups0);
-	  
-	  t_sectionstart = time(NULL);	  
+
+	  t_sectionstart = time(NULL);
 	  loadgroups(isnapshot,group0);
 	  /* loadgroups_no_particles(isnapshot,group0); */
 	  fprintf(stderr," done ...\n\n");
 	  t_sectionend = time(NULL);
 	  print_time(t_sectionstart,t_sectionend,"loadgroups");
 	  Ngroups[isnapshot] = Ngroups0;
-	  
+
           t_sectionstart = time(NULL);
-          my_snprintf(outfname,MAXLEN,"%s/subhalolevel_%03d.txt",PARAMS.GROUP_DIR,isnapshot);
+          my_snprintf(outfname,MAXLEN,"%s/subhalolevel_%03d.txt",PARAMS.OUTPUT_DIR,isnapshot);
           readsubhalo_hierarchy_levels(outfname,group0);
           fprintf(stderr," done ...\n\n");
           t_sectionend = time(NULL);
           print_time(t_sectionstart,t_sectionend,"subhalo hierarchy levels");
 
 	  /*Read in the actual snapshot */
-#if (defined(GET_GROUPVEL) == 0 && defined(GET_MEANVEL) == 0)
+#if ((defined(GET_GROUPVEL) == 0) && (defined(GET_MEANVEL) == 0))
 	  my_snprintf(snapshotname, MAXLEN,"%s/%s_%03d",PARAMS.SNAPSHOT_DIR,PARAMS.SNAPSHOT_BASE,isnapshot);
 	  t_sectionstart = time(NULL);
 	  header = get_gadget_header(snapshotname);
 	  P = loadsnapshot(snapshotname,&header);
 	  t_sectionend = time(NULL);
 	  print_time(t_sectionstart,t_sectionend,"loadsnapshot");
-	  
+
 	  t_sectionstart = time(NULL);
 	  assign_vxcm(group0,Ngroups0,P,REDSHIFT[isnapshot]);
 	  t_sectionend = time(NULL);
@@ -259,25 +240,25 @@ int main(int argc, char **argv)
 	  assign_node(group0,Ngroups0,parent,node,isnapshot);
 	  t_sectionend = time(NULL);
 	  print_time(t_sectionstart,t_sectionend,"assign_node");
-	  
+
 	  /* Now store the node data in the tree */
 	  tree[isnapshot] = node;
 	  free_group(group0,Ngroups0);
-	  
+
 	}
-	  
+
       my_snprintf(outfname,MAXLEN,"%s %d ","Reading groups and assigning to node for i = ",isnapshot);/*use outfname as temporary message variable. Gets reset..*/
       t_sectionend = time(NULL);
       print_time(t_bigsectionstart,t_sectionend,outfname);
     }
-  
-  
+
+
   /* All the groups have now been assigned in the node/tree structure. Make the parent/child pointer associations */
   t_sectionstart = time(NULL);
   maketree(allparents,Ngroups,tree);
   t_sectionend = time(NULL);
   print_time(t_sectionstart,t_sectionend,"make_fof_tree");
-  
+
   /* Give the halos unique ids starting at redshift 0 and tracing them all the way back. */
   t_sectionstart = time(NULL);
   assign_haloid(tree,Ngroups);
@@ -285,7 +266,7 @@ int main(int argc, char **argv)
   print_time(t_sectionstart,t_sectionend,"assign_haloid");
 
 #ifndef FOF_ONLY
-  my_snprintf(outfname,MAXLEN,"%s/found_progenitors.txt",PARAMS.GROUP_DIR);
+  my_snprintf(outfname,MAXLEN,"%s/found_progenitors.txt",PARAMS.OUTPUT_DIR);
   t_sectionstart = time(NULL);
   load_found_progenitors(tree,Ngroups,outfname);
   assign_haloid(tree,Ngroups);
@@ -337,22 +318,22 @@ int main(int argc, char **argv)
   t_sectionstart = time(NULL);
   output_interesting_halos(tree,Ngroups);
   t_sectionend = time(NULL);
-  print_time(t_sectionstart,t_sectionend,"output haloids for `interesting' halos");		  
+  print_time(t_sectionstart,t_sectionend,"output haloids for `interesting' halos");
 
   t_sectionstart = time(NULL);
   output_suspicious_halos(tree,Ngroups);
   t_sectionend = time(NULL);
-  print_time(t_sectionstart,t_sectionend,"output haloids for `suspicious' halos");		  
+  print_time(t_sectionstart,t_sectionend,"output haloids for `suspicious' halos");
 
   t_sectionstart = time(NULL);
   output_milkyway_halos(tree,Ngroups);
   t_sectionend = time(NULL);
-  print_time(t_sectionstart,t_sectionend,"output all MW type halos at z = 0.0");		  
+  print_time(t_sectionstart,t_sectionend,"output all MW type halos at z = 0.0");
 
   t_sectionstart = time(NULL);
   output_flyby_futures(tree,Ngroups);
   t_sectionend = time(NULL);
-  print_time(t_sectionstart,t_sectionend,"output all flyby futures ");		  
+  print_time(t_sectionstart,t_sectionend,"output all flyby futures ");
 
   {
     if(PARAMS.INDIVIDUAL_MERGERS == 1)
@@ -370,26 +351,26 @@ int main(int argc, char **argv)
 	    print_time(t_sectionstart,t_sectionend,"output_mergers_for_haloid");
 	    fprintf(stderr,"Do you want to output mergers for another haloid (y/n) ? \n");
 	    scanf("%s",answer);
-	  }  
+	  }
       }
   }
 
   t_sectionstart = time(NULL);
   output_all_haloids(tree,Ngroups);
   t_sectionend = time(NULL);
-  print_time(t_sectionstart,t_sectionend,"output data for haloids");		  
+  print_time(t_sectionstart,t_sectionend,"output data for haloids");
 
   t_sectionstart = time(NULL);
   output_plot_data(tree,Ngroups);
   t_sectionend = time(NULL);
-  print_time(t_sectionstart,t_sectionend,"output data for making plots");		  
+  print_time(t_sectionstart,t_sectionend,"output data for making plots");
 
 
   /* free up the memory */
   for(int isnapshot=PARAMS.MIN_SNAPSHOT_NUM;isnapshot<=PARAMS.MAX_SNAPSHOT_NUM;isnapshot++)
-    { 
+    {
       if (Ngroups[isnapshot] > 0 )
-        { 
+        {
           if(isnapshot < PARAMS.MAX_SNAPSHOT_NUM)
             free(allparents[isnapshot]);
 
@@ -401,19 +382,19 @@ int main(int argc, char **argv)
   free(PARAMS.Age);
 
   fprintf(stderr,"\n\n Done...\n\n");
-  
+
   t_codeend = time(NULL);
   print_time(t_codestart,t_codeend,"Entire code");
-  
+
   exit(EXIT_SUCCESS);
-  
-}	
+
+}
 
 
 
 void print_makefile_options()
 {
-  
+
 #ifdef FOF_ONLY
   fprintf(stderr,"The code was compiled to read in FOF groups only\n");
 #else
@@ -442,7 +423,7 @@ void print_makefile_options()
 
 #ifdef TRACK_BH_BY_ID
   fprintf(stderr,"The code was compiled to track black holes by the id \n");
-#endif 
+#endif
 
 #ifdef TRACK_BH_BY_HALO
   fprintf(stderr,"The code was compiled to track black holes by the centres of halos they were assigned to \n");
@@ -462,7 +443,7 @@ void print_makefile_options()
 #endif
 
   fprintf(stderr,"\n");
- 
+
 }
 
 
@@ -474,7 +455,7 @@ void readsubhalo_hierarchy_levels(const char *fname,struct group_data *group0)
   const char comment='#';
   int64 i=0,dummy;
   short dummy1;
-  
+
   fp = my_fopen(fname,"r");
   i=0;
   while(1)
@@ -486,7 +467,7 @@ void readsubhalo_hierarchy_levels(const char *fname,struct group_data *group0)
 			  /*                    sscanf(str_line,"%*"STR_FMT" %"STR_FMT" %hd   %"STR_FMT"  %"STR_FMT"     %hd",  */
 			  sscanf(str_line,"%*d  %"STR_FMT" %hd   %"STR_FMT"  %"STR_FMT"     %hd",
 					 &dummy,&(group0[i].ParentLevel),&(group0[i].ContainerIndex),&(group0[i].Nsub),&dummy1); /*discarding the first field, Fofid */
-			  
+
 			  if(dummy != i)
 				{
 				  fprintf(stderr,"Error: While reading in file `%s' for subhalo hierarchy level \n ",fname);
@@ -500,7 +481,7 @@ void readsubhalo_hierarchy_levels(const char *fname,struct group_data *group0)
 		  break;
 	}
   fclose(fp);
-  
+
 }
 
 
@@ -510,7 +491,7 @@ void output_parents(struct node_data * tree[],int64 *Ngroups)
   char outfname[MAXLEN];
   struct node_data *BaseNode=NULL,*thisnode=NULL;
   int interrupted;
-  
+
   fprintf(stderr,"\n\nupdating parentlist.txt files\n");
   init_my_progressbar(PARAMS.MAX_SNAPSHOT_NUM-PARAMS.MIN_SNAPSHOT_NUM+1,&interrupted);
   //there will be no parents at the last snapshot
@@ -533,7 +514,7 @@ void output_parents(struct node_data * tree[],int64 *Ngroups)
 	else
 	  fprintf(fd,"%6d  %14"STR_FMT " %14"STR_FMT"  %12d    %12d  %14d   %14d  %12d\n",
 		  thisnode->snapshot,thisnode->haloid,thisnode->nodeloc,thisnode->isFof,-1,-1,-1,-1);
-	
+
       }
       fclose(fd);
     }
@@ -576,32 +557,32 @@ void output_all_haloids(struct node_data * tree[],int64 *Ngroups)
 	    else
 	      if(tmp->Mtot > maxmass)
 		maxmass = tmp->Mtot;
-	    
+
 	    tmp=tmp->BigChild;
 	  }
-	  
+
 	  fprintf(fp,"%14"STR_FMT"   %14d     %14.4g      %12d        %14.4g    %12d  %14.4g",
 		  thisnode->haloid,isnapshot,thisnode->FormationRedshift,tmp->snapshot,thisnode->DestructionRedshift,
 		  thisnode->snapshot,thisnode->Mtot);
-	  
+
 	  if(first_as_subhalo != NULL)
 	    fprintf(fp,"  %20d",first_as_subhalo->snapshot);
-	  else 
+	  else
 	    fprintf(fp,"  %20d",-1);
-	  
+
 	  if(maxmass > 0.0)
 	    fprintf(fp," %18.4g",maxmass);
 	  else
 	    fprintf(fp," %18.4g",-1.0);
-	  
+
 	  fprintf(fp,"\n");
-	  
+
 	  haloid++;
 	}
       }
     }
   }
-  
+
 
   fclose(fp);
 }
@@ -622,7 +603,7 @@ void assign_vxcm(struct group_data *group,int64 Ngroups,struct particle_data *P,
     sumvy=0.0;
     sumvz=0.0;
     summ=0.0;
-    
+
 #ifdef FOF_ONLY
     group[i].Mtot=0.0;
 #endif
@@ -637,17 +618,17 @@ void assign_vxcm(struct group_data *group,int64 Ngroups,struct particle_data *P,
       sumx += (periodic(P[index].Pos[0]-group[i].xcen)*mass); /* computing the centre of mass -> needs to account for box wrapping. */
       sumy += (periodic(P[index].Pos[1]-group[i].ycen)*mass);
       sumz += (periodic(P[index].Pos[2]-group[i].zcen)*mass);
-#else 
+#else
       sumx += (periodic(P[index].Pos[0]-group[i].xcen)*mass); /* Make sure that group[i].xcen is initiliased by loadgroups under the FOF_ONLY flag. */
       sumy += (periodic(P[index].Pos[1]-group[i].ycen)*mass);
       sumz += (periodic(P[index].Pos[2]-group[i].zcen)*mass);
-#endif 
-      
+#endif
+
 #ifdef FOF_ONLY
       group[i].Mtot += mass;
 #endif
     }
-    
+
 #ifdef FOF_ONLY
     group[i].xcen = periodic_wrap(sumx/summ);
     group[i].ycen = periodic_wrap(sumy/summ);
@@ -657,17 +638,17 @@ void assign_vxcm(struct group_data *group,int64 Ngroups,struct particle_data *P,
     group[i].Yoffset = group[i].ycen - periodic_wrap(sumy/summ);
     group[i].Zoffset = group[i].zcen - periodic_wrap(sumz/summ);
 #endif
-    
+
     group[i].vxcen = sumvx/summ;
     group[i].vycen = sumvy/summ;
     group[i].vzcen = sumvz/summ;
-    
+
     group[i].vxcen *= sqrt(get_scalefactor(redshift));
     group[i].vycen *= sqrt(get_scalefactor(redshift));
     group[i].vzcen *= sqrt(get_scalefactor(redshift));
-    
+
   }
-  
+
 }
 
 
@@ -696,12 +677,12 @@ void assign_node(struct group_data *group0,int64 Ngroups0,struct parent_data *pa
   float scale_factor = 1.0/(1.0+REDSHIFT[isnapshot]);
   float root_a = sqrt(scale_factor);
 /*   double boundfofmtot=0.0; */
-  
+
   rhocrit = get_rhocrit_at_redshift(REDSHIFT[isnapshot],PARAMS.COSMO);
   rhocrit *= (scale_factor*scale_factor*scale_factor);  /* in co-moving co-ordinates */
   /*   overdensity = get_overdensity(REDSHIFT[isnapshot],PARAMS.COSMO); */
   overdensity = 200.0; /* Using 200 instead of the Bryan Norman overdensity */
-  
+
   for(int64 igroup = 0;igroup<Ngroups0;igroup++) {
 /*       if(FOF_Parent!=NULL && group0[igroup].isFof==1) */
 /* 		{ */
@@ -710,7 +691,7 @@ void assign_node(struct group_data *group0,int64 Ngroups0,struct parent_data *pa
 /* 			 need to check for that at the end of the loop *\/ */
 /* 		  FOF_Parent->BoundFofMtot = boundfofmtot; */
 /* 		} */
-      
+
     if(group0[igroup].isFof == 1) {
       FOF_Parent = &node[igroup];
       /* 		  boundfofmtot = group0[igroup].Mtot; */
@@ -719,7 +700,7 @@ void assign_node(struct group_data *group0,int64 Ngroups0,struct parent_data *pa
       FOF_Parent->BoundFofMtot += group0[igroup].Mtot;
       node[igroup].BoundFofMtot = group0[igroup].Mtot; /* Not really proper -- subhalos have their 'normal' mass as the bound fof mass */
     }
-    
+
     node[igroup].isFof = group0[igroup].isFof;
     /* 	  node[igroup].Nsub     = group0[igroup].Nsub; */
     node[igroup].haloid = -1;
@@ -733,55 +714,55 @@ void assign_node(struct group_data *group0,int64 Ngroups0,struct parent_data *pa
     node[igroup].xcen = group0[igroup].xcen;
     node[igroup].ycen = group0[igroup].ycen;
     node[igroup].zcen = group0[igroup].zcen;
-      
+
 #ifdef GET_GROUPVEL
     node[igroup].vxcen = group0[igroup].vxcen*root_a;
     node[igroup].vycen = group0[igroup].vycen*root_a;
     node[igroup].vzcen = group0[igroup].vzcen*root_a;
-#else 
+#else
 #ifndef GET_MEANVEL
     node[igroup].vxcen = group0[igroup].vxcen;/* group vels have been loaded in from snapshots. Copy them to the nodes. */
     node[igroup].vycen = group0[igroup].vycen;
     node[igroup].vzcen = group0[igroup].vzcen;
 #endif
 #endif
-    
+
     node[igroup].Mtot = group0[igroup].Mtot;
     node[igroup].InfallMass = group0[igroup].Mtot;/* initialization -- will get the `real' value from maketree later on*/
     node[igroup].InfallSnapshot    = -1;
     node[igroup].Mstar = 0.0;
-    
+
     /* 	  node[igroup].FormationRedshift = REDSHIFT[isnapshot]; */
     node[igroup].FormationRedshift = 0.0;
     node[igroup].RedshiftofLastMerger = -1.0;
-    
+
     node[igroup].TotNmergers = 0;
     node[igroup].Nmergers = 0;
-    
+
     node[igroup].NDisruptions = 0;
     node[igroup].TotNDisruptions = 0;
-    
+
     node[igroup].NDissolutions = 0;
     node[igroup].TotNDissolutions = 0;
-    
+
     node[igroup].NFlybys = 0;
     node[igroup].TotNFlybys = 0;
-    
+
     node[igroup].Xoffset = group0[igroup].Xoffset;
-    node[igroup].Yoffset = group0[igroup].Yoffset; 
-    node[igroup].Zoffset = group0[igroup].Zoffset; 
-    
+    node[igroup].Yoffset = group0[igroup].Yoffset;
+    node[igroup].Zoffset = group0[igroup].Zoffset;
+
       /* Set the group level density parameters */
     node[igroup].Rvir_anyl = getrvir_anyl(group0[igroup].Mtot,REDSHIFT[isnapshot],PARAMS.COSMO);
     getrvir_from_overdensity(&group0[igroup],Nbins,rhocrit,overdensity); /* Follows Bullock et al. 2001 MNRAS 321 559*/
     /* compute_vmax(&group0[igroup],REDSHIFT[isnapshot]); */ //Not implemented yet
-    
+
     /*       if(group0[igroup].N > 10000 ) */
     /* 		fprintf(stderr,"DEBUG: After fitting profile\n  Rvir = %lf  Rvir_anyl=%lf  Rhalf = %lf Maxoverdensity=%e  group->N = %"STR_FMT" group->Mtot = %lf rhocrit=%e\n", */
     /* 		group0[igroup].Rvir,node[igroup].Rvir_anyl,group0[igroup].Rhalf,group0[igroup].MaxOverDensity,group0[igroup].N,group0[igroup].Mtot,rhocrit); */
-      
+
     node[igroup].Rhalf     = group0[igroup].Rhalf;
-    
+
     if (group0[igroup].Rvir > 0.0) {
       node[igroup].Rvir      = group0[igroup].Rvir;
       node[igroup].Conc      = group0[igroup].Conc;
@@ -790,44 +771,44 @@ void assign_node(struct group_data *group0,int64 Ngroups0,struct parent_data *pa
       node[igroup].Rvir  = node[igroup].Rvir_anyl;
       node[igroup].Conc  = 0.0; /* use concentration and mass to fit concentration  (Bullock 2001) */
     }
-    
+
     node[igroup].MaxOverDensity    = group0[igroup].MaxOverDensity;
     node[igroup].OverDensityThresh = group0[igroup].OverDensityThresh;
     node[igroup].Vmax              = group0[igroup].Vmax;
     node[igroup].RVmax             = group0[igroup].RVmax;
-    
-    
+
+
     //The parent structure will not exist for snapshot PARAMS.MAX_SNAPSHOT_NUM. initialize from
     // the group directory.
-    
+
 /* 	  node[igroup].ContainerId     = parent[igroup].containerid; */
 /*    node[igroup].ParentLevel     = parent[igroup].parentlevel; */
 /*    node[igroup].Nsub            = parent[igroup].nsub; */
 /*    node[igroup].ContainerHalo   = &(node[node[igroup].ContainerId]); */
-    
+
     node[igroup].ContainerId     = group0[igroup].ContainerIndex;
     node[igroup].ParentLevel     = group0[igroup].ParentLevel;
     node[igroup].Nsub            = group0[igroup].Nsub;
     node[igroup].ContainerHalo   = &(node[node[igroup].ContainerId]);
-    
+
     node[igroup].VisitedForMassloss = 0;
     node[igroup].VisitedForCumulativeMerger = 0;
     node[igroup].CumulativeNmergers = 0;
     node[igroup].CumulativeNFlybys  = 0;
     node[igroup].FormationRedshift= node[igroup].z;
     node[igroup].DestructionRedshift = node[igroup].z;
-    
+
     if((node[igroup].ContainerHalo)->Nsub == 0) {
       fprintf(stderr,"This should not have happened. The container claims to have no Nsubs. snapshot = %hd igroup = %"STR_FMT" Container id = %"STR_FMT" ..exiting\n",
 	      isnapshot,igroup,node[igroup].ContainerId);
       exit(EXIT_FAILURE);
     }
-    
+
 
     /* group0 is going to be freed once this function returns. No need to fill it up. */
     /* 	  group0[igroup].ContainerId   = parent[igroup].containerid; */
     /* 	  group0[igroup].ParentLevel   = parent[igroup].parentlevel; */
-    
+
     if(isnapshot < PARAMS.MAX_SNAPSHOT_NUM && parent[igroup].parentsnapshot <= PARAMS.MAX_SNAPSHOT_NUM && parent[igroup].parentsnapshot >= PARAMS.MIN_SNAPSHOT_NUM && parent[igroup].parentid >=0 ) {
       /* 			  fprintf(stderr,"isnapshot = %d igroup = %d parent snapshot = %d\n",isnapshot,igroup,parent[igroup].parentsnapshot); */
       node[igroup].ParentID        = parent[igroup].parentid;
@@ -852,13 +833,13 @@ void assign_node(struct group_data *group0,int64 Ngroups0,struct parent_data *pa
       fprintf(stderr,"expected groupnum = %"STR_FMT"  got groupnum = %"STR_FMT" ..exiting\n",igroup,tmp_grpnum);
       exit(EXIT_FAILURE);
     }
-    
+
     if(fgets(str_line, MAXLINESIZE,fp)==NULL  && igroup != (Ngroups0-1)) {
       fprintf(stderr,"Error (eof): expected more lines to read in from group velocities file `%s' \n",fname);
       fprintf(stderr,"currently at igroup = %"STR_FMT" ..exiting\n",igroup);
       exit(EXIT_FAILURE);
     }
-    
+
       /* MS: 5th Aug, 2010. Took out the sqrt(a) dependence of v */
 
       for(int k=0;k<3;k++)
@@ -873,7 +854,7 @@ void assign_node(struct group_data *group0,int64 Ngroups0,struct parent_data *pa
 #endif
 
       node[igroup].Seeded=0; /* This halo has not 'yet' been seeded with a black hole */
-      
+
     }
 #ifdef GET_MEANVEL
   fclose(fp);
@@ -904,10 +885,10 @@ void writeids(struct node_data * tree[],int64 *Ngroups)
     /* } */
 
     my_progressbar(isnapshot-PARAMS.MIN_SNAPSHOT_NUM,&interrupted);
-    
+
     BaseNode = tree[isnapshot];
     my_snprintf(outfname,MAXLEN,"%s/table_%03d.txt",PARAMS.OUTPUT_DIR,isnapshot);
-    
+
     /*       fprintf(stderr,"writing to file `%s' \n",outfname); */
     fp = my_fopen(outfname,"w");
     fprintf(fp,"# Mass is in %e Msun. Redshift = %f  \n",ActualMassUnits,REDSHIFT[isnapshot]);
@@ -915,7 +896,7 @@ void writeids(struct node_data * tree[],int64 *Ngroups)
     fprintf(fp,"# Snapshot        GroupNum        Haloid           Mtot         LastMergerRed     Formationz      Nmergers    TotNmergers     ParentLev       Nsub     FofHaloid    ContainerNum       Rvir          Rvir_anyl         Rhalf       Nflybys       TotNflybys     Mstar    InfallMass       xcen \n");
     fprintf(fp,"#   i                l               l               d                 f               f               l           l              i              l         l             l                d             d                 d           l               l            d          d            f   \n");
     fprintf(fp,"###############################################################################################################################################################################################################################################################################################\n");
-    
+
     for(int64 igroup=0;igroup<Ngroups[isnapshot];igroup++) {
       thisnode = &BaseNode[igroup];
       fprintf(fp,"%4d     %12"STR_FMT "     %12"STR_FMT"    %13.4f    %12.3f      %12.3f    %10"STR_FMT"    %10"STR_FMT"  %10d  %12"STR_FMT"  %12"STR_FMT"    %12"STR_FMT "   %12.4g    %12.4g    %12.4g     %12"STR_FMT"    %12"STR_FMT"   %14.4lf   %14.4lf %14.6g \n",
@@ -925,7 +906,7 @@ void writeids(struct node_data * tree[],int64 *Ngroups)
 	      thisnode->Rvir,thisnode->Rvir_anyl,thisnode->Rhalf,thisnode->NFlybys,thisnode->TotNFlybys,thisnode->Mstar,
 							thisnode->InfallMass,thisnode->xcen);
     }
-    
+
     fclose(fp);
   }
   /* fprintf(stderr,"..done\n"); */
@@ -942,7 +923,7 @@ void output_children(struct node_data * tree[],int64 *Ngroups)
   struct node_data *childnode;
   /* int PRINTSTEP,SMALLPRINTSTEP; */
   int interrupted;
-  
+
   fprintf(stderr,"\n\nwriting children.txt files\n");
   /* PRINTSTEP = (int)floor(0.1*(PARAMS.MAX_SNAPSHOT_NUM-PARAMS.MIN_SNAPSHOT_NUM)); */
   /* SMALLPRINTSTEP = ceil(0.01*(PARAMS.MAX_SNAPSHOT_NUM-PARAMS.MIN_SNAPSHOT_NUM)) > 1 ? ceil(0.01*(PARAMS.MAX_SNAPSHOT_NUM-PARAMS.MIN_SNAPSHOT_NUM)):1; */
@@ -996,10 +977,10 @@ void output_mergers_for_haloid(struct node_data * tree[],int64 *Ngroups,const in
     if (Ngroups[isnapshot] > 0) {
       igroup = 0;
       node = tree[isnapshot];
-      while(node[igroup].haloid != haloid  && igroup < Ngroups[isnapshot]) 
+      while(node[igroup].haloid != haloid  && igroup < Ngroups[isnapshot])
 	igroup++;
-	  
-      
+
+
       if (igroup < Ngroups[isnapshot] && node[igroup].haloid == haloid)
 	break;
     } else {
@@ -1023,23 +1004,23 @@ void output_mergers_for_haloid(struct node_data * tree[],int64 *Ngroups,const in
     fprintf(fp1,"###############################################################################\n");
     fprintf(fp1,"#   snapshot         groupnum          haloid          mtot         Fofhaloid #\n");
     fprintf(fp1,"###############################################################################\n");
-    
+
     bigchild = &node[igroup];
     while(bigchild->BigChild !=NULL) {
       bigchild = bigchild->BigChild;
       if(bigchild->Parent->Nchild > 1) {
 	sibling = bigchild -> Sibling;
 	if (sibling->Mtot/bigchild->Mtot > mineta)
-	  fprintf(fp," At z = %7.2f  primary mass = %12.4g other mass = %12.4g  ratio = %10.4f\n",bigchild->z, 
+	  fprintf(fp," At z = %7.2f  primary mass = %12.4g other mass = %12.4g  ratio = %10.4f\n",bigchild->z,
 		  bigchild->Mtot,sibling->Mtot,(sibling->Mtot/bigchild->Mtot));
       }
-      
+
       if(bigchild->haloid ==0)
 	fprintf(stderr,"z = %7.2f  Nmergers = %4"STR_FMT"  TotNmergers = %6"STR_FMT"  NDisruptions = %4"STR_FMT"  TotNdisrupt = %6"STR_FMT"  NDissolution = %4"STR_FMT
 		"  TotNDissolutions = %6"STR_FMT"\n",bigchild->z,bigchild->Nmergers,bigchild->TotNmergers,bigchild->NDisruptions,
 		bigchild->TotNDisruptions,bigchild->NDissolutions,bigchild->TotNDissolutions);
-      
-      
+
+
       fprintf(fp1,"%10hd    %14"STR_FMT"   %14"STR_FMT"    %12.6g    %14"STR_FMT" \n",bigchild->snapshot,bigchild->nodeloc,bigchild->haloid,bigchild->Mtot,bigchild->FofHalo->haloid);
     }
     fclose(fp);
@@ -1064,7 +1045,7 @@ void output_mergers(struct node_data * tree[],int64 *Ngroups)
   struct node_data *bigchildfofhalo;
   const float MinMergerRatio = 0.1;
   int interrupted;
-  
+
   my_snprintf(outfname,MAXLEN,"%s/%s",PARAMS.OUTPUT_DIR,"mergers.txt");
   Fof = my_fopen(outfname,"w");
 
@@ -1107,28 +1088,28 @@ void output_mergers(struct node_data * tree[],int64 *Ngroups)
 	    do
 	      {
 		thischild = thischild->Sibling;
-		
-		/* 
+
+		/*
 		   There may be a situation where the big child is not from the previous snapshot
 		   but all the rest of the children are. There needs to be a check for that.
 		*/
-		
-		
+
+
 		fprintf(Fof,"%4d   %14"STR_FMT"   %14.5g   %10d   %8d      %8d    %14"STR_FMT"   %14"STR_FMT"   %15d   %15d  %14.5g   %14.5g     \n",
 			isnapshot,node[igroup].haloid,node[igroup].Mtot,node[igroup].ParentLevel,bigchild->snapshot,thischild->snapshot,bigchild->haloid,
 			thischild->haloid,bigchild->ParentLevel,thischild->ParentLevel,bigchild->Mtot,thischild->Mtot);
-		
+
 		if(printedbig ==0) {
 		  fprintf(Fofprop,"%4d  %14"STR_FMT"   %14"STR_FMT"   %8"STR_FMT"   %14.5lf   %14.5lf  %14.5lf  %14.5lf  \n",
 			  bigchild->snapshot,node[igroup].haloid,bigchild->haloid,bigchild->nodeloc,bigchild->Mtot,bigchild->xcen,
 			  bigchild->ycen,bigchild->zcen);
 		  printedbig = 1;
 		}
-		
+
 		fprintf(Fofprop,   "%4d  %14"STR_FMT"   %14"STR_FMT"   %8"STR_FMT"   %14.4f  %14.4f  %14.4f  %14.4f  \n",
 			thischild->snapshot,node[igroup].haloid,thischild->haloid,thischild->nodeloc,thischild->Mtot,thischild->xcen,
 			thischild->ycen,thischild->zcen);
-		
+
 	      }while(thischild->Sibling !=NULL);
 	  } else {
 	    fprintf(stderr,"\nError: The parent claims to have more than one child but I can only find one\n");
@@ -1136,23 +1117,23 @@ void output_mergers(struct node_data * tree[],int64 *Ngroups)
 	    fprintf(stderr,"Aborting...\n");
 	    exit(EXIT_FAILURE);
 	  }
-	  
+
 	} else {
 	  if(node[igroup].Nchild == 1) {
-	    /* 
-	       this is where I write out the haloes that are not doing anything ...as in possible isolated halos. 
+	    /*
+	       this is where I write out the haloes that are not doing anything ...as in possible isolated halos.
 	       Not really required since a combination of parents_xxx.txt, mergers.txt and table_xxx.txt will tell
-	       you which halos did not have a merger. 
+	       you which halos did not have a merger.
 	    */
-	    
+
 	    fprintf(Isolated,"%4d   %14"STR_FMT"    %14"STR_FMT"   %14.4g \n",isnapshot,node[igroup].haloid,node[igroup].nodeloc,node[igroup].Mtot);
-	    
+
 	  }
 	}
       }
     }
   }
-  
+
   fclose(Fof);
   fclose(Fofprop);
   fclose(Isolated);
@@ -1190,11 +1171,11 @@ void output_mergers(struct node_data * tree[],int64 *Ngroups)
 	      {
 		thischild = thischild->Sibling;
 		if(thischild->Mtot/bigchild->Mtot >= MinMergerRatio) {
-		  /* 
+		  /*
 		     There may be a situation where the big child is not from the previous snapshot
 		     but all the rest of the children are. There needs to be a check for that.
 		  */
-		  
+
 		  fprintf(Fof,"%4d   %14"STR_FMT"   %14.4f   %8d      %8d    %14"STR_FMT"   %14"STR_FMT"    %14.4f   %14.4f     \n",
 			  isnapshot,node[igroup].haloid,node[igroup].Mtot,bigchild->snapshot,thischild->snapshot,bigchild->haloid,
 			  thischild->haloid,bigchild->Mtot,thischild->Mtot);
@@ -1244,24 +1225,24 @@ void output_mergers(struct node_data * tree[],int64 *Ngroups)
 	      /* If I can't assign these mergers in make_fof_tree -> assign them here.*/
 	      /* 					  node[igroup].Nmergers++; */
 	      /* 					  node[igroup].TotNmergers++; */
-	      
+
 	      fprintf(Fof,"%4d   %14"STR_FMT"   %14.4f   %14"STR_FMT"    %14.4f    %12"STR_FMT"  %12d\n",
 		      isnapshot,thisfofhalo->haloid,thisfofhalo->Mtot,
 		      node[igroup].haloid,node[igroup].Mtot,bigchildfofhalo->haloid,bigchildfofhalo->snapshot);
-	      
+
 	    }
 	  }
 	}
       }
     }
   }
-  
+
   fclose(Fof);
   /* fprintf(stderr,"..done\n");   */
   finish_myprogressbar(&interrupted);
-  
+
   fprintf(stderr,"\n\nFinished writing out the mergers and the halo properties\n");
-  
+
 }
 
 void cumulative_merger_history(struct node_data * tree[],int64 *Ngroups)
@@ -1273,7 +1254,7 @@ void cumulative_merger_history(struct node_data * tree[],int64 *Ngroups)
   struct node_data *thisnode;
   struct node_data *BaseNode;
   int interrupted;
-  
+
   fprintf(stderr,"\n\nwriting cumulative_merger.txt files\n");
   /* PRINTSTEP = (int)floor(0.1*(PARAMS.MAX_SNAPSHOT_NUM-PARAMS.MIN_SNAPSHOT_NUM-1)); */
   /* SMALLPRINTSTEP = ceil(0.01*(PARAMS.MAX_SNAPSHOT_NUM-PARAMS.MIN_SNAPSHOT_NUM-1)) > 1 ? ceil(0.01*(PARAMS.MAX_SNAPSHOT_NUM-PARAMS.MIN_SNAPSHOT_NUM-1)):1; */
@@ -1289,7 +1270,7 @@ void cumulative_merger_history(struct node_data * tree[],int64 *Ngroups)
       fprintf(fp,"#   Snapshot       HaloId         Mtot      CumulNmergers      CumulNflybys      FormationZ  \n");
       fprintf(fp,"#      i              l             d           l                 l              f       \n");
       fprintf(fp,"#########################################################################################\n");
-      
+
       BaseNode = tree[isnapshot];
       for(int64 igroup=0;igroup<Ngroups[isnapshot];igroup++) {
 	thisnode = &BaseNode[igroup];
@@ -1298,7 +1279,7 @@ void cumulative_merger_history(struct node_data * tree[],int64 *Ngroups)
 	  totnflybys  = 0;
 	  /* 			  totnmergers += (thisnode->Nmergers + thisnode->NDisruptions + thisnode->NDissolutions); */
 	  /* 			  while( (thisnode = walk_tree(thisnode)) != NULL) */
-	  
+
 	  while(thisnode != NULL) {
 	    /* 				  if(thisnode->VisitedForCumulativeMerger == 1 ) */
 	    /* 					{ */
@@ -1333,7 +1314,7 @@ void cumulative_merger_history(struct node_data * tree[],int64 *Ngroups)
 
 void output_interesting_halos(struct node_data * tree[],int64 *Ngroups)
 {
-  
+
   FILE *fp=NULL;
   char outfname[MAXLEN];
   int isnapshot;
@@ -1352,7 +1333,7 @@ void output_interesting_halos(struct node_data * tree[],int64 *Ngroups)
   fprintf(fp,"##############################################################################################################\n");
 
   for(isnapshot=PARAMS.MAX_SNAPSHOT_NUM;isnapshot>=PARAMS.MIN_SNAPSHOT_NUM;isnapshot--) {
-    if (Ngroups[isnapshot] > 0) { 
+    if (Ngroups[isnapshot] > 0) {
       node = tree[isnapshot];
       for(igroup=0;igroup<Ngroups[isnapshot];igroup++) {
 	thisnode = &node[igroup];
@@ -1360,7 +1341,7 @@ void output_interesting_halos(struct node_data * tree[],int64 *Ngroups)
 	  container = thisnode->ContainerHalo;
 	  if(container->Parent != NULL && thisnode->Parent != NULL) {
 	    if(container->Parent->haloid != container->haloid && thisnode->Parent->haloid == thisnode->haloid)
-	      fprintf(fp,"%10d  %12"STR_FMT"   %12.4g    %10d    %12"STR_FMT"    %12.4f   %12.4f\n", 
+	      fprintf(fp,"%10d  %12"STR_FMT"   %12.4g    %10d    %12"STR_FMT"    %12.4f   %12.4f\n",
 		      isnapshot, thisnode->haloid,thisnode->Mtot,thisnode->ParentLevel,container->haloid,thisnode->FormationRedshift,
 		      container->FormationRedshift);
 	  }
@@ -1368,7 +1349,7 @@ void output_interesting_halos(struct node_data * tree[],int64 *Ngroups)
       }
     }
   }
-  
+
   fclose(fp);
 
 }
@@ -1382,7 +1363,7 @@ void output_suspicious_halos(struct node_data * tree[],int64 *Ngroups)
   char outfname[MAXLEN];
   int isnapshot;
   int64 ifof;
-  
+
   double Mthresh = 1.0; /* 1d10 Msun */
   float Mratio  = 0.3;
 
@@ -1407,7 +1388,7 @@ void output_suspicious_halos(struct node_data * tree[],int64 *Ngroups)
 	if(thisnode->Nsub > 1) {
 	  bigsub = &node[ifof+1];
 	  if( (thisnode->Mtot > Mthresh) &&  bigsub->Mtot/thisnode->Mtot > Mratio )
-	    fprintf(fp,"%10d  %12"STR_FMT"   %12.4g     %12"STR_FMT"   %12.4g    %12.4f   %12.4f\n", 
+	    fprintf(fp,"%10d  %12"STR_FMT"   %12.4g     %12"STR_FMT"   %12.4g    %12.4f   %12.4f\n",
 		    isnapshot, thisnode->haloid,thisnode->Mtot,bigsub->haloid,bigsub->Mtot,thisnode->FormationRedshift,
 		    bigsub->FormationRedshift);
 	}
@@ -1415,10 +1396,10 @@ void output_suspicious_halos(struct node_data * tree[],int64 *Ngroups)
       }
     }
   }
-  
+
   fclose(fp);
 
-  
+
   my_snprintf(outfname,MAXLEN,"%s/%s",PARAMS.OUTPUT_DIR,"suspicious_halos_massgain.txt");
   fp = my_fopen(outfname,"w");
   fprintf(fp,"######################################################\n");
@@ -1451,22 +1432,22 @@ void output_suspicious_halos(struct node_data * tree[],int64 *Ngroups)
 	      fprintf(fp,"%6d   %12"STR_FMT" %12"STR_FMT"  %12.4g   %10d  %12"STR_FMT"  %13.4g \n",
 		      thisnode->BigChild->snapshot,thisnode->BigChild->nodeloc,thisnode->BigChild->haloid,
 		      thisnode->BigChild->Mtot,thisnode->snapshot,thisnode->nodeloc,thisnode->Mtot);
-	    
+
 	    /* mass loss and the smaller of the two needs to satisfy the mass threshold */
 	    if(thisnode->BigChild->Mtot/thisnode->Mtot > (1.0/Mratio)  && thisnode->Mtot > Mthresh)
 	      fprintf(fp1,"%6d   %12"STR_FMT" %12"STR_FMT"  %12.4g   %10d   %12"STR_FMT" %13.4g \n",
 		      thisnode->BigChild->snapshot,thisnode->BigChild->nodeloc,thisnode->BigChild->haloid,
 		      thisnode->BigChild->Mtot,thisnode->snapshot,thisnode->nodeloc,thisnode->Mtot);
-	    
+
 	    thisnode = thisnode->BigChild;
-	  }	
-	  
+	  }
+
 	  ifof++;
 	}
       }
     }
   }
-  
+
   fclose(fp);
   fclose(fp1);
 
@@ -1510,16 +1491,16 @@ void output_suspicious_halos(struct node_data * tree[],int64 *Ngroups)
 	  fprintf(fp,"%10d   %14"STR_FMT"   %14"STR_FMT"   %12.6g      %14"STR_FMT"   %12.4g    %12"STR_FMT" \n",
 		  thisnode->snapshot,thisnode->nodeloc,thisnode->haloid,thisnode->Mtot,thisnode->FofHalo->haloid,
 		  thisnode->FofHalo->Mtot,thisnode->FofHalo->Nsub);
-	  
+
 	}
-			  
+
 	if(thisnode->Parent !=NULL && thisnode->Parent->haloid != thisnode->haloid && thisnode->Mtot > Mthresh) {
 	  fprintf(fp1,"%10d   %14"STR_FMT"   %14"STR_FMT"   %12.4g    %12hd    %14"STR_FMT"    %12"STR_FMT"  %12.6g   \n",
 		  thisnode->snapshot,thisnode->nodeloc,thisnode->haloid,thisnode->Mtot,thisnode->ParentLevel,
 		  thisnode->ContainerHalo->haloid, thisnode->Parent->haloid,thisnode->Parent->Mtot);
 	}
-	
-	
+
+
 	if(thisnode->Parent==NULL && thisnode->Mtot > Mthresh) {
 	  fprintf(fp2,"%10d   %14"STR_FMT"   %14"STR_FMT"   %12.4g   \n",
 		  thisnode->snapshot,thisnode->nodeloc,thisnode->haloid,thisnode->Mtot);
@@ -1527,7 +1508,7 @@ void output_suspicious_halos(struct node_data * tree[],int64 *Ngroups)
       }
     }
   }
-  
+
   fclose(fp);
   fclose(fp1);
   fclose(fp2);
@@ -1587,18 +1568,18 @@ void output_flyby_futures(struct node_data * tree[],int64 *Ngroups)
 	    }
 	    mwnode=mwnode->BigChild;
 	  }
-		  
+
 	  /*Check if this halo has already been processed at some later snapshot */
 	  if(flag!=1) {
 	    mwnode = &BaseNode[igroup];
 	    my_snprintf(outfname,MAXLEN,"%s/%s_%"STR_FMT"%s",PARAMS.OUTPUT_DIR,"MW_flybys",mwnode->haloid,".txt");
-	    fp = fopen(outfname,"r");/* so as to not overwrite halos written at the higher snapshot */	
+	    fp = fopen(outfname,"r");/* so as to not overwrite halos written at the higher snapshot */
 	    if (fp !=NULL) {
 	      fclose(fp);
 	      flag=1;
 	    }
 	  }
-	  
+
 	  if(flag !=1) {
 	    fp = my_fopen(outfname,"w");
 	    print_flyby_future_header(fp);
@@ -1607,27 +1588,27 @@ void output_flyby_futures(struct node_data * tree[],int64 *Ngroups)
 		thisnode = mwnode + 1; /* goodness, pointer increment..*/
 	      else
 		break;/* to protect when primary fof does not have any subs and is the last group in the snapshot */
-			  
-	      while(thisnode != NULL && thisnode->isFof == 0 && thisnode->nodeloc < (Ngroups[thisnode->snapshot]-1) && 
+
+	      while(thisnode != NULL && thisnode->isFof == 0 && thisnode->nodeloc < (Ngroups[thisnode->snapshot]-1) &&
 		    thisnode->FofHalo == mwnode ) {
 		/* 							  tag = get_tag(thisnode,mwnode,&destructionz,&destructionradius);/\*disregard the last two things*\/ */
-		//MS 7th Dec, 2011 - updated to use the new tagging system that accounts for 
+		//MS 7th Dec, 2011 - updated to use the new tagging system that accounts for
 		//subhalos missing snapshots
 		double destruction_subtmot=-1.0;
 		double destruction_parentmtot=-1.0;
 		int destruction_snapshot=-1;
 		double destruction_mstar=-1.0;
-		
+
 		tag = get_tag(thisnode,mwnode,&destructionz,&destructionradius,&destruction_snapshot,&destruction_subtmot,&destruction_parentmtot,&destruction_mstar);
 		if (tag == 3 || tag == 5) { /* flyby tags -> should make it into a function that returns the tags from a name */
 		    nflybys++;
 		    comesback = 0;
-		    
+
 		    /* Now lets see all the descendants of thisnode (while conserving haloid) and see if it comes back */
 		    tmpnode = thisnode;
 		    while(tmpnode != NULL && tmpnode->isFof==0)
 		      tmpnode = tmpnode->Parent;/*walk to the future when thisnode becomes a FOF*/
-		    
+
 		    while(tmpnode != NULL && tmpnode->haloid == thisnode->haloid) {
 		      if(tmpnode->isFof==0 && tmpnode->FofHalo->haloid==mwnode->haloid) {
 			comesback++;
@@ -1635,13 +1616,13 @@ void output_flyby_futures(struct node_data * tree[],int64 *Ngroups)
 		      }
 		      tmpnode = tmpnode->Parent;
 		    }
-		    
-		    /* What happens if I take out the haloid requirement -> thisnode dissolves in something else 
+
+		    /* What happens if I take out the haloid requirement -> thisnode dissolves in something else
 		       which then has a merger with mwnode (NOTE that mwnode will be around till z~0)*/
 		    tmpnode = thisnode;
 		    while(tmpnode->isFof==0)
 		      tmpnode = tmpnode->Parent;/*walk to the future when thisnode becomes a FOF*/
-		    
+
 		    while(tmpnode != NULL) {
 		      if(tmpnode->isFof==0 && tmpnode->FofHalo->haloid==mwnode->haloid) {
 			comesback +=2;
@@ -1653,15 +1634,15 @@ void output_flyby_futures(struct node_data * tree[],int64 *Ngroups)
 			    mwnode->snapshot,mwnode->z,mwnode->haloid,mwnode->nodeloc,mwnode->Mtot,mwnode->BoundFofMtot,
 			    thisnode->haloid,thisnode->nodeloc,thisnode->Mtot,thisnode->BoundFofMtot,
 			    tag,comesback);
-		    
+
 		    fprintf(fp1,"%10d    %14.4f   %14"STR_FMT" %14"STR_FMT" %16.4lf  %16.4lf %14"STR_FMT"  %14"STR_FMT"  %16.4lf   %16.4lf   %12d  %12d \n",
 			    mwnode->snapshot,mwnode->z,mwnode->haloid,mwnode->nodeloc,mwnode->Mtot,mwnode->BoundFofMtot,
 			    thisnode->haloid,thisnode->nodeloc,thisnode->Mtot,thisnode->BoundFofMtot,
 			    tag,comesback);
-		    
+
 		    if(comesback > 0)
 		      ncomebacks++;
-		    
+
 		}
 		thisnode++; /* really?!! */
 	      }
@@ -1673,9 +1654,9 @@ void output_flyby_futures(struct node_data * tree[],int64 *Ngroups)
       }
     }
   }
-  
+
   fclose(fp1);
-  
+
 /*   nwritten = snprintf(command,MAXLEN,"ls -1 %s/MW_flybys*.txt",PARAMS.OUTPUT_DIR); */
 /*   check_string_copy(nwritten,MAXLEN);*/
 /*   fp = popen(command,"r"); */
@@ -1710,7 +1691,7 @@ void output_flyby_futures(struct node_data * tree[],int64 *Ngroups)
 /*   pclose(fp);/\* close the process output handler *\/ */
 
   fprintf(stderr,"\n\n nflybys = %d ncomebacks = %d   \n\n",nflybys,ncomebacks);
-  
+
 }
 
 void output_milkyway_halos(struct node_data * tree[],int64 *Ngroups)
@@ -1747,7 +1728,7 @@ void output_milkyway_halos(struct node_data * tree[],int64 *Ngroups)
 	    }
 	    thisnode=thisnode->BigChild;
 	  }
-	  
+
 	  thisnode = &node[igroup];
 	  my_snprintf(outfname,MAXLEN,"%s/%s_%"STR_FMT"%s",PARAMS.OUTPUT_DIR,"MW",thisnode->haloid,".txt");
 	  fp = fopen(outfname,"r");/* so as to not overwrite halos written at the higher snapshot */
@@ -1755,7 +1736,7 @@ void output_milkyway_halos(struct node_data * tree[],int64 *Ngroups)
 	    fclose(fp);
 	    flag=1;
 	  }
-	  
+
 	  if(flag !=1) {
 	    fp = my_fopen(outfname,"w");
 	    fprintf(fp,"# MW type halo. Haloid = %"STR_FMT" final snapshot = %d  mtot = %g  formationz = %12.5g\n",
@@ -1764,7 +1745,7 @@ void output_milkyway_halos(struct node_data * tree[],int64 *Ngroups)
 	    fprintf(fp,"# Snapshot       GroupNum            Haloid            Mtot       ParentLevel       Fofhaloid      ParentID      ParentSnap    CumulNmergers \n");
 	    fprintf(fp,"#     i              l                  l                d            i                 l              l             i               l       \n");
 	    fprintf(fp,"#############################################################################################################################################\n");
-	    
+
 	    while( thisnode != NULL ) {
 	      parentid = -1;
 	      parentsnap = -1;
@@ -1784,12 +1765,12 @@ void output_milkyway_halos(struct node_data * tree[],int64 *Ngroups)
 	    fp = my_fopen(outfname,"w");
 	    fprintf(fp,"# MW type halo. Haloid = %"STR_FMT" final snapshot = %d  mtot = %g  formationz = %12.5g\n",
 		    thisnode->haloid,isnapshot,thisnode->Mtot,thisnode->FormationRedshift);
-	    
+
 	    fprintf(fp,"####################################################################################################################################################\n");
 	    fprintf(fp,"# Snapshot       GroupNum            Haloid            Mtot       ParentLevel       FormationZ     CumulNmergers        ParentID         ParentSnap \n");
-	    fprintf(fp,"#     i              l                  l                d            i                 f               l                   l                i      \n");					  
+	    fprintf(fp,"#     i              l                  l                d            i                 f               l                   l                i      \n");
 	    fprintf(fp,"####################################################################################################################################################\n");
-	    
+
 	    while(mwnode !=NULL) {
 	      newnode = tree[mwnode->snapshot];
 	      for(int64 isub=mwnode->nodeloc;isub < (mwnode->nodeloc+mwnode->Nsub);isub++) {
@@ -1800,7 +1781,7 @@ void output_milkyway_halos(struct node_data * tree[],int64 *Ngroups)
 		  parentid = thisnode->Parent->haloid;
 		  parentsnap = thisnode->Parent->snapshot;
 		}
-		
+
 		fprintf(fp," %6d    %14"STR_FMT"    %14"STR_FMT"   %14.4g    %10d   %14.4g   %14u    %14"STR_FMT"     %10d \n",
 			thisnode->snapshot,thisnode->nodeloc,thisnode->haloid,thisnode->Mtot,thisnode->ParentLevel,
 			/* 									  thisnode->FormationRedshift,thisnode->DestructionRedshift,thisnode->CumulativeNmergers); */
@@ -1811,7 +1792,7 @@ void output_milkyway_halos(struct node_data * tree[],int64 *Ngroups)
 		  exit(EXIT_FAILURE);
 		}
 	      }
-	      
+
 	      mwnode = mwnode->BigChild;
 	    }
 	    fclose(fp);
@@ -1868,19 +1849,19 @@ void output_gill_data(struct node_data * tree[],int64 *Ngroups)
       //found a new cluster -- now let's locate all the subhalos
       //that are now present + all the halos that have interacted with
       //this cluster (in the past) and are still surviving
-      
+
       Nclusters++;
       snprintf(message,MAXLEN,"%s","cluster_haloids in function output_gill_data");
       cluster_haloids = my_realloc(cluster_haloids,sizeof(int64),Nclusters,message);
       cluster_haloids[Nclusters-1] = clusternode->haloid;
-      
+
       snprintf(outfname,MAXLEN,"%s/gill_data_%"STR_FMT".txt",PARAMS.OUTPUT_DIR,clusternode->haloid);
       fp = my_fopen(outfname,"w");
-      
+
       subhaloids = NULL;
       subhalos   = NULL;
       alltags    = NULL;
-      
+
       Max_Search_Radius = Max_Search_Radius_Factor*clusternode->Rvir;
       for(int64 jgroup=0;jgroup<Ngroups[snapshot];jgroup++) {
 	if(jgroup != igroup) {
@@ -1892,44 +1873,44 @@ void output_gill_data(struct node_data * tree[],int64 *Ngroups)
 	    while(thisnode != NULL) {
 	      if(thisnode->FofHalo->haloid == clusternode->haloid)
 		break;
-	      
+
 	      thisnode = thisnode->BigChild;
 	    }
-	    
+
 	    if(thisnode != NULL && thisnode->FofHalo->haloid == clusternode->haloid)  {
 	      tag = -1;
 	      Nsubhaloids++;
 	      snprintf(message,MAXLEN,"%s","subhaloids in function output_gill_data");
 	      subhaloids = my_realloc(subhaloids,sizeof(int64),Nsubhaloids,message);
 	      subhaloids[Nsubhaloids-1] = thisnode->haloid;
-	      
+
 	      snprintf(message,MAXLEN,"%s","subhalos in function output_gill_data");
 	      subhalos = my_realloc(subhalos,sizeof(struct node_data *),Nsubhaloids,message);
 	      subhalos[Nsubhaloids-1] = &node[jgroup];//store the pointer at z=0
-	      
-	      
+
+
 	      //now let's go back to when the subhalo first appeared inside this cluster
 	      while(thisnode->BigChild != NULL && thisnode->BigChild->FofHalo->haloid==clusternode->haloid)
 		thisnode=thisnode->BigChild;
-	      
+
 	      if(thisnode != NULL && thisnode->FofHalo->haloid==clusternode->haloid) {
 		double destruction_subtmot=-1.0;
 		double destruction_parentmtot=-1.0;
 		int destruction_snapshot=-1;
 		double destruction_mstar=-1.0;
-		
+
 		tag = get_tag(thisnode,thisnode->FofHalo,&destructionz,&destructionradius,&destruction_snapshot,&destruction_subtmot,&destruction_parentmtot,&destruction_mstar);
 	      }
-	      
+
 	      snprintf(message,MAXLEN,"%s","alltags in function output_gill_data");
 	      alltags = my_realloc(alltags,sizeof(int),Nsubhaloids,message);
 	      alltags[Nsubhaloids-1] = tag;//store the pointer at z=0
-	      
+
 	    }
 	  }
 	}
       }
-      //Now all the subhalos that have interacted with this cluster have been identified. 
+      //Now all the subhalos that have interacted with this cluster have been identified.
       fprintf(stderr,"For cluster # %"STR_FMT" there are %"STR_FMT" halos that have interacted with it and survive to z=0\n",Nclusters,Nsubhaloids);
       snprintf(outfname,MAXLEN,"%s/gill_data_%"STR_FMT".txt",PARAMS.OUTPUT_DIR,clusternode->haloid);
       fp = my_fopen(outfname,"w");
@@ -1937,15 +1918,15 @@ void output_gill_data(struct node_data * tree[],int64 *Ngroups)
       fprintf(fp,"#  ClusterId        SubhaloId         Rsep       Rvir1         Rvir2        MinRsep     Rvir1_at_min    Rvir2_at_min     Snapshot_at_min    InfallMass     FinalMass     tag      dmax   Rvir1_at_max    Rvir2_at_max   Snapshot_at_max   \n");
       fprintf(fp,"#     l                 l               f          f             f             f             f              f                  i                f              f          i         f         f             f                i\n");
       fprintf(fp,"##########################################################################################################################################################################################################################################\n");
-      
+
       for(int64 isub=0;isub<Nsubhaloids;isub++) {
 	subnode = subhalos[isub];
 	dmin = PARAMS.BOXSIZE;
-	
+
 	rvir2_at_min = subnode->Rvir;
 	rvir1_at_min = subnode->FofHalo->Rvir;
 	snapshot_for_dmin = subnode->snapshot;
-	
+
 	while(subnode != NULL && subnode->FofHalo->haloid==clusternode->haloid) {
 	  tmp_dmin = get_separation_between_centres(subnode,subnode->FofHalo);
 	  dmin = tmp_dmin < dmin ? tmp_dmin:dmin;
@@ -1957,20 +1938,20 @@ void output_gill_data(struct node_data * tree[],int64 *Ngroups)
 	  }
 	  subnode = subnode->BigChild;
 	}
-	
+
 	//MS - Added 06/22/12
-	//repeat for finding the max separation. but now the sub doesn't have to contained inside the halo. 
+	//repeat for finding the max separation. but now the sub doesn't have to contained inside the halo.
 	subnode = subhalos[isub];
 	while(subnode != NULL) {
 	  if(subnode->FofHalo->haloid == clusternode->haloid)
 	    break;
-	  
+
 	  subnode = subnode->BigChild;
 	}
-	
-	//so now subnode is at the last time it was a subhalo..now let's walk into the future and find 
+
+	//so now subnode is at the last time it was a subhalo..now let's walk into the future and find
 	//the maximum separation between the sub and the cluster node.
-	snapshot_for_dmax = subnode->snapshot;			  
+	snapshot_for_dmax = subnode->snapshot;
 	dmax = 0.0;
 	//new scope
 	{
@@ -1993,15 +1974,15 @@ void output_gill_data(struct node_data * tree[],int64 *Ngroups)
 	    tmp_fof = tmp_fof->Parent;
 	  }
 	}
-	
+
 	subnode = subhalos[isub];
 	fprintf(fp,"%14"STR_FMT" %14"STR_FMT"  %14.6f     %14.6f  %14.6f  %14.6f   %14.6f   %14.6f  %10d   %14.6f  %14.6f %10d  %14.6f  %14.6f  %14.6f  %10d\n",
 		clusternode->haloid,subnode->haloid,get_separation_between_centres(subnode,clusternode),
 		subnode->Rvir,clusternode->Rvir, dmin,rvir1_at_min,rvir2_at_min,snapshot_for_dmin,subnode->InfallMass,
 		subnode->Mtot,alltags[isub],dmax,rvir1_at_max,rvir2_at_max,snapshot_for_dmax);
       }//tmp_fof will not be visible outside of this closing brace.
-      
-      
+
+
       //we are done outputting data for this cluster
       free(subhaloids);
       free(subhalos);
@@ -2009,7 +1990,7 @@ void output_gill_data(struct node_data * tree[],int64 *Ngroups)
       fclose(fp);
     }
   }
-  
+
   free(cluster_haloids);
 }
 
@@ -2029,7 +2010,7 @@ struct node_data * partial_walk_tree(struct node_data *this,struct node_data *st
 		{
 		  while( (tmp->Sibling==NULL) && (tmp->Parent !=NULL) && (tmp->snapshot < start->snapshot))
 			tmp = tmp->Parent;
-	  
+
 		  if(tmp->Parent != NULL && tmp->Parent->snapshot >=start->snapshot)
 			tmp=NULL;
 		  else
@@ -2042,7 +2023,7 @@ struct node_data * partial_walk_tree(struct node_data *this,struct node_data *st
 		}
     }
   return tmp;
-  
+
 }
 
 
@@ -2051,7 +2032,7 @@ struct node_data * walk_tree(struct node_data *start)
 {
   struct node_data *tmp;
   tmp = start;
-  
+
   if( tmp->BigChild != NULL)
     return tmp->BigChild;
   else
@@ -2062,7 +2043,7 @@ struct node_data * walk_tree(struct node_data *start)
 	{
 	  while( (tmp->Sibling==NULL) && (tmp->Parent !=NULL))
 	    tmp = tmp->Parent;
-	  
+
 	  if(tmp->Sibling !=NULL)
 	    tmp = tmp->Sibling;
 	  else
@@ -2070,5 +2051,5 @@ struct node_data * walk_tree(struct node_data *start)
 	}
     }
   return tmp;
-  
+
 }
