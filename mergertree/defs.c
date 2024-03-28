@@ -3,10 +3,10 @@
 
 struct params_data PARAMS;
 float *REDSHIFT;
-/* int Nbins = 100; /\*Bins in log r. Gets passed to numerical fitting routine (where it might get modified for very small halos)*\/ */
+/* int Nbins = 100; /\*Bins in log r. Gets passed to numerical fitting routine
+ * (where it might get modified for very small halos)*\/ */
 int64 NUMPART;
 int64 MaxHaloId = 0; /* defined in assign_haloid function in maketree.c */
 double ActualMassUnits = 1e10;
 int Nbins = 100;
-struct cosmology_data *COSMO=NULL;
-
+struct cosmology_data *COSMO = NULL;

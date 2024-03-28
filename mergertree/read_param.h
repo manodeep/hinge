@@ -6,8 +6,7 @@
 #include "defs.h"
 #include "set_cosmology.h"
 
-struct params_data
-{ 
+struct params_data {
   int MIN_SNAPSHOT_NUM;
   int MAX_SNAPSHOT_NUM;
 
@@ -19,14 +18,15 @@ struct params_data
 
   char OUTPUT_DIR[MAXLEN];
 
-  double LINKLENGTH;// linking length for the FOF algorithm
-  int INDIVIDUAL_MERGERS;//whether or not merger histories for individual haloids are wanted. 
+  double LINKLENGTH;      // linking length for the FOF algorithm
+  int INDIVIDUAL_MERGERS; // whether or not merger histories for individual
+                          // haloids are wanted.
 
   /* Populated from the snapshots (not read in from parameter file) */
   double BOXSIZE;
-  double MASSARR[6];//Gadget massarr
+  double MASSARR[6]; // Gadget massarr
 
-  //Makefile options
+  // Makefile options
   int fof_only;
   int get_groupvel;
   int get_meanvel;
@@ -46,13 +46,12 @@ struct params_data
   struct cosmology_data *COSMO;
 };
 
-//global variable
+// global variable
 extern struct params_data PARAMS;
 
 /* public functions in read_param.c*/
 void set_simulation_params(struct params_data *params);
-void read_params(const char *fname,struct params_data *params);
-void output_params(const char *fname,struct params_data *params);
+void read_params(const char *fname, struct params_data *params);
+void output_params(const char *fname, struct params_data *params);
 void fill_config_params(struct params_data *params);
 void sanity_check_params(struct params_data *params);
-

@@ -6,4 +6,5 @@
 #include "defs.h"
 #include "maketree.h"
 
-void load_found_progenitors(struct node_data *tree[],int64 *Ngroups,const char *fname);
+void load_found_progenitors(struct node_data *tree[], int64 *Ngroups,
+                            const char *fname);

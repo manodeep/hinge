@@ -6,9 +6,8 @@
 #include "defs.h"
 #include "io.h"
 
-struct parent_data
-{
-/*   int Ngroups; */
+struct parent_data {
+  /*   int Ngroups; */
   short snapshot;
   int64 groupid;
   short isFof;
@@ -23,6 +22,6 @@ struct parent_data
   int64 ncommon;
 };
 
-
 /* functions in loadparents*/
-struct parent_data * loadparents(const char *fname,struct parent_data *parent,int64 Ngroups);
+struct parent_data *loadparents(const char *fname, struct parent_data *parent,
+                                int64 Ngroups);
