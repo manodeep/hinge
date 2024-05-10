@@ -96,8 +96,6 @@ void output_params(const char *fname, struct params_data *params)
     fclose(fp);
 }
 
-
-
 /* The following function is shamelessly taken from Gadget2
     Adapted by MS 10th 2024: to add a function pointer to allow for customising parameter names */
 void read_params(const char *fname, struct params_data *params,
@@ -248,11 +246,11 @@ void read_params(const char *fname, struct params_data *params,
     sanity_check_params(params);
     fill_config_params(params);
 
-// #undef DOUBLE
-// #undef STRING
-// #undef INT
-// #undef LONG
-// #undef MAXTAGS
+    // #undef DOUBLE
+    // #undef STRING
+    // #undef INT
+    // #undef LONG
+    // #undef MAXTAGS
 
     return;
 }

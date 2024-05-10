@@ -1,7 +1,7 @@
-#include "utils_read_params.h"
+#include "read_param.h"
 #include "defs.h"
 #include "utils.h"
-#include "read_param.h"
+#include "utils_read_params.h"
 
 void haloparentfinder_fill_params(struct params_data *params, const int maxtags, void **addr, int *id, char **tag,
                                   int *nt_out)

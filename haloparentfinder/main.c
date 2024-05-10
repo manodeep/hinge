@@ -60,10 +60,10 @@ Reduces the clutter at the low mass parent matching.
 #include "hierarchy.h"
 #include "io.h"
 #include "loadgroups.h"
-#include "utils_read_params.h" //for global variable extern definition + function calls
 #include "read_param.h"
 #include "switchfof.h"
 #include "utils.h"
+#include "utils_read_params.h" //for global variable extern definition + function calls
 
 struct params_data PARAMS; // global variable
 float *REDSHIFT;
