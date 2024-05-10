@@ -30,7 +30,7 @@ OPT += -DWMAP5
 
 
 
-### Set the compiler -- options are icc/gcc/clang. 
+### Set the compiler -- options are icc/gcc/clang.
 CC=gcc
 #### Add any compiler specific flags you want
 CFLAGS=
@@ -42,13 +42,13 @@ DISTNAME=HINGE
 MINOR=0
 MAJOR=1
 
-INCLUDE=-I../io -I../utils -I.
+INCLUDE := -I../io -I../utils -I.
 
 ### The POSIX_SOURCE flag is required to get the definition of strtok_r
 CFLAGS += -Wsign-compare -Wall -Wextra -Wshadow -Wunused -std=c99 -g -gdwarf-3 -m64 -fPIC -D_POSIX_SOURCE -D_DARWIN_C_SOURCE  -O3 #-Ofast
-GSL_CFLAGS := $(shell gsl-config --cflags) 
+GSL_CFLAGS := $(shell gsl-config --cflags)
 GSL_LIBDIR := $(shell gsl-config --prefix)/lib
-GSL_LINK   := $(shell gsl-config --libs) -Xlinker -rpath -Xlinker $(GSL_LIBDIR) 
+GSL_LINK   := $(shell gsl-config --libs) -Xlinker -rpath -Xlinker $(GSL_LIBDIR)
 
 
 ifneq (USE_OMP,$(findstring USE_OMP,$(OPT)))
@@ -58,10 +58,10 @@ ifneq (USE_OMP,$(findstring USE_OMP,$(OPT)))
 endif
 
 ifeq (icc,$(findstring icc,$(CC)))
-  CFLAGS += -xhost -opt-prefetch #-vec-report6  
+  CFLAGS += -xhost -opt-prefetch #-vec-report6
   ifeq (USE_OMP,$(findstring USE_OMP,$(OPT)))
 		CFLAGS += -qopenmp
-		CLINK  += -qopenmp 
+		CLINK  += -qopenmp
   endif
 else
 
@@ -84,9 +84,7 @@ else
 
   #### common options for gcc and clang
   CFLAGS  += -march=native
-	CFLAGS  += -Wformat=2  -Wpacked  -Wnested-externs -Wpointer-arith  -Wredundant-decls  -Wfloat-equal -Wcast-qual  
+	CFLAGS  += -Wformat=2  -Wpacked  -Wnested-externs -Wpointer-arith  -Wredundant-decls  -Wfloat-equal -Wcast-qual
   CFLAGS  +=  -Wcast-align -Wmissing-declarations -Wmissing-prototypes  -Wnested-externs -Wstrict-prototypes  #-D_POSIX_C_SOURCE=2 -Wpadded -Wconversion
   CLINK += -lm
 endif
-
-

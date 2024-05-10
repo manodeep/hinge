@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "defs.h"
 
 struct group_data
@@ -130,3 +134,15 @@ struct io_header
                                        instead of u */
     char fill[60];                  /*!< fills to 256 Bytes */
 };
+
+#define MAXTAGLEN 50
+
+extern char GROUP_FORMAT_NAMES[][MAXTAGLEN];
+extern enum valid_group_formats GROUP_FORMAT_ENUMS[];
+extern int nvalid_group_format_names;
+
+#define    SQR_PERIODIC(dx) (periodic(dx) * periodic(dx))
+
+#ifdef __cplusplus
+}
+#endif

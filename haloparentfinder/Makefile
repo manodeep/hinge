@@ -3,18 +3,23 @@ include ../common.mk
 
 EXEC   = HaloParentFinder
 
-SRC    = hierarchy.c  findallparents.c switchfof.c findprogenitor.c read_param.c main.c ../utils/utils.c ../utils/progressbar.c ../io/loadgroups.c 
-OBJS  = $(SRC:.c=.o)
+IO_SRC := ../io/io.c ../io/loadgroups.c ../io/io_subfind_binary.c ../io/io_hinge_ascii.c
+SRC    := hierarchy.c  findallparents.c switchfof.c findprogenitor.c read_param.c main.c ../utils/utils.c ../utils/progressbar.c
+SRC    += $(IO_SRC)
+OBJS   := $(SRC:.c=.o)
 
-INCL   = hierarchy.h findallparents.h switchfof.h findprogenitor.h read_param.h defs.h ../utils/utils.h ../utils/progressbar.h ../io/loadgroups.h ../io/io.h Makefile
+INCL   := $(IO_SRC:.c=.h)
+INCL   += Makefile defs.h
 
-all = $(EXEC) $(SRC) $(INCL)
+all = $(EXEC)
 
-$(EXEC): $(OBJS) 
-	$(CC) $(OBJS) $(CLINK)   -o  $@
+$(EXEC): $(OBJS)
+	$(CC) $(OBJS) $(CLINK) -o  $@
 
-%.o: %.c $(INCL) 
-	$(CC) $(CFLAGS) $(OPT) $(INCLUDE)  -c $< -o $@
+$(OBJS): $(INCL)
+%.o: %.c
+	@echo "Compiling $<"
+	$(CC) $(INCLUDE) $(CFLAGS) $(OPT) -c $< -o $@
 
 clean:
 	rm -f $(OBJS) $(EXEC)
@@ -24,4 +29,3 @@ clean:
 clena: clean
 celan: clean
 celna: clean
-

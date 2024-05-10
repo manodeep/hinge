@@ -1,5 +1,4 @@
-#ifndef __DEFS_H
-#define __DEFS_H
+#pragma once
 
 #if __GNUC__
 #if __x86_64__ || __ppc64__
@@ -56,8 +55,59 @@
 #define MAXLEN (1000)
 #define MAXLINESIZE (10000)
 
+enum valid_group_formats
+{
+    /* The number of input group catalogs supported
+       This consists of two parts, the first part
+       dictates the catalog kind (i.e., what the bytes mean), while
+       the second part dictates the actual format on disk (i.e.,
+       how to read/cast the bytes from disk) */
+    subfind_binary = 0,
+    hinge_ascii = 1,
+    num_group_formats
+};
+
+
+
+struct params_data
+{
+    int MIN_SNAPSHOT_NUM;
+    int MAX_SNAPSHOT_NUM;
+    /*   int SNAPSHOT_NUMBER; */
+
+    char SNAPSHOT_DIR[MAXLEN];
+    char SNAPSHOT_BASE[MAXLEN];
+
+    char GROUP_DIR[MAXLEN];
+    char GROUP_BASE[MAXLEN];
+    enum valid_group_formats GROUP_FORMAT;
+
+    char OUTPUT_DIR[MAXLEN];
+
+    int MAX_INCR;
+    int64 MAX_RANK_LOC;
+
+    double MIN_FCOMMON_FINDPROGENITOR_THRESH; // findprogenitor
+    int64 MIN_NUMPART_IN_FINDPROGENITOR_HALO; // findprogenitor
+
+    double MIN_FCOMMON_SWITCHFOF_THRESH; // switchfof
+    int64 MIN_NUMPART_IN_SWITCHFOF_HALO; // switchfof
+
+    /* Populated from the GADGET snapshots (not read in from parameter file) */
+    double BOXSIZE;
+    double MASSARR[6]; // Gadget massarr
+
+    // Makefile options
+    int fof_only;
+    int get_groupvel;
+    int bigsim;
+    int longids;
+    int make_lean;
+};
+
+
+
 /* #ifdef SUSSING_TREES */
 extern float *REDSHIFT;
+extern struct params_data PARAMS;
 /* #endif */
-
-#endif
