@@ -12,8 +12,11 @@
 #define INT64 4
 #define MAXTAGS 20
 
-extern void read_params(const char *fname, struct params_data *params, void special_params(struct params_data *params, const int maxtags, void **addr, int *id, char **tag, int *nt));
+extern void read_params(const char *fname, struct params_data *params,
+                        void special_params(struct params_data *params, const int maxtags, void **addr, int *id,
+                                            char **tag, int *nt));
 extern void output_params(const char *fname, struct params_data *params);
 extern void fill_config_params(struct params_data *params);
 extern void sanity_check_params(struct params_data *params);
-extern void haloparentfinder_fill_params(struct params_data *params, const int maxtags, void **addr, int *id, char **tag, int *nt_out);
+extern void haloparentfinder_fill_params(struct params_data *params, const int maxtags, void **addr, int *id,
+                                         char **tag, int *nt_out);

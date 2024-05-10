@@ -6,7 +6,6 @@
 extern void loadgroups(const struct params_data *params, const int snapnum, struct group_data *group);
 extern int64 returnNhalo(const struct params_data *params, const int snapnum, const int fof_only);
 
-
 #if 0
 void reorder_groups_on_array(const int64 Ngroups, struct group_data *group);
 void remove_duplicate_particles(const int64 Ngroups, struct group_data *groups);

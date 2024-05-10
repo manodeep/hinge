@@ -4,9 +4,12 @@
 int64 returnNhalo_subfind_binary(const struct params_data *params, const int snapnum, const int fof_only)
 {
     char catalogue_fname[MAXLEN];
-    if(fof_only) {
+    if (fof_only)
+    {
         my_snprintf(catalogue_fname, MAXLEN, "%s/%s_%03d.fofcat", params->GROUP_DIR, params->GROUP_BASE, snapnum);
-    } else {
+    }
+    else
+    {
         my_snprintf(catalogue_fname, MAXLEN, "%s/%s_%03d.subcat", params->GROUP_DIR, params->GROUP_BASE, snapnum);
     }
 

@@ -10,14 +10,13 @@
 
 // #include "read_param.h"
 
-#include "io_subfind_binary.h"
 #include "io_hinge_ascii.h"
+#include "io_subfind_binary.h"
 
 #define FOFMINLEN (32)
 #define SUBHALOMINLEN (20)
 
 #define SQR_PERIODIC(dx) (periodic(dx) * periodic(dx))
-
 
 #if 0
 void reorder_groups_on_array(const int64 Ngroups, struct group_data *group)
@@ -379,51 +378,55 @@ void remove_duplicate_particles(const int64 Ngroups, struct group_data *groups)
 // #endif
 // #endif
 
-#endif //if 0
+#endif // if 0
 
 int64 returnNhalo(const struct params_data *params, const int snapnum, const int fof_only)
 {
-    if(params == NULL) {
+    if (params == NULL)
+    {
         fprintf(stderr, "%s>: params is NULL\n", __FUNCTION__);
         return -1;
     }
-    if(snapnum < 0 || snapnum > params->MAX_SNAPSHOT_NUM) {
+    if (snapnum < 0 || snapnum > params->MAX_SNAPSHOT_NUM)
+    {
         fprintf(stderr, "%s>: snapnum = %d is out of range [0, %d]\n", __FUNCTION__, snapnum, params->MAX_SNAPSHOT_NUM);
         return -1;
     }
 
-    switch(params->GROUP_FORMAT){
-        case subfind_binary:
-            return returnNhalo_subfind_binary(params, snapnum, fof_only);
-        case hinge_ascii:
-            return returnNhalo_hinge_ascii(params, snapnum, fof_only);
-        default:
-            fprintf(stderr, "%s>: Unknown group format = %d\n", __FUNCTION__, (int) params->GROUP_FORMAT);
-            return -1;
+    switch (params->GROUP_FORMAT)
+    {
+    case subfind_binary:
+        return returnNhalo_subfind_binary(params, snapnum, fof_only);
+    case hinge_ascii:
+        return returnNhalo_hinge_ascii(params, snapnum, fof_only);
+    default:
+        fprintf(stderr, "%s>: Unknown group format = %d\n", __FUNCTION__, (int)params->GROUP_FORMAT);
+        return -1;
     }
 
     return -1;
 }
 
-
 void loadgroups(const struct params_data *params, const int snapnum, struct group_data *group)
 {
-    if(params == NULL || group == NULL) {
+    if (params == NULL || group == NULL)
+    {
         fprintf(stderr, "%s>: params or group is NULL\n", __FUNCTION__);
         exit(EXIT_FAILURE);
     }
 
-    switch(params->GROUP_FORMAT){
-        case subfind_binary:
-            loadgroups_subfind_binary(snapnum, params, group);
-            break;
-        case hinge_ascii:
-            loadgroups_hinge_ascii(snapnum, params, group);
-            break;
+    switch (params->GROUP_FORMAT)
+    {
+    case subfind_binary:
+        loadgroups_subfind_binary(snapnum, params, group);
+        break;
+    case hinge_ascii:
+        loadgroups_hinge_ascii(snapnum, params, group);
+        break;
 
-        default:
-            fprintf(stderr, "%s>: Unknown group format = %d\n", __FUNCTION__, (int) params->GROUP_FORMAT);
-            exit(EXIT_FAILURE);
+    default:
+        fprintf(stderr, "%s>: Unknown group format = %d\n", __FUNCTION__, (int)params->GROUP_FORMAT);
+        exit(EXIT_FAILURE);
     }
 
     return;

@@ -96,45 +96,46 @@ void output_params(const char *fname, struct params_data *params)
 
 /*
         The following function is shamelessly taken from Gadget2 */
-void haloparentfinder_fill_params(struct params_data *params, const int maxtags, void **addr, int *id, char **tag, int *nt_out)
+void haloparentfinder_fill_params(struct params_data *params, const int maxtags, void **addr, int *id, char **tag,
+                                  int *nt_out)
 {
     int nt = *nt_out;
     my_snprintf(tag[nt], MAXLEN, "MAX_INCR");
     addr[nt] = &(params->MAX_INCR);
     id[nt++] = INT;
-    assert (nt < maxtags);
+    assert(nt < maxtags);
 
     my_snprintf(tag[nt], MAXLEN, "MAX_RANK_LOC");
     addr[nt] = &(params->MAX_RANK_LOC);
     id[nt++] = INT64;
-    assert (nt < maxtags);
+    assert(nt < maxtags);
 
     my_snprintf(tag[nt], MAXLEN, "MIN_FCOMMON_FINDPROGENITOR_THRESH");
     addr[nt] = &(params->MIN_FCOMMON_FINDPROGENITOR_THRESH);
     id[nt++] = DOUBLE;
-    assert (nt < maxtags);
+    assert(nt < maxtags);
 
     my_snprintf(tag[nt], MAXLEN, "MIN_NUMPART_IN_FINDPROGENITOR_HALO");
     addr[nt] = &(params->MIN_NUMPART_IN_FINDPROGENITOR_HALO);
     id[nt++] = INT64;
-    assert (nt < maxtags);
+    assert(nt < maxtags);
 
     my_snprintf(tag[nt], MAXLEN, "MIN_FCOMMON_SWITCHFOF_THRESH");
     addr[nt] = &(params->MIN_FCOMMON_SWITCHFOF_THRESH);
     id[nt++] = DOUBLE;
-    assert (nt < maxtags);
+    assert(nt < maxtags);
 
     my_snprintf(tag[nt], MAXLEN, "MIN_NUMPART_IN_SWITCHFOF_HALO");
     addr[nt] = &(params->MIN_NUMPART_IN_SWITCHFOF_HALO);
     id[nt++] = INT64;
-    assert (nt < maxtags);
+    assert(nt < maxtags);
 
     *nt_out = nt;
 }
 
-
-
-void read_params(const char *fname, struct params_data *params, void special_params(struct params_data *params, const int maxtags, void **addr, int *id, char **tag, int *nt))
+void read_params(const char *fname, struct params_data *params,
+                 void special_params(struct params_data *params, const int maxtags, void **addr, int *id, char **tag,
+                                     int *nt))
 {
 
     FILE *fd = NULL;
@@ -181,7 +182,7 @@ void read_params(const char *fname, struct params_data *params, void special_par
     addr[nt] = params->OUTPUT_DIR;
     id[nt++] = STRING;
 
-    special_params(params, MAXTAGS, addr, id, (char **) &tag, &nt);
+    special_params(params, MAXTAGS, addr, id, (char **)&tag, &nt);
 
     fd = my_fopen(fname, "r");
     while (!feof(fd))
@@ -250,30 +251,35 @@ void read_params(const char *fname, struct params_data *params, void special_par
         exit(EXIT_FAILURE);
     }
 
-#define CHECK_VALID_ENUM_IN_PARAM_FILE(paramname, num_enum_types, enum_names, enum_values, string_value) { \
-        int found = 0;                                                  \
-        for(int ii=0;ii<num_enum_types;ii++) {                          \
-            if (strcasecmp(string_value, enum_names[ii]) == 0) {        \
-                params->paramname = enum_values[ii];                    \
-                found = 1;                                              \
-                break;                                                  \
-            }                                                           \
-        }                                                               \
-        if(found == 0) {                                                \
-            fprintf(stderr, #paramname " field contains unsupported value of '%s' is not supported\n", string_value); \
-            fprintf(stderr," Please choose one of the values -- \n");    \
-            for(int ii=0;ii<num_enum_types;ii++) {                          \
-                fprintf(stderr, #paramname " = '%s'\n", enum_names[ii]); \
-            }                                                            \
-            exit(EXIT_FAILURE);                                          \
-        }                                                                \
- }
+#define CHECK_VALID_ENUM_IN_PARAM_FILE(paramname, num_enum_types, enum_names, enum_values, string_value)               \
+    {                                                                                                                  \
+        int found = 0;                                                                                                 \
+        for (int ii = 0; ii < num_enum_types; ii++)                                                                    \
+        {                                                                                                              \
+            if (strcasecmp(string_value, enum_names[ii]) == 0)                                                         \
+            {                                                                                                          \
+                params->paramname = enum_values[ii];                                                                   \
+                found = 1;                                                                                             \
+                break;                                                                                                 \
+            }                                                                                                          \
+        }                                                                                                              \
+        if (found == 0)                                                                                                \
+        {                                                                                                              \
+            fprintf(stderr, #paramname " field contains unsupported value of '%s' is not supported\n", string_value);  \
+            fprintf(stderr, " Please choose one of the values -- \n");                                                 \
+            for (int ii = 0; ii < num_enum_types; ii++)                                                                \
+            {                                                                                                          \
+                fprintf(stderr, #paramname " = '%s'\n", enum_names[ii]);                                               \
+            }                                                                                                          \
+            exit(EXIT_FAILURE);                                                                                        \
+        }                                                                                                              \
+    }
 
-    CHECK_VALID_ENUM_IN_PARAM_FILE(GROUP_FORMAT, nvalid_group_format_names, GROUP_FORMAT_NAMES, GROUP_FORMAT_ENUMS, group_format_type);
+    CHECK_VALID_ENUM_IN_PARAM_FILE(GROUP_FORMAT, nvalid_group_format_names, GROUP_FORMAT_NAMES, GROUP_FORMAT_ENUMS,
+                                   group_format_type);
 
     sanity_check_params(params);
     fill_config_params(params);
-
 
 #undef DOUBLE
 #undef STRING

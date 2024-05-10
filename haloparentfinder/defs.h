@@ -67,8 +67,6 @@ enum valid_group_formats
     num_group_formats
 };
 
-
-
 struct params_data
 {
     int MIN_SNAPSHOT_NUM;
@@ -104,8 +102,6 @@ struct params_data
     int longids;
     int make_lean;
 };
-
-
 
 /* #ifdef SUSSING_TREES */
 extern float *REDSHIFT;

@@ -7,7 +7,8 @@
 int64 returnNhalo_hinge_ascii(const struct params_data *params, const int snapnum, const int fof_only)
 {
     char catalogue_fname[MAXLEN];
-    if(fof_only != 0) {
+    if (fof_only != 0)
+    {
         fprintf(stderr, "%s>: fof_only is not supported for 'HINGE-ASCII' format\n", __FUNCTION__);
         return -1;
     }
@@ -27,11 +28,11 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
     fcat = my_fopen(catalogue_fname, "rt");
     fpart = my_fopen(particles_fname, "rt");
 
-    while(1) {
+    while (1)
+    {
 
         break;
     }
-
 
     fclose(fcat);
     fclose(fpart);
