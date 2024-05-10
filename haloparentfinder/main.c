@@ -58,9 +58,10 @@ Reduces the clutter at the low mass parent matching.
 #include "findallparents.h"
 #include "findprogenitor.h"
 #include "hierarchy.h"
-// #include "io.h"
+#include "io.h"
 #include "loadgroups.h"
-#include "read_param.h" //for global variable extern definition + function calls
+#include "utils_read_params.h" //for global variable extern definition + function calls
+#include "read_param.h"
 #include "switchfof.h"
 #include "utils.h"
 
@@ -138,10 +139,6 @@ int main(int argc, char **argv)
     read_params(outfname, &PARAMS, haloparentfinder_fill_params);
     fprintf(stderr, "..done\n");
 
-    fprintf(stderr, "sanity checking param values ...");
-    sanity_check_params(&PARAMS);
-    fprintf(stderr, "..done\n");
-
     // Check if the snapshot is the last one - nothing to do then
     if (snapshot_number >= PARAMS.MAX_SNAPSHOT_NUM)
     {
@@ -151,9 +148,6 @@ int main(int argc, char **argv)
                 snapshot_number, PARAMS.MAX_SNAPSHOT_NUM);
         exit(EXIT_SUCCESS);
     }
-
-    // fill in the config parameters
-    fill_config_params(&PARAMS);
 
     NUM_SNAPSHOTS = PARAMS.MAX_SNAPSHOT_NUM + 1;
     REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);
