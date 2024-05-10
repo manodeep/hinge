@@ -138,9 +138,9 @@ extern "C"
 
 #define MAXTAGLEN 50
 
-extern const char GROUP_FORMAT_NAMES[][MAXTAGLEN];
-extern const enum valid_group_formats GROUP_FORMAT_ENUMS[];
-extern const int nvalid_group_format_names;
+    extern const char GROUP_FORMAT_NAMES[][MAXTAGLEN];
+    extern const enum valid_group_formats GROUP_FORMAT_ENUMS[];
+    extern const int nvalid_group_format_names;
 
 #define SQR_PERIODIC(dx) (periodic(dx) * periodic(dx))
 
