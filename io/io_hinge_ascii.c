@@ -1,6 +1,6 @@
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
 
 #include "io_hinge_ascii.h"
 #include "utils.h"
@@ -49,7 +49,6 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
     }
     fseek(fcat, offset, SEEK_SET);
 
-
     offset = 0;
     while (fgets(buf1, MAXBUFSIZE, fpart) != NULL)
     {
@@ -66,7 +65,8 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         // ## haloid  hosthaloid  nsub  mvir npart xc yc zc vxc vyc vzc
         int64 haloid, hosthaloid, nsub, npart;
         double mvir, xc, yc, zc, vxc, vyc, vzc;
-        if(sscanf(buf1, "%"RD_FMT " %"RD_FMT" %"RD_FMT" %lf %"RD_FMT " %lf %lf %lf %lf %lf %lf" , &haloid, &hosthaloid, &nsub, &mvir, &npart, &xc, &yc, &zc, &vxc, &vyc, &vzc) != 11)
+        if (sscanf(buf1, "%" RD_FMT " %" RD_FMT " %" RD_FMT " %lf %" RD_FMT " %lf %lf %lf %lf %lf %lf", &haloid,
+                   &hosthaloid, &nsub, &mvir, &npart, &xc, &yc, &zc, &vxc, &vyc, &vzc) != 11)
         {
             fprintf(stderr, "%s>: Error reading catalogue file %s\n", __FUNCTION__, catalogue_fname);
             exit(EXIT_FAILURE);
@@ -96,7 +96,7 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
 
         group[ihalo].x = my_malloc(sizeof(group->x[0]), npart);
         group[ihalo].y = my_malloc(sizeof(group->y[0]), npart);
-        group[ihalo].z = my_malloc(sizeof(group->z[0]),  npart);
+        group[ihalo].z = my_malloc(sizeof(group->z[0]), npart);
         group[ihalo].id = my_malloc(sizeof(group->id[0]), npart);
 
         for (int64 i = 0; i < npart; i++)
@@ -108,7 +108,8 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
                 fprintf(stderr, "%s>: Error reading particles file %s\n", __FUNCTION__, particles_fname);
                 exit(EXIT_FAILURE);
             }
-            if(sscanf(buf1, "%"RD_FMT" %"RD_FMT" %"RD_FMT" %d %f %f %f", &fofid, &part_haloid, &group[ihalo].id[i], &type, &group[ihalo].x[i], &group[ihalo].y[i], &group[ihalo].z[i]) != 7)
+            if (sscanf(buf1, "%" RD_FMT " %" RD_FMT " %" RD_FMT " %d %f %f %f", &fofid, &part_haloid,
+                       &group[ihalo].id[i], &type, &group[ihalo].x[i], &group[ihalo].y[i], &group[ihalo].z[i]) != 7)
             {
                 fprintf(stderr, "%s>: Error reading particle ids from file %s\n", __FUNCTION__, particles_fname);
                 exit(EXIT_FAILURE);
