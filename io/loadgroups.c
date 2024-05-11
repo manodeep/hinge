@@ -302,18 +302,18 @@ void remove_duplicate_particles(const int64 Ngroups, struct group_data *groups)
             /* So we have duplicate particles -> Need to remove this particles from at
              * least one halo */
             /* fprintf(stderr,"ipart = %"STR_FMT" nmatches = %"STR_FMT" this_id =
-             * %"STR_ID"\n",ipart,nmatches,this_partid); */
+             * %"STR_ID_FMT"\n",ipart,nmatches,this_partid); */
             for (int64 i = ipart; i <= (ipart + nmatches); i++)
             {
-                /* fprintf(stderr,"partids[%"STR_FMT"] = %"STR_ID" this_partid =
-                 * %"STR_ID"\n",i,partids[i],this_partid); */
+                /* fprintf(stderr,"partids[%"STR_FMT"] = %"STR_ID_FMT" this_partid =
+                 * %"STR_ID_FMT"\n",i,partids[i],this_partid); */
                 assert(partids[i] == this_partid && "Particle ids must be identical");
                 // Check that the same particle does not belong to two different
                 // subhalos at the same parentlevel MS 3rd Mar, 2015 - this condition
                 // does not hold. Two different subhalos may contain the same particle.
                 /* if(halolevel[i] == maxparentlevel) { */
                 /* 	if( !(haloindex_maxparentlevel == haloindex[i])) { */
-                /* 		fprintf(stderr,"ERROR: About to crash: partid = %"STR_ID"
+                /* 		fprintf(stderr,"ERROR: About to crash: partid = %"STR_ID_FMT"
                  * haloindex[%"STR_FMT"] = %"STR_FMT"  haloindex_maxparentlevel =
                  * %"STR_FMT"  halolevel[%"STR_FMT"] = %d maxparentlevel = %d\n", */
                 /* 						partids[i],

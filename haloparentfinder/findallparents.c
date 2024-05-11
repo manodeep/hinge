@@ -156,7 +156,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             {
                 /* fprintf(stderr,"There are duplicate particle ids - this code will not
                  * work \n"); */
-                /* fprintf(stderr,"duplicate id = %"STR_ID" in group = %"STR_FMT"
+                /* fprintf(stderr,"duplicate id = %"STR_ID_FMT" in group = %"STR_FMT"
                  * previously seen in group =%"STR_FMT"
                  * \n",nextgroup[i].id[j],i,NextAllRealGroupIds[nextgroup[i].id[j]]); */
                 flag++;

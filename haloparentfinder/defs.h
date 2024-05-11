@@ -29,19 +29,23 @@
 #ifdef BIGSIM
 #define int64 int64_t
 #define STR_FMT PRId64
+#define RD_FMT SCNd64
 #else
 #define int64 int
 #define STR_FMT "d"
+#define RD_FMT "d"
 #endif
 
 // Do not defined IDs to be unsigned. Code assigns -1 to ids to mark particles
 // for deletion later.
 #ifdef LONGIDS
 #define id64 int64_t
-#define STR_ID PRId64
+#define STR_ID_FMT PRId64
+#define RD_ID_FMT SCNd64
 #else
 #define id64 int
-#define STR_ID "d"
+#define STR_ID_FMT "d"
+#define RD_ID_FMT "d"
 #endif
 
 /* officially work with groups with larger N

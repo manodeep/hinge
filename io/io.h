@@ -16,12 +16,12 @@ extern "C"
         float xcen;
         float ycen;
         float zcen;
+        long haloID;
 #ifdef SUSSING_TREES
         float *ParticleEnergy;
         float *vx;
         float *vy;
         float *vz;
-        long haloID;
 #endif
 
         /*   float minpos[3]; */

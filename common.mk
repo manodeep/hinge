@@ -1,5 +1,5 @@
-#OPT   += -DBIGSIM        # particle load requires 64 bit int
-#OPT   += -DLONGIDS       # particle ids are written in 64 bit int
+OPT   += -DBIGSIM        # particle load requires 64 bit int
+OPT   += -DLONGIDS       # particle ids are written in 64 bit int
 OPT   += -DMAKE_LEAN
 
 #OPT += -DUSE_OMP
