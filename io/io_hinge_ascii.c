@@ -85,7 +85,17 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         group[ihalo].N = npart;
 
         group[ihalo].haloID = haloid;
+        int64 fof_hostnum = -1, fof_hostid = -1;
+        if(haloid == hosthaloid) {
+            fof_hostnum = ihalo;
+            fof_hostid = haloid;
+        }
         // group[ihalo].hosthaloid = hosthaloid;
+        group[ihalo].isFof = (haloid == hosthaloid) ? 1 : 0;
+        group[ihalo].FOFHalo = fof_hostnum;
+        group[ihalo].ContainerIndex = fof_hostnum;
+
+        group[ihalo].ParentLevel = (group[ihalo].isFof == 1) ? 1;-1;//subhalos don't have a parentlevel defined yet
 
         group[ihalo].xcen = xc;
         group[ihalo].ycen = yc;
@@ -98,6 +108,18 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         group[ihalo].y = my_malloc(sizeof(group->y[0]), npart);
         group[ihalo].z = my_malloc(sizeof(group->z[0]), npart);
         group[ihalo].id = my_malloc(sizeof(group->id[0]), npart);
+
+        assert(fof_hostnum != -1 && fof_hostid != -1 && "Both fofid and fofnum must be set before reading particles");
+
+        group[ihalo].N_per_wedge = 0;
+        /* initialise the parent finding variables*/
+        group[ihalo].ParentId = -1;
+        group[ihalo].NParents = 0;
+        group[ihalo].Switched = 0;
+        group[ihalo].ParentSnapshot = -1;
+        group[ihalo].Ncommon = 0;
+        group[ihalo].Rank = 0.0;
+        group[ihalo].NpartinParent = 0;
 
         for (int64 i = 0; i < npart; i++)
         {
@@ -114,6 +136,8 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
                 fprintf(stderr, "%s>: Error reading particle ids from file %s\n", __FUNCTION__, particles_fname);
                 exit(EXIT_FAILURE);
             }
+            assert(fofid == fof_hostid && "All particles must belong to the same FOF halo");
+            assert(part_haloid == haloid && "All particles must belong to the same halo");
         }
 
         ihalo++;
