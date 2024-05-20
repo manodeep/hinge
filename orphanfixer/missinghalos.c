@@ -428,7 +428,7 @@ void output_missing_halo_centres(struct node_data *tree[], int64 *Ngroups)
 
                                 } // so I really found that particle TrackIds[location] ==
                                   // tmp_id
-                            } // location != -1
+                            }     // location != -1
                             else
                                 nmisses++;
 
