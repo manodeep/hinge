@@ -1036,8 +1036,8 @@ void output_plot_data(struct node_data *tree[], int64 *Ngroups)
                 fclose(fp);
             } // for loop over target halo mass
         }     // This redshift is actually a valid one and covered in the redshift-range
-          // of the simulation
-    } // for loop over redshift
+              // of the simulation
+    }         // for loop over redshift
 }
 
 void print_header_for_fma(FILE *fp)
