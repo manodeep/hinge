@@ -1,7 +1,7 @@
 #include <strings.h>
 
-#include "utils_read_params.h"
 #include "utils.h"
+#include "utils_read_params.h"
 
 void sanity_check_params(struct params_data *params);
 void fill_config_params(struct params_data *params);
