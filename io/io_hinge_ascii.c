@@ -7,6 +7,7 @@
 
 #include "io_hinge_ascii.h"
 #include "utils.h"
+#include "progressbar.h"
 
 #ifndef LONGIDS
 #error "LONGIDS must be defined"
