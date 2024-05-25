@@ -3,8 +3,8 @@
 #include "utils.h"
 #include "utils_read_params.h"
 
-void haloparentfinder_fill_params(struct params_data *params, const int maxtags, void **addr, int *id, char (*tag)[MAXLEN],
-                                  int *nt_out)
+void haloparentfinder_fill_params(struct params_data *params, const int maxtags, void **addr, int *id,
+                                  char (*tag)[MAXLEN], int *nt_out)
 {
     int nt = *nt_out;
     my_snprintf(tag[nt], MAXLEN, "MAX_INCR");

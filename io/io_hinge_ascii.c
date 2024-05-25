@@ -5,14 +5,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-
 #include "io_hinge_ascii.h"
 #include "utils.h"
 
 #ifndef LONGIDS
 #error "LONGIDS must be defined"
 #endif
-
 
 static int64 get_num_fofs(const char *catalogue_fname, char comment);
 
@@ -21,17 +19,21 @@ int64 get_num_fofs(const char *catalogue_fname, char comment)
     FILE *fp = my_fopen(catalogue_fname, "rt");
     char buf[BUFSIZ];
     int64 num_fofs = 0;
-    while(fgets(buf, BUFSIZ, fp) != NULL) {
-        if (buf[0] == comment) continue;
+    while (fgets(buf, BUFSIZ, fp) != NULL)
+    {
+        if (buf[0] == comment)
+            continue;
         int64_t haloid, hostid;
-        int nread = sscanf(buf, "%"SCNd64 "%"SCNd64, &haloid, &hostid);
-        if(nread != 2) {
-          fprintf(stderr,"Error: Could not read two ids (haloid, hosthaloid) from line = '%s'\n", buf);
-          exit(EXIT_FAILURE);
+        int nread = sscanf(buf, "%" SCNd64 "%" SCNd64, &haloid, &hostid);
+        if (nread != 2)
+        {
+            fprintf(stderr, "Error: Could not read two ids (haloid, hosthaloid) from line = '%s'\n", buf);
+            exit(EXIT_FAILURE);
         }
-        if(haloid == hostid) num_fofs++;
+        if (haloid == hostid)
+            num_fofs++;
     }
-    
+
     fclose(fp);
     return num_fofs;
 }
@@ -45,10 +47,11 @@ int64 returnNhalo_hinge_ascii(const struct params_data *params, const int snapnu
     if (fof_only == 0)
     {
         return getnumlines(catalogue_fname, '#');
-    } else {
+    }
+    else
+    {
         return get_num_fofs(catalogue_fname, '#');
     }
-
 }
 
 void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params, struct group_data *group)

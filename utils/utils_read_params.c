@@ -101,8 +101,8 @@ void output_params(const char *fname, struct params_data *params)
 /* The following function is shamelessly taken from Gadget2
     Adapted by MS 10th 2024: to add a function pointer to allow for customising parameter names */
 void read_params(const char *fname, struct params_data *params,
-                 void special_params(struct params_data *params, const int maxtags, void **addr, int *id, char (*tag)[MAXLEN],
-                                     int *nt))
+                 void special_params(struct params_data *params, const int maxtags, void **addr, int *id,
+                                     char (*tag)[MAXLEN], int *nt))
 {
 
     FILE *fd = NULL;
@@ -199,7 +199,7 @@ void read_params(const char *fname, struct params_data *params,
         }
     }
     fclose(fd);
-    
+
     if (errorFlag != 2)
     {
         for (i = 0; i < nt; i++)
