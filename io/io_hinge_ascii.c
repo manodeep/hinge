@@ -96,7 +96,7 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         group[ihalo].FOFHalo = fof_hostnum;
         group[ihalo].ContainerIndex = fof_hostnum;
 
-        group[ihalo].ParentLevel = (group[ihalo].isFof == 1) ? 1:-1; // subhalos don't have a parentlevel defined yet
+        group[ihalo].ParentLevel = (group[ihalo].isFof == 1) ? 1 : -1; // subhalos don't have a parentlevel defined yet
 
         group[ihalo].xcen = xc;
         group[ihalo].ycen = yc;
