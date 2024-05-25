@@ -69,6 +69,7 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
     my_snprintf(catalogue_fname, MAXLEN, "%s/%s_halos_z%0.3f.txt", params->GROUP_DIR, params->GROUP_BASE,
                 REDSHIFT[snapnum]);
 
+    const int64 numgroups = returnNhalo_hinge_ascii(params, snapnum, 0);
     fcat = my_fopen(catalogue_fname, "rt");
     fpart = my_fopen(particles_fname, "rt");
 
@@ -95,6 +96,8 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
     }
     fseek(fpart, offset, SEEK_SET);
 
+    int interrupted = 0;
+    init_my_progressbar(numgroups, &interrupted);
     while (fgets(buf1, MAXBUFSIZE, fcat) != NULL)
     {
         // ## haloid  hosthaloid  nsub  mvir npart xc yc zc vxc vyc vzc
@@ -106,7 +109,7 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
             fprintf(stderr, "%s>: Error reading catalogue file %s\n", __FUNCTION__, catalogue_fname);
             exit(EXIT_FAILURE);
         }
-
+        my_progressbar(ihalo, &interrupted);
         // group[i].N = SubLen[i];
         // group[i].nodeloc = i;
         // group[i].snapshot = num;
@@ -178,7 +181,7 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
 
         ihalo++;
     }
-
+    finish_myprogressbar(&interrupted);
     fclose(fcat);
     fclose(fpart);
 }
