@@ -1,3 +1,5 @@
+#include <strings.h>
+
 #include "utils_read_params.h"
 #include "utils.h"
 
