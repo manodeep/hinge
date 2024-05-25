@@ -9,5 +9,5 @@
 
 extern void read_params(const char *fname, struct params_data *params,
                         void special_params(struct params_data *params, const int maxtags, void **addr, int *id,
-                                            char **tag, int *nt));
+                                            char (*tag)[MAXLEN], int *nt));
 extern void output_params(const char *fname, struct params_data *params);

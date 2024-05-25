@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+
 #include "io_hinge_ascii.h"
 #include "utils.h"
 
@@ -12,17 +13,42 @@
 #error "LONGIDS must be defined"
 #endif
 
+
+static int64 get_num_fofs(const char *catalogue_fname, char comment);
+
+int64 get_num_fofs(const char *catalogue_fname, char comment)
+{
+    FILE *fp = my_fopen(catalogue_fname, "rt");
+    char buf[BUFSIZ];
+    int64 num_fofs = 0;
+    while(fgets(buf, BUFSIZ, fp) != NULL) {
+        if (buf[0] == comment) continue;
+        int64_t haloid, hostid;
+        int nread = sscanf(buf, "%"SCNd64 "%"SCNd64, &haloid, &hostid);
+        if(nread != 2) {
+          fprintf(stderr,"Error: Could not read two ids (haloid, hosthaloid) from line = '%s'\n", buf);
+          exit(EXIT_FAILURE);
+        }
+        if(haloid == hostid) num_fofs++;
+    }
+    
+    fclose(fp);
+    return num_fofs;
+}
+
 int64 returnNhalo_hinge_ascii(const struct params_data *params, const int snapnum, const int fof_only)
 {
     char catalogue_fname[MAXLEN];
-    if (fof_only != 0)
-    {
-        fprintf(stderr, "%s>: fof_only is not supported for 'HINGE-ASCII' format\n", __FUNCTION__);
-        return -1;
-    }
     my_snprintf(catalogue_fname, MAXLEN, "%s/%s_halos_z%0.3f.txt", params->GROUP_DIR, params->GROUP_BASE,
                 REDSHIFT[snapnum]);
-    return getnumlines(catalogue_fname, '#');
+
+    if (fof_only == 0)
+    {
+        return getnumlines(catalogue_fname, '#');
+    } else {
+        return get_num_fofs(catalogue_fname, '#');
+    }
+
 }
 
 void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params, struct group_data *group)
