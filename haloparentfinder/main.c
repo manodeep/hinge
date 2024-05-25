@@ -571,6 +571,7 @@ int main(int argc, char **argv)
 void print_makefile_options(void)
 {
 
+#if 0
 #ifdef FOF_ONLY
     fprintf(stderr, "The code is going to read in FOF groups only\n");
 #endif
@@ -587,6 +588,7 @@ void print_makefile_options(void)
 #ifdef ASCII_DATA
     fprintf(stderr, "The code will read in ASCII input data (only valid with "
                     "-DSUSSING_TREES; ignored otherwise) \n");
+#endif
 #endif
 
 #ifdef GET_GROUPVEL
