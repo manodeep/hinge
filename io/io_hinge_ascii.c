@@ -73,7 +73,7 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
     const int64 numgroups = returnNhalo_hinge_ascii(params, snapnum, 0);
     fcat = my_fopen(catalogue_fname, "rt");
     fpart = my_fopen(particles_fname, "rt");
-    
+
     int64 ihalo = 0;
     off_t offset = 0;
     while (fgets(buf1, MAXBUFSIZE, fcat) != NULL)
@@ -82,10 +82,12 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         {
             offset = ftell(fcat);
             continue;
-        } else break;
+        }
+        else
+            break;
     }
     fseek(fcat, offset, SEEK_SET);
-    
+
     offset = 0;
     while (fgets(buf1, MAXBUFSIZE, fpart) != NULL)
     {
@@ -93,10 +95,12 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         {
             offset = ftell(fpart);
             continue;
-        } else break;
+        }
+        else
+            break;
     }
     fseek(fpart, offset, SEEK_SET);
-    
+
     int interrupted = 0;
     init_my_progressbar(numgroups, &interrupted);
     while (fgets(buf1, MAXBUFSIZE, fcat) != NULL)
