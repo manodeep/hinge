@@ -20,7 +20,7 @@ int64 returnNhalo_hinge_ascii(const struct params_data *params, const int snapnu
         fprintf(stderr, "%s>: fof_only is not supported for 'HINGE-ASCII' format\n", __FUNCTION__);
         return -1;
     }
-    my_snprintf(catalogue_fname, MAXLEN, "%s/%s_%03d_halocat.txt", params->GROUP_DIR, params->GROUP_BASE, snapnum);
+    my_snprintf(catalogue_fname, MAXLEN, "%s/hinge_halos_z%0.3f.txt", params->GROUP_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
     return getnumlines(catalogue_fname, '#');
 }
 
@@ -34,8 +34,8 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
     char buf1[MAXBUFSIZE];
     FILE *fcat = NULL, *fpart = NULL;
 
-    my_snprintf(particles_fname, MAXLEN, "%s/%s_%03d_particles.txt", params->GROUP_DIR, params->GROUP_BASE, snapnum);
-    my_snprintf(catalogue_fname, MAXLEN, "%s/%s_%03d_halocat.txt", params->GROUP_DIR, params->GROUP_BASE, snapnum);
+    my_snprintf(particles_fname, MAXLEN, "%s/hinge_particles_z%0.3f.txt", params->GROUP_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
+    my_snprintf(catalogue_fname, MAXLEN, "%s/hinge_halos_z%0.3f.txt", params->GROUP_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
 
     fcat = my_fopen(catalogue_fname, "rt");
     fpart = my_fopen(particles_fname, "rt");
