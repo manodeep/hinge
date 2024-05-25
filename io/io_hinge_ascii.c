@@ -1,7 +1,9 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define __USE_LARGEFILE64
 #include <sys/types.h>
+#include <unistd.h>
 
 #include "io_hinge_ascii.h"
 #include "utils.h"
