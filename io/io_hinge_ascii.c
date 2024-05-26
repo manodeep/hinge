@@ -6,10 +6,9 @@
 #include <unistd.h>
 
 #include "io_hinge_ascii.h"
+#include "macros.h"
 #include "progressbar.h"
 #include "utils.h"
-#include "macros.h"
-
 
 static int64 get_num_fofs(const char *catalogue_fname, char comment);
 
@@ -40,8 +39,8 @@ int64 get_num_fofs(const char *catalogue_fname, char comment)
 int64 returnNhalo_hinge_ascii(const struct params_data *params, const int snapnum, const int fof_only)
 {
 #if !defined(LONGIDS) || !defined(BIGSIM)
-    fprintf(stderr,"Both 'LONGIDS and 'BIGSIM' need to be defined loading the HINGE-ascii format\n");
-    fprintf(stderr,"Please enable those two options in the `common.mk` file and then recompile + re-run\n");
+    fprintf(stderr, "Both 'LONGIDS and 'BIGSIM' need to be defined loading the HINGE-ascii format\n");
+    fprintf(stderr, "Please enable those two options in the `common.mk` file and then recompile + re-run\n");
     exit(EXIT_FAILURE);
 #endif
 
@@ -157,8 +156,11 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         group[ihalo].z = my_malloc(sizeof(group->z[0]), npart);
         group[ihalo].id = my_malloc(sizeof(group->id[0]), npart);
 
-        XASSERT(fof_hostnum != -1 && fof_hostid != -1, "Error: fof_hostnum = %"STR_FMT" and fof_hostid = %"STR_FMT" must both be set \n", fof_hostnum, fof_hostid);
-        // assert(fof_hostnum != -1 && fof_hostid != -1 && "Both fofid and fofnum must be set before reading particles");
+        XASSERT(fof_hostnum != -1 && fof_hostid != -1,
+                "Error: fof_hostnum = %" STR_FMT " and fof_hostid = %" STR_FMT " must both be set \n", fof_hostnum,
+                fof_hostid);
+        // assert(fof_hostnum != -1 && fof_hostid != -1 && "Both fofid and fofnum must be set before reading
+        // particles");
 
         group[ihalo].N_per_wedge = 0;
         /* initialise the parent finding variables*/
