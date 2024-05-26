@@ -106,6 +106,7 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
 
     int interrupted = 0;
     init_my_progressbar(numgroups, &interrupted);
+    int64 fof_hostnum = -1, fof_hostid = -1;
     while (fgets(buf1, MAXBUFSIZE, fcat) != NULL)
     {
         // ## haloid  hosthaloid  nsub  mvir npart xc yc zc vxc vyc vzc
@@ -131,7 +132,6 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         group[ihalo].N = npart;
 
         group[ihalo].haloID = haloid;
-        int64 fof_hostnum = -1, fof_hostid = -1;
         if (haloid == hosthaloid)
         {
             fof_hostnum = ihalo;
@@ -160,9 +160,7 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
                 "Error: ihalo %" STR_FMT " fof_hostnum = %" STR_FMT " and fof_hostid = %" STR_FMT
                 " must both be set (haloid = %" STR_FMT ") \n",
                 ihalo, fof_hostnum, fof_hostid, haloid);
-        // assert(fof_hostnum != -1 && fof_hostid != -1 && "Both fofid and fofnum must be set before reading
-        // particles");
-
+       
         group[ihalo].N_per_wedge = 0;
         /* initialise the parent finding variables*/
         group[ihalo].ParentId = -1;
