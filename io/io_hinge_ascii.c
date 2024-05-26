@@ -156,8 +156,12 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         group[ihalo].z = my_malloc(sizeof(group->z[0]), npart);
         group[ihalo].id = my_malloc(sizeof(group->id[0]), npart);
 
-        XASSERT(fof_hostnum != -1 && fof_hostid != -1, "Error: ihalo %"STR_FMT" fof_hostnum = %"STR_FMT" and fof_hostid = %"STR_FMT" must both be set (haloid = %"STR_FMT") \n", ihalo, fof_hostnum, fof_hostid, haloid);
-        // assert(fof_hostnum != -1 && fof_hostid != -1 && "Both fofid and fofnum must be set before reading particles");
+        XASSERT(fof_hostnum != -1 && fof_hostid != -1,
+                "Error: ihalo %" STR_FMT " fof_hostnum = %" STR_FMT " and fof_hostid = %" STR_FMT
+                " must both be set (haloid = %" STR_FMT ") \n",
+                ihalo, fof_hostnum, fof_hostid, haloid);
+        // assert(fof_hostnum != -1 && fof_hostid != -1 && "Both fofid and fofnum must be set before reading
+        // particles");
 
         group[ihalo].N_per_wedge = 0;
         /* initialise the parent finding variables*/
