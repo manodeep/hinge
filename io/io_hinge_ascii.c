@@ -77,7 +77,6 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
     fcat = my_fopen(catalogue_fname, "rt");
     fpart = my_fopen(particles_fname, "rt");
 
-    int64 ihalo = 0;
     off_t offset = 0;
     while (fgets(buf1, MAXBUFSIZE, fcat) != NULL)
     {
@@ -106,18 +105,16 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
 
     int interrupted = 0;
     init_my_progressbar(numgroups, &interrupted);
-    int64 fof_hostnum = -1, fof_hostid = -1;
+    int64_t fof_hostnum = -1, fof_hostid = -1;
+    int64 ihalo = 0;
     while (fgets(buf1, MAXBUFSIZE, fcat) != NULL)
     {
         // ## haloid  hosthaloid  nsub  mvir npart xc yc zc vxc vyc vzc
-        int64 haloid, hosthaloid, nsub, npart;
+        int64_t haloid, hosthaloid, nsub, npart;
         double mvir, xc, yc, zc, vxc, vyc, vzc;
-        if (sscanf(buf1, "%" RD_FMT " %" RD_FMT " %" RD_FMT " %lf %" RD_FMT " %lf %lf %lf %lf %lf %lf", &haloid,
-                   &hosthaloid, &nsub, &mvir, &npart, &xc, &yc, &zc, &vxc, &vyc, &vzc) != 11)
-        {
-            fprintf(stderr, "%s>: Error reading catalogue file %s\n", __FUNCTION__, catalogue_fname);
-            exit(EXIT_FAILURE);
-        }
+        const int nread = sscanf(buf1, "%" RD_FMT " %" RD_FMT " %" RD_FMT " %lf %" RD_FMT " %lf %lf %lf %lf %lf %lf",
+                           &haloid, &hosthaloid, &nsub, &mvir, &npart, &xc, &yc, &zc, &vxc, &vyc, &vzc);
+        XASSERT(nread == 11, "Error: Could only read %d elements instead of the expected 11 (file = %s)\n", nread, catalogue_fname);
         my_progressbar(ihalo, &interrupted);
         // group[i].N = SubLen[i];
         // group[i].nodeloc = i;
@@ -157,8 +154,8 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         group[ihalo].id = my_malloc(sizeof(group->id[0]), npart);
 
         XASSERT(fof_hostnum != -1 && fof_hostid != -1,
-                "Error: ihalo %" STR_FMT " fof_hostnum = %" STR_FMT " and fof_hostid = %" STR_FMT
-                " must both be set (haloid = %" STR_FMT ") \n",
+                "Error: ihalo %" PRId64 " fof_hostnum = %" PRId64 " and fof_hostid = %" PRId64
+                " must both be set (haloid = %" PRId64 ") \n",
                 ihalo, fof_hostnum, fof_hostid, haloid);
        
         group[ihalo].N_per_wedge = 0;
@@ -180,14 +177,14 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
                 fprintf(stderr, "%s>: Error reading particles file %s\n", __FUNCTION__, particles_fname);
                 exit(EXIT_FAILURE);
             }
-            if (sscanf(buf1, "%" RD_FMT " %" RD_FMT " %" RD_FMT " %d %f %f %f", &fofid, &part_haloid,
+            if (sscanf(buf1, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %d %f %f %f", &fofid, &part_haloid,
                        &group[ihalo].id[i], &type, &group[ihalo].x[i], &group[ihalo].y[i], &group[ihalo].z[i]) != 7)
             {
                 fprintf(stderr, "%s>: Error reading particle ids from file %s\n", __FUNCTION__, particles_fname);
                 exit(EXIT_FAILURE);
             }
-            assert(fofid == fof_hostid && "All particles must belong to the same FOF halo");
-            assert(part_haloid == haloid && "All particles must belong to the same halo");
+            XASSERT(part_haloid == haloid, "All particles must belong to the same halo. ihalo = %"PRId64" part_haloid (particles file) = %"PRId64" haloid (halo catalog) = %"PRId64"\n", ihalo, part_haloid, haloid);
+            XASSERT(fofid == fof_hostid, "All particles must belong to the same FOF halo. ihalo = %"PRId64" (haloid = %"PRId64") fofid (particles file) = %"PRId64" fof_hostid (halo catalog) = %"PRId64"\n", ihalo, haloid, fofid, fof_hostid);
         }
 
         ihalo++;

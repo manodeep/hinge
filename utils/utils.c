@@ -139,14 +139,14 @@ void *my_malloc(size_t size, int64 N)
 {
     void *x = NULL;
     x = malloc(N * size);
-    unsigned long megabytes = (unsigned long)N * size / (1024.0 * 1024.0);
+    /* unsigned long megabytes = (unsigned long)N * size / (1024.0 * 1024.0); */
     if (x == NULL)
     {
         fprintf(stderr, "malloc for %" STR_FMT "  elements with %zu size failed..aborting\n", N, size);
         exit(EXIT_FAILURE);
     }
-    else if (megabytes > 100)
-        fprintf(stderr, "\n Successfully allocated  %" STR_FMT " elements with total size %lu (MB) \n", N, megabytes);
+    /* else if (megabytes > 100) */
+    /*     fprintf(stderr, "\n Successfully allocated  %" STR_FMT " elements with total size %lu (MB) \n", N, megabytes); */
 
     return x;
 }
@@ -168,7 +168,7 @@ void *my_calloc(size_t size, int64 N)
 void *my_realloc(void *x, size_t size, int64_t N, const char *varname)
 {
     void *tmp = realloc(x, N * size);
-    size_t gigabytes = N * size / (1024.0 * 1024.0 * 1024.0);
+    /* size_t gigabytes = N * size / (1024.0 * 1024.0 * 1024.0); */
 
     if (tmp == NULL)
     {
@@ -178,13 +178,13 @@ void *my_realloc(void *x, size_t size, int64_t N, const char *varname)
         my_free((void **)&x);
         exit(EXIT_FAILURE);
     }
-    else
-    {
-        if (gigabytes > 1)
-            fprintf(stderr,
-                    "\n Successfully re-allocated  %" PRId64 " elements with total size %zu (GB) for variable `%s' \n",
-                    N, gigabytes, varname);
-    }
+    /* else */
+    /* { */
+    /*     if (gigabytes > 1) */
+    /*         fprintf(stderr, */
+    /*                 "\n Successfully re-allocated  %" PRId64 " elements with total size %zu (GB) for variable `%s' \n", */
+    /*                 N, gigabytes, varname); */
+    /* } */
     return tmp;
 }
 
