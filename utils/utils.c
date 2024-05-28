@@ -146,7 +146,8 @@ void *my_malloc(size_t size, int64 N)
         exit(EXIT_FAILURE);
     }
     /* else if (megabytes > 100) */
-    /*     fprintf(stderr, "\n Successfully allocated  %" STR_FMT " elements with total size %lu (MB) \n", N, megabytes); */
+    /*     fprintf(stderr, "\n Successfully allocated  %" STR_FMT " elements with total size %lu (MB) \n", N,
+     * megabytes); */
 
     return x;
 }
@@ -182,7 +183,8 @@ void *my_realloc(void *x, size_t size, int64_t N, const char *varname)
     /* { */
     /*     if (gigabytes > 1) */
     /*         fprintf(stderr, */
-    /*                 "\n Successfully re-allocated  %" PRId64 " elements with total size %zu (GB) for variable `%s' \n", */
+    /*                 "\n Successfully re-allocated  %" PRId64 " elements with total size %zu (GB) for variable `%s'
+     * \n", */
     /*                 N, gigabytes, varname); */
     /* } */
     return tmp;

@@ -113,8 +113,9 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
         int64_t haloid, hosthaloid, nsub, npart;
         double mvir, xc, yc, zc, vxc, vyc, vzc;
         const int nread = sscanf(buf1, "%" RD_FMT " %" RD_FMT " %" RD_FMT " %lf %" RD_FMT " %lf %lf %lf %lf %lf %lf",
-                           &haloid, &hosthaloid, &nsub, &mvir, &npart, &xc, &yc, &zc, &vxc, &vyc, &vzc);
-        XASSERT(nread == 11, "Error: Could only read %d elements instead of the expected 11 (file = %s)\n", nread, catalogue_fname);
+                                 &haloid, &hosthaloid, &nsub, &mvir, &npart, &xc, &yc, &zc, &vxc, &vyc, &vzc);
+        XASSERT(nread == 11, "Error: Could only read %d elements instead of the expected 11 (file = %s)\n", nread,
+                catalogue_fname);
         my_progressbar(ihalo, &interrupted);
         // group[i].N = SubLen[i];
         // group[i].nodeloc = i;
@@ -157,7 +158,7 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
                 "Error: ihalo %" PRId64 " fof_hostnum = %" PRId64 " and fof_hostid = %" PRId64
                 " must both be set (haloid = %" PRId64 ") \n",
                 ihalo, fof_hostnum, fof_hostid, haloid);
-       
+
         group[ihalo].N_per_wedge = 0;
         /* initialise the parent finding variables*/
         group[ihalo].ParentId = -1;
@@ -183,8 +184,14 @@ void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params,
                 fprintf(stderr, "%s>: Error reading particle ids from file %s\n", __FUNCTION__, particles_fname);
                 exit(EXIT_FAILURE);
             }
-            XASSERT(part_haloid == haloid, "All particles must belong to the same halo. ihalo = %"PRId64" part_haloid (particles file) = %"PRId64" haloid (halo catalog) = %"PRId64"\n", ihalo, part_haloid, haloid);
-            XASSERT(fofid == fof_hostid, "All particles must belong to the same FOF halo. ihalo = %"PRId64" (haloid = %"PRId64") fofid (particles file) = %"PRId64" fof_hostid (halo catalog) = %"PRId64"\n", ihalo, haloid, fofid, fof_hostid);
+            XASSERT(part_haloid == haloid,
+                    "All particles must belong to the same halo. ihalo = %" PRId64
+                    " part_haloid (particles file) = %" PRId64 " haloid (halo catalog) = %" PRId64 "\n",
+                    ihalo, part_haloid, haloid);
+            XASSERT(fofid == fof_hostid,
+                    "All particles must belong to the same FOF halo. ihalo = %" PRId64 " (haloid = %" PRId64
+                    ") fofid (particles file) = %" PRId64 " fof_hostid (halo catalog) = %" PRId64 "\n",
+                    ihalo, haloid, fofid, fof_hostid);
         }
 
         ihalo++;
