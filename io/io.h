@@ -17,6 +17,7 @@ extern "C"
         float ycen;
         float zcen;
         long haloID;
+        long fofID;
 #ifdef SUSSING_TREES
         float *ParticleEnergy;
         float *vx;

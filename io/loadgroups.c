@@ -11,6 +11,7 @@
 // #include "read_param.h"
 
 #include "io_hinge_ascii.h"
+#include "io_hinge_binary.h"
 #include "io_subfind_binary.h"
 
 #define FOFMINLEN (32)
@@ -399,6 +400,9 @@ int64 returnNhalo(const struct params_data *params, const int snapnum, const int
         return returnNhalo_subfind_binary(params, snapnum, fof_only);
     case hinge_ascii:
         return returnNhalo_hinge_ascii(params, snapnum, fof_only);
+    case hinge_binary:
+        return returnNhalo_hinge_binary(params, snapnum, fof_only);
+
     default:
         fprintf(stderr, "%s>: Unknown group format = %d\n", __FUNCTION__, (int)params->GROUP_FORMAT);
         return -1;
@@ -421,6 +425,10 @@ void loadgroups(const struct params_data *params, const int snapnum, struct grou
         loadgroups_subfind_binary(snapnum, params, group);
         break;
     case hinge_ascii:
+        loadgroups_hinge_ascii(snapnum, params, group);
+        break;
+
+    case hinge_binary:
         loadgroups_hinge_ascii(snapnum, params, group);
         break;
 

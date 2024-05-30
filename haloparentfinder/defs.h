@@ -68,6 +68,7 @@ enum valid_group_formats
        how to read/cast the bytes from disk) */
     subfind_binary = 0,
     hinge_ascii = 1,
+    hinge_binary = 2,
     num_group_formats
 };
 
