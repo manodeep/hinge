@@ -113,7 +113,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     int64 *NextAllRealGroupLocs = NULL;
     double *NextAllRanks = NULL;
     int64 *NextAllCommon = NULL;
-    int64 NextMaxPartId = 0;
+    int64 NextMaxPartId = -1;
     int64 FOF_Parent;
     char buf[MAXLEN];
 
@@ -130,22 +130,22 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             }
         }
     }
-
+    fprintf(stderr,"NextMaxPartId = %"STR_ID_FMT"\n",NextMaxPartId);
     NextMaxPartId++; /* should be able to index with NextMaxPartId -> n+1 elements
                       */
     NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
     NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     NextAllRealGroupIds = my_malloc(sizeof(*NextAllRealGroupIds), NextMaxPartId);
     NextAllRealGroupLocs = my_malloc(sizeof(*NextAllRealGroupLocs), NextMaxPartId);
-    NextAllRanks = my_malloc(sizeof(*NextAllRanks), NextNsub);
-    NextAllCommon = my_malloc(sizeof(*NextAllCommon), NextNsub);
+    NextAllRanks = my_calloc(sizeof(*NextAllRanks), NextNsub);
+    NextAllCommon = my_calloc(sizeof(*NextAllCommon), NextNsub);
 
     FOF_Parent = 0;
     int64 flag = 0;
     for (i = 0; i < NextNsub; i++)
     {
-        NextAllRanks[i] = 0.0;
-        NextAllCommon[i] = 0;
+        // NextAllRanks[i] = 0.0;
+        // NextAllCommon[i] = 0;
         if (nextgroup[i].isFof == 1)
             FOF_Parent = i;
 
