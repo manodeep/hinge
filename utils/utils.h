@@ -46,6 +46,7 @@ void free_group_positions(struct group_data *g, int64 N);
 struct group_data *allocate_group(int64 N);
 
 // utils related to the particle matching
+int64 remove_duplicates(struct group_data *g, int64 N);
 void init_all_ranks(double *rank, int64 *ncommon, int64 N);
 int64 find_max_rank(double *NextAllRanks, int64 NextNsub);
 void reset_ncommon(int64 *Ncommon, int64 N);

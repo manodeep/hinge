@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "defs.h"
 #include "read_param.h"
+#include "sglib.h"
 
 // A real wrapper to snprintf that will exit() if the allocated buffer length
 // was not sufficient. Usage is the same as snprintf
@@ -470,6 +471,100 @@ int64 get_ncommon(struct group_data *prev, struct group_data *next)
 
     return ncommon;
 }
+
+int64 remove_duplicates(struct group_data *g, int64 N)
+{
+    int64_t totnpart = 0;
+    for(int64 i=0;i<N;i++){
+        totnpart += g[i].N;
+    }
+    int64_t *all_ids = my_malloc(sizeof(*all_ids), totnpart);
+    int64_t *groupnum = my_malloc(sizeof(*groupnum), totnpart);
+    int64_t *partindex = my_malloc(sizeof(*partindex), totnpart);
+    int64_t *num_removed_per_group = my_calloc(sizeof(*num_removed_per_group), N);
+    int64 nremoved = 0;
+    int64_t offset = 0;
+    for(int64 i=0;i<N;i++){
+        for(int64 j=0;j<g[i].N;j++){
+            all_ids[offset] = g[i].id[j];
+            groupnum[offset] = i;
+            partindex[offset] = j;
+            offset++;
+        }
+    }
+
+    //Now sort the particle ids such that the duplicates appear together
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)                  \
+    {                                                               \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, all_ids, i, j);        \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, groupnum, i, j);      \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partindex, i, j);     \
+    }
+
+        SGLIB_ARRAY_HEAP_SORT(id64, all_ids, totnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
+#undef MULTIPLE_ARRAY_EXCHANGER
+
+    for(int64_t i=0;i<totnpart-1;i++){
+        if(all_ids[i] == all_ids[i+1]){
+            int64_t group1 = groupnum[i];
+            int64_t group2 = groupnum[i+1];
+            int64_t part1 = partindex[i];
+            int64_t part2 = partindex[i+1];
+            if(g[group1].fofID == g[group2].fofID){
+                fprintf(stderr, "ERROR: Found a duplicate particle in two halos that have the same fofID\n");
+                fprintf(stderr, "fofid: %lld, Group1: %lld, Group2: %lld, Part1: %lld, Part2: %lld\n",
+                    (long long)g[group1].fofID, (long long) group1, (long long)group2, (long long)part1, (long long)part2);
+                exit(EXIT_FAILURE);
+            }
+
+            const double dx1 = periodic(g[group1].x[part1] - g[group1].xcen);
+            const double dy1 = periodic(g[group1].y[part1] - g[group1].ycen);
+            const double dz1 = periodic(g[group1].z[part1] - g[group1].zcen);
+            const double dist_from_cen1 = dx1*dx1 + dy1*dy1 + dz1*dz1;
+
+            const double dx2 = periodic(g[group2].x[part2] - g[group2].xcen);
+            const double dy2 = periodic(g[group2].y[part2] - g[group2].ycen);
+            const double dz2 = periodic(g[group2].z[part2] - g[group2].zcen);
+            const double dist_from_cen2 = dx2*dx2 + dy2*dy2 + dz2*dz2;
+
+            //Keep the particle in the halo with the smaller distance from the center
+            int64 group_to_remove = dist_from_cen1 < dist_from_cen2 ? group2 : group1;
+            int64 part_to_remove = dist_from_cen1 < dist_from_cen2 ? part2 : part1;
+            g[group_to_remove].id[part_to_remove] = -1;
+            num_removed_per_group[group_to_remove]++;
+            nremoved++;
+        }
+    }
+
+    for(int64 i=0;i<N;i++){
+        if(num_removed_per_group[i] == 0) continue;
+        for(int64 j=0;j<g[i].N;j++){
+            if(g[i].id[j] == -1){
+                if(j == (g[i].N-1)) break;
+
+                const int64_t nmove = g[i].N - (j + 1);
+                //Do a memmove to preserve the ordering of the particles
+                memmove(&g[i].id[j], &g[i].id[j+1], nmove*sizeof(g[i].id[0]));
+                memmove(&g[i].x[j] , &g[i].x[j+1] , nmove*sizeof(g[i].x[0]));
+                memmove(&g[i].y[j] , &g[i].y[j+1] , nmove*sizeof(g[i].y[0]));
+                memmove(&g[i].z[j] , &g[i].z[j+1] , nmove*sizeof(g[i].z[0]));
+
+                g[i].N--;
+                j--;
+            }
+        }
+
+        if(num_removed_per_group[i] > 0){
+            fprintf(stderr, "Removed %lld particles from group %lld\n", (long long)num_removed_per_group[i], (long long)i);
+        }
+    }
+
+    free(all_ids);free(groupnum);free(partindex);free(num_removed_per_group);
+    return nremoved;
+}
+
+
+
 
 short float_almost_equal(float A, float B, int maxUlps)
 {
