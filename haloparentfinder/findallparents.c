@@ -130,7 +130,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             }
         }
     }
-    fprintf(stderr,"NextMaxPartId = %"STR_ID_FMT"\n",NextMaxPartId);
+    fprintf(stderr, "NextMaxPartId = %" STR_ID_FMT "\n", NextMaxPartId);
     NextMaxPartId++; /* should be able to index with NextMaxPartId -> n+1 elements
                       */
     NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
