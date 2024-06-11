@@ -320,7 +320,7 @@ void free_group(struct group_data *g, int64 N)
 
 void free_group_positions(struct group_data *g, int64 N)
 {
-    if(g == NULL)
+    if (g == NULL)
         return;
 
     for (int64 i = 0; i < N; i++)
