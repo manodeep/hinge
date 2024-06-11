@@ -38,31 +38,29 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     // Now parse the header line
     //  size_t buflen = strnlen(buffer, BUFSIZ);
     char *buf = &buffer[0];
-    while (*buf == '#')
-        buf++;
 
     int colnum = 0;
-    char *token;
-    while ((token = strsep(&buf, " ")) != NULL)
+    char *delim = " #\t\n";
+    char *token = NULL;
+    while ((token = strsep(&buf, delim)) != NULL)
     {
         if (*token == '\0')
         {
             continue; // Skip empty tokens if multiple delimiters are encountered consecutively
         }
         fprintf(stderr, "column name: '%s' (column number = %d)\n", token, colnum);
-        // XASSERT(colnum < num_columns, "Column number %d is greater than the number of columns %d", colnum,
-        // num_columns);
-        if (colnum >= num_columns)
-        {
-            fprintf(stderr, "Column number %d is greater than the number of columns %d...breaking\n", colnum,
-                    num_columns);
+        if(colnum >= num_columns) {
+            fprintf(stderr, "Column number %d is greater than the number of columns %d...breaking\n", colnum, num_columns);
             break;
         }
         else
         {
+            fprintf(stderr,"token = '%s'\n", token);
+            fprintf(stderr,"colnum = %d wanted_columns[colnum] = '%s'\n", colnum, wanted_columns[colnum]);
             XASSERT(strcasecmp(token, wanted_columns[colnum]) == 0,
                     "Column name '%s' does not match wanted column name '%s'", token, wanted_columns[colnum]);
         }
+        
         colnum++;
     }
     int64 nhalos = getnumlines(fname, '#');
