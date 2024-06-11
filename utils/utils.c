@@ -293,6 +293,9 @@ int64 get_Numpart(struct io_header *header)
 
 void free_group(struct group_data *g, int64 N)
 {
+    if (g == NULL)
+        return;
+
     for (int64 i = 0; i < N; i++)
     {
 #ifndef MAKE_LEAN
@@ -317,6 +320,9 @@ void free_group(struct group_data *g, int64 N)
 
 void free_group_positions(struct group_data *g, int64 N)
 {
+    if(g == NULL)
+        return;
+
     for (int64 i = 0; i < N; i++)
     {
         my_free((void **)&(g[i].x));

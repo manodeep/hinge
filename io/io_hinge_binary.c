@@ -9,6 +9,7 @@
 #include "macros.h"
 #include "progressbar.h"
 #include "utils.h"
+#include "io_hinge_utils.h"
 
 // static int64_t get_num_fofs(const char *catalogue_fname, char comment);
 
@@ -50,47 +51,93 @@ int64 returnNhalo_hinge_binary(const struct params_data *params, const int snapn
 
 void loadgroups_hinge_binary(const int snapnum, const struct params_data *params, struct group_data *group)
 {
+    XASSERT(group != NULL, "group is NULL\n");
+
     char catalogue_fname[MAXLEN];
-    my_snprintf(catalogue_fname, MAXLEN, "%s/%s_halos_z%0.3f.bin", params->GROUP_DIR, params->GROUP_BASE,
+    my_snprintf(catalogue_fname, MAXLEN, "%s/%s_z%0.3f.txt", params->GROUP_DIR, params->GROUP_BASE,
                 REDSHIFT[snapnum]);
+#ifdef FOF_ONLY
+    const int fof_only = 1;
+#else
+    const int fof_only = 0;
+#endif
 
-    const int64_t numgroups = returnNhalo_hinge_binary(params, snapnum, 0);
-    FILE *fcat = my_fopen(catalogue_fname, "r");
-    int64_t totnhalos, totnfofs, totnpart;
-    my_fread(&totnhalos, sizeof(totnhalos), 1, fcat);
-    my_fread(&totnfofs, sizeof(totnfofs), 1, fcat);
-    my_fread(&totnpart, sizeof(totnpart), 1, fcat);
-    void *buf;
-    int64_t numbuf = totnpart > totnhalos ? totnpart : totnhalos;
-    buf = malloc(numbuf * sizeof(double));
-#define READ_AND_ASSIGN_TO_GROUPS(field, src_type, dst_type)                                                           \
-    {                                                                                                                  \
-        my_fread(buf, sizeof(src_type), totnhalos, fcat);                                                              \
-        for (int64_t jj = 0; jj < totnhalos; jj++)                                                                     \
-        {                                                                                                              \
-            group[jj].field = (dst_type)((src_type *)buf)[jj];                                                         \
-        }                                                                                                              \
-    }
-    fprintf(stderr, "Reading halo catalog ...\n");
-    READ_AND_ASSIGN_TO_GROUPS(haloID, int64_t, long);
-    READ_AND_ASSIGN_TO_GROUPS(fofID, int64_t, long);
-    READ_AND_ASSIGN_TO_GROUPS(Nsub, int64_t, int64);
-    READ_AND_ASSIGN_TO_GROUPS(Mtot, double, float);
-    READ_AND_ASSIGN_TO_GROUPS(N, int64_t, int64_t);
-    READ_AND_ASSIGN_TO_GROUPS(xcen, double, float);
-    READ_AND_ASSIGN_TO_GROUPS(ycen, double, float);
-    READ_AND_ASSIGN_TO_GROUPS(zcen, double, float);
-    READ_AND_ASSIGN_TO_GROUPS(vxcen, double, float);
-    READ_AND_ASSIGN_TO_GROUPS(vycen, double, float);
-    READ_AND_ASSIGN_TO_GROUPS(vzcen, double, float);
-    fprintf(stderr, "Reading halo catalog ...done\n");
-
-    int interrupted = 0;
-    init_my_progressbar(numgroups, &interrupted);
-#undef READ_AND_ASSIGN_TO_GROUPS
-    for (int64_t ihalo = 0; ihalo < numgroups; ihalo++)
+    struct hinge_catalog *halocat = read_hinge_ascii_halo_catalog(catalogue_fname, fof_only);
+    if (halocat == NULL)
     {
+        fprintf(stderr, "Could not read the halo catalog from file %s\n", catalogue_fname);
+        exit(EXIT_FAILURE);
+    }
+    const int64_t nhalos = halocat->nhalos;
+    const int64_t totnpart = halocat->totnpart;
+
+
+    /* read individual files for each column */
+
+    /* Can't really automate the process - so need to read in individually and assign */
+
+    // const char field_names[][MAXLEN] = {"partid", "xpos", "ypos", "zpos", "haloid", "fofid"};
+#define  CHECK_NPART_AND_READ_FIELD(field_name, totnpart, buf) { \
+    int64_t npart_field;\
+    char field_fname[MAXLEN];\
+    my_snprintf(field_fname, MAXLEN, "%s/%s_particles_z%0.3f_%s.bin", params->GROUP_DIR, params->GROUP_BASE, REDSHIFT[snapnum], field_name);\
+    FILE *fp = my_fopen(field_fname, "r");\
+    my_fread(&npart_field, sizeof(npart_field), 1, fp);     \
+    if(npart_field != totnpart) {\
+        fprintf(stderr, "Number of particles in file %s = %"PRId64" does not match total number of particles = %"PRId64"\n", field_fname, npart_field, totnpart);\
+        fclose(fp);\
+        exit(EXIT_FAILURE);\
+    }\
+    const size_t sizeof_every_field = 8;\
+    buf = my_malloc(sizeof_every_field, totnpart);\
+    my_fread(buf, sizeof_every_field, totnpart, fp); /* all the fields are of type int64_t or double (i.e., 8 bytes) */ \
+    fclose(fp);\
+}
+
+#define ASSIGN_FIELD_TO_GROUPS(field_name, field_type, nhalos, buf, dst_field) { \
+    int64_t offset = 0;\
+    int interrupted = 0;\
+    fprintf(stderr,"Assigning field %s to groups ...\n", field_name);\
+    init_my_progressbar(nhalos, &interrupted);\
+    for(int64_t i = 0; i < nhalos; i++) {\
+        my_progressbar(i, &interrupted);\
+        const int64_t npart_field = group[i].N;\
+        group[i].dst_field = my_malloc(sizeof(field_type), npart_field);\
+        for(int64_t j = 0; j < npart_field; j++) {\
+            group[i].dst_field[j] = ((field_type *)buf)[offset + j];\
+        }\
+        offset += npart_field;\
+    }\
+    free(buf);\
+    finish_myprogressbar(&interrupted);\
+    fprintf(stderr,"Assigning field %s to groups ...\n", field_name);\
+}
+    void *buf;
+    CHECK_NPART_AND_READ_FIELD("partid", totnpart, buf);
+    ASSIGN_FIELD_TO_GROUPS("partid", int64_t, nhalos, buf, id);
+
+
+//    CHECK_NPART_AND_READ_FIELD(fp, "part_type", totnpart, buf);
+    CHECK_NPART_AND_READ_FIELD("xpos", totnpart, buf);
+    ASSIGN_FIELD_TO_GROUPS("xpos", double, nhalos, buf, x);
+
+    CHECK_NPART_AND_READ_FIELD("ypos", totnpart, buf);
+    ASSIGN_FIELD_TO_GROUPS("ypos", double, nhalos, buf, y);
+
+    CHECK_NPART_AND_READ_FIELD("zpos", totnpart, buf);
+    ASSIGN_FIELD_TO_GROUPS("zpos", double, nhalos, buf, z);
+
+    int64_t *haloids, *fofids;
+    CHECK_NPART_AND_READ_FIELD("haloid", totnpart, haloids);
+    CHECK_NPART_AND_READ_FIELD("fofid", totnpart, fofids);
+
+    int64_t offset = 0;
+    int interrupted = 0;
+    init_my_progressbar(nhalos, &interrupted);
+    for(int64_t ihalo=0;ihalo<nhalos;ihalo++) {
         my_progressbar(ihalo, &interrupted);
+        const int64_t *fids = &fofids[offset];
+        const int64_t *hids = &haloids[offset];
         group[ihalo].groupnum = ihalo;
         group[ihalo].nodeloc = ihalo;
         group[ihalo].snapshot = snapnum;
@@ -98,7 +145,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
 
         int64_t haloid = group[ihalo].haloID;
         int64_t hosthaloid = group[ihalo].fofID;
-        int64 fof_hostnum = -1; //, fof_hostid = -1;
+        int64_t fof_hostnum = -1;
         if (haloid == hosthaloid)
         {
             fof_hostnum = ihalo;
@@ -107,31 +154,12 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         group[ihalo].isFof = (haloid == hosthaloid) ? 1 : 0;
         group[ihalo].FOFHalo = fof_hostnum;
         group[ihalo].ContainerIndex = fof_hostnum;
+        for(int64_t j=0;j<group[ihalo].N;j++) {
+            XASSERT(hids[j] == haloid, "Haloid mismatch: %"PRId64" != %"PRId64, hids[j], haloid);
+            XASSERT(fids[j] == hosthaloid, "Fofid mismatch: %"PRId64" != %"PRId64, fids[j], hosthaloid);
+        }
 
         group[ihalo].ParentLevel = (group[ihalo].isFof == 1) ? 1 : -1; // subhalos don't have a parentlevel defined yet
-
-        group[ihalo].x = my_malloc(sizeof(group->x[0]), group[ihalo].N);
-        group[ihalo].y = my_malloc(sizeof(group->y[0]), group[ihalo].N);
-        group[ihalo].z = my_malloc(sizeof(group->z[0]), group[ihalo].N);
-        group[ihalo].id = my_malloc(sizeof(group->id[0]), group[ihalo].N);
-
-        // my_fread(group[ihalo].id, sizeof(id64), group[ihalo].N, fcat);
-#define READ_AND_ASSIGN_TO_PARTICLES(field, ii, src_type, dst_type, npart)                                             \
-    {                                                                                                                  \
-        my_fread(buf, sizeof(src_type), npart, fcat);                                                                  \
-        for (int64_t jj = 0; jj < npart; jj++)                                                                         \
-        {                                                                                                              \
-            group[ii].field[jj] = (dst_type)((src_type *)buf)[jj];                                                     \
-        }                                                                                                              \
-    }
-        READ_AND_ASSIGN_TO_PARTICLES(id, ihalo, int64_t, id64, group[ihalo].N)
-        fseek(fcat, sizeof(int64_t) * group[ihalo].N, SEEK_CUR); // skip over the particle types
-        READ_AND_ASSIGN_TO_PARTICLES(x, ihalo, double, float, group[ihalo].N);
-        READ_AND_ASSIGN_TO_PARTICLES(y, ihalo, double, float, group[ihalo].N);
-        READ_AND_ASSIGN_TO_PARTICLES(z, ihalo, double, float, group[ihalo].N);
-
-#undef READ_AND_ASSIGN_TO_PARTICLES
-
         group[ihalo].N_per_wedge = 0;
         /* initialise the parent finding variables*/
         group[ihalo].ParentId = -1;
@@ -141,7 +169,12 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         group[ihalo].Ncommon = 0;
         group[ihalo].Rank = 0.0;
         group[ihalo].NpartinParent = 0;
+
+        offset += group[ihalo].N;
     }
-    fclose(fcat);
     finish_myprogressbar(&interrupted);
+
+    free(haloids);
+    free(fofids);
+
 }
