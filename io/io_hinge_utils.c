@@ -45,6 +45,9 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     char *token;
     while ((token = strsep(&buf, " ")) != NULL)
     {
+        if (*token == '\0') {
+            continue; // Skip empty tokens if multiple delimiters are encountered consecutively
+        }
         fprintf(stderr, "column name: '%s' (column number = %d)\n", token, colnum);
         XASSERT(colnum < num_columns, "Column number %d is greater than the number of columns %d", colnum, num_columns);
         XASSERT(strcasecmp(token, wanted_columns[colnum]) == 0,
