@@ -429,7 +429,7 @@ void loadgroups(const struct params_data *params, const int snapnum, struct grou
         break;
 
     case hinge_binary:
-        loadgroups_hinge_ascii(snapnum, params, group);
+        loadgroups_hinge_binary(snapnum, params, group);
         break;
 
     default:
