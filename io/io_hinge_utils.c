@@ -37,12 +37,13 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
 
     // Now parse the header line
     //  size_t buflen = strnlen(buffer, BUFSIZ);
-    char *token = &buffer[0];
-    while (*token == '#')
-        token++;
+    char *buf = &buffer[0];
+    while (*buf == '#')
+        buf++;
 
     int colnum = 0;
-    while ((token = strsep((char **)&buffer, " ")) != NULL)
+    char *token;
+    while ((token = strsep(&buf, " ")) != NULL)
     {
         fprintf(stderr, "column name: '%s' (column number = %d)\n", token, colnum);
         XASSERT(colnum < num_columns, "Column number %d is greater than the number of columns %d", colnum, num_columns);
