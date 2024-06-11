@@ -25,7 +25,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
         return NULL;
     }
     //"# ID                  fofid                  nsub                  Mvir                  npart Xc Yc Zc VXc VYc
-    //VZc                  Rvir                  partid_start_bytes_offset                  partid_end_bytes_offset"
+    // VZc                  Rvir                  partid_start_bytes_offset                  partid_end_bytes_offset"
 
     char wanted_columns[][MAXLEN] = {"ID", "fofid", "nsub", "Mvir", "npart", "Xc",
                                      "Yc", "Zc",    "VXc",  "VYc",  "VZc",   "Rvir"};
