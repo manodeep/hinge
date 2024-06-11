@@ -50,11 +50,15 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
             continue; // Skip empty tokens if multiple delimiters are encountered consecutively
         }
         fprintf(stderr, "column name: '%s' (column number = %d)\n", token, colnum);
-        // XASSERT(colnum < num_columns, "Column number %d is greater than the number of columns %d", colnum, num_columns);
-        if(colnum >= num_columns) {
+        // XASSERT(colnum < num_columns, "Column number %d is greater than the number of columns %d", colnum,
+        // num_columns);
+        if (colnum >= num_columns)
+        {
             fprintf(stderr, "Column number %d is greater than the number of columns %d\n", colnum, num_columns);
             break;
-        } else {
+        }
+        else
+        {
             XASSERT(strcasecmp(token, wanted_columns[colnum]) == 0,
                     "Column name '%s' does not match wanted column name '%s'", token, wanted_columns[colnum]);
         }
