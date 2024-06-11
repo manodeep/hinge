@@ -10,43 +10,11 @@
 #include "macros.h"
 #include "progressbar.h"
 #include "utils.h"
-
-// static int64_t get_num_fofs(const char *catalogue_fname, char comment);
-
-// int64_t get_num_fofs(const char *catalogue_fname, char comment)
-// {
-//     FILE *fp = my_fopen(catalogue_fname, "r");
-//     fseek(fp, 8, SEEK_SET);//skip 'totnhalos'
-//     int64_t num_fofs;
-//     my_fread(&num_fofs, sizeof(num_fofs), 1, fp);
-//     fclose(fp);
-//     return num_fofs;
-// }
+#include "io_hinge_ascii.h"
 
 int64 returnNhalo_hinge_binary(const struct params_data *params, const int snapnum, const int fof_only)
 {
-#if !defined(LONGIDS) || !defined(BIGSIM)
-    fprintf(stderr, "Both 'LONGIDS and 'BIGSIM' need to be defined loading the HINGE-binary format\n");
-    fprintf(stderr, "Please enable those two options in the `common.mk` file and then recompile + re-run\n");
-    exit(EXIT_FAILURE);
-#endif
-
-    char catalogue_fname[MAXLEN];
-    my_snprintf(catalogue_fname, MAXLEN, "%s/%s_halos_z%0.3f.bin", params->GROUP_DIR, params->GROUP_BASE,
-                REDSHIFT[snapnum]);
-    FILE *fp = my_fopen(catalogue_fname, "r");
-    int64_t nhalos;
-    if (fof_only == 0)
-    {
-        my_fread(&nhalos, sizeof(nhalos), 1, fp);
-    }
-    else
-    {
-        fseek(fp, sizeof(nhalos), SEEK_SET);      // skip 'totnhalos'
-        my_fread(&nhalos, sizeof(nhalos), 1, fp); // read 'totnfofs'
-    }
-    fclose(fp);
-    return nhalos;
+    return returnNhalo_hinge_ascii(params, snapnum, fof_only);
 }
 
 void loadgroups_hinge_binary(const int snapnum, const struct params_data *params, struct group_data *group)
