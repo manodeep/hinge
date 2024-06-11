@@ -45,7 +45,8 @@ MAJOR=1
 INCLUDE := -I../io -I../utils -I.
 
 ### The POSIX_SOURCE flag is required to get the definition of strtok_r
-CFLAGS += -Wsign-compare -Wall -Wextra -Wshadow -Wunused -std=c99 -g -gdwarf-3 -m64 -fPIC -D_POSIX_SOURCE -D_DARWIN_C_SOURCE  -O3 #-Ofast
+### _BSD_SOURCE is required for strsep
+CFLAGS += -Wsign-compare -Wall -Wextra -Wshadow -Wunused -std=c99 -g -gdwarf-3 -m64 -fPIC -D_POSIX_SOURCE -D_DARWIN_C_SOURCE -D_BSD_SOURCE -O3 #-Ofast
 GSL_CFLAGS := $(shell gsl-config --cflags)
 GSL_LIBDIR := $(shell gsl-config --prefix)/lib
 GSL_LINK   := $(shell gsl-config --libs) -Xlinker -rpath -Xlinker $(GSL_LIBDIR)
