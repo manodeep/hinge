@@ -45,7 +45,8 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     char *token;
     while ((token = strsep(&buf, " ")) != NULL)
     {
-        if (*token == '\0') {
+        if (*token == '\0')
+        {
             continue; // Skip empty tokens if multiple delimiters are encountered consecutively
         }
         fprintf(stderr, "column name: '%s' (column number = %d)\n", token, colnum);
