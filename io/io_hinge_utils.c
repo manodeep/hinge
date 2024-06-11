@@ -30,7 +30,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     char wanted_columns[][MAXLEN] = {"ID", "fofid", "nsub", "Mvir", "npart", "Xc",
                                      "Yc", "Zc",    "VXc",  "VYc",  "VZc",   "Rvir"};
     int num_columns = sizeof(wanted_columns) / sizeof(wanted_columns[0]);
-    int wanted_columns_indices[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    int wanted_columns_indices[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
     int num_column_indices = sizeof(wanted_columns_indices) / sizeof(wanted_columns_indices[0]);
     XASSERT(num_columns == num_column_indices, "Number of column names = %d does not match number of indices = %d",
             num_columns, num_column_indices);
