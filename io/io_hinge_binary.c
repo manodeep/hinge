@@ -22,7 +22,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     XASSERT(group != NULL, "group is NULL\n");
 
     char catalogue_fname[MAXLEN];
-    my_snprintf(catalogue_fname, MAXLEN, "%s/%s_z%0.3f.txt", params->GROUP_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
+    my_snprintf(catalogue_fname, MAXLEN, "%s/%s_halos_z%0.3f.txt", params->GROUP_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
 #ifdef FOF_ONLY
     const int fof_only = 1;
 #else
