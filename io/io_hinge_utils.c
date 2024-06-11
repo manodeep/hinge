@@ -72,10 +72,17 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     halocat->totnpart = 0;
     int64_t index = 0;
     struct hinge_halo *halos = halocat->halos;
-    while (fscanf(fp, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %lf %" SCNd64 " %lf %lf %lf %lf %lf %lf %lf",
-                  &(halos->halo_id), &halos->fof_id, &halos->nsub, &halos->Mvir, &halos->npart, &halos->Xc, &halos->Yc,
-                  &halos->Zc, &halos->VXc, &halos->VYc, &halos->VZc, &halos->Rvir) == num_columns)
+    while (fgets(buffer, BUFSIZ, fp) != NULL)
     {
+        int nread = sscanf(buffer, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %lf %" SCNd64 " %lf %lf %lf %lf %lf %lf %lf",
+                              &(halos->halo_id), &halos->fof_id, &halos->nsub, &halos->Mvir, &halos->npart, &halos->Xc, &halos->Yc,
+                              &halos->Zc, &halos->VXc, &halos->VYc, &halos->VZc, &halos->Rvir);
+        if (nread != num_column_indices)
+        {
+            fprintf(stderr, "Error: Could not read %d columns from line = '%s'\n", num_column_indices, buffer);
+            exit(EXIT_FAILURE);
+        }
+
         if (fof_only && halos->fof_id != halos->halo_id)
         {
             continue;
