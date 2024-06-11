@@ -5,12 +5,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "io_hinge_ascii.h"
 #include "io_hinge_binary.h"
 #include "io_hinge_utils.h"
 #include "macros.h"
 #include "progressbar.h"
 #include "utils.h"
-#include "io_hinge_ascii.h"
 
 int64 returnNhalo_hinge_binary(const struct params_data *params, const int snapnum, const int fof_only)
 {
