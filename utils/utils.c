@@ -633,6 +633,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         {
             fprintf(stderr, "Removed %lld particles from group %lld\n", (long long)num_removed_per_group[i],
                     (long long)i);
+            interrupted = 1;
         }
     }
     finish_myprogressbar(&interrupted);
