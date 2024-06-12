@@ -583,7 +583,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     for (int64 i = 0; i < N; i++)
     {
         my_progressbar(i, &interrupted);
-        if (num_removed_per_group[i] == 0) continue;
+        if (num_removed_per_group[i] == 0)
+            continue;
 
         for (int64 j = 0; j < g[i].N; j++)
         {
