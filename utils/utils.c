@@ -486,9 +486,9 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     {
         totnpart += g[i].N;
     }
-    int64_t *all_ids = my_malloc(sizeof(*all_ids), totnpart);
-    int64_t *groupnum = my_malloc(sizeof(*groupnum), totnpart);
-    int64_t *partindex = my_malloc(sizeof(*partindex), totnpart);
+    id64 *all_ids = my_malloc(sizeof(*all_ids), totnpart);
+    int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
+    int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
     int64_t *num_removed_per_group = my_calloc(sizeof(*num_removed_per_group), N);
     int64 nremoved = 0;
     int64_t offset = 0;
@@ -504,8 +504,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     }
 
     // Now sort the particle ids such that the duplicates appear together
-#define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)                                                                     \
-    {                                                                                                                  \
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)        {                                                            \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, all_ids, i, j);                                                           \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, groupnum, i, j);                                                         \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partindex, i, j);                                                        \
