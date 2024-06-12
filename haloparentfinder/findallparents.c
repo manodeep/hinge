@@ -129,7 +129,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     NextMaxPartId++; /* should be able to index with NextMaxPartId -> n+1 elements */
     fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT "\n", __FUNCTION__, NextMaxPartId);
 
-    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
+    int8_t *NextAllPartIds =
+        my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     int64 *NextAllRealGroupIds = my_malloc(sizeof(*NextAllRealGroupIds), NextMaxPartId);
     int64 *NextAllRealGroupLocs = my_malloc(sizeof(*NextAllRealGroupLocs), NextMaxPartId);
@@ -139,7 +140,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     FOF_Parent = 0;
     int64 flag = 0;
     int interrupted = 0;
-    fprintf(stderr,"Finding parents for FOF halos ...\n");
+    fprintf(stderr, "Finding parents for FOF halos ...\n");
     init_my_progressbar(NextNsub, &interrupted);
     for (i = 0; i < NextNsub; i++)
     {
@@ -170,7 +171,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         }
     }
     finish_myprogressbar(&interrupted);
-    fprintf(stderr,"Finding parents for FOF halos ...done\n");
+    fprintf(stderr, "Finding parents for FOF halos ...done\n");
 
     if (flag > 0)
     {
@@ -395,8 +396,9 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         }
     }
     NextMaxPartId++;
-    fprintf(stderr,"In %s> NextMaxPartId = %" STR_FMT "\n", __FUNCTION__, NextMaxPartId);
-    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
+    fprintf(stderr, "In %s> NextMaxPartId = %" STR_FMT "\n", __FUNCTION__, NextMaxPartId);
+    int8_t *NextAllPartIds =
+        my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     int64 *NextAllGroupLocs = my_malloc(sizeof(*NextAllGroupLocs), NextMaxPartId);
     double *NextAllRanks = my_calloc(sizeof(*NextAllRanks), NextNsub);
