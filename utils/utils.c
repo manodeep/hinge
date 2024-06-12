@@ -658,12 +658,12 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         //     j--;
         // }
 
-        if (num_removed_per_group[i] > 0)
-        {
-            fprintf(stderr, "\nRemoved %lld particles from group %lld\n", (long long)num_removed_per_group[i],
-                    (long long)i);
-            interrupted = 1;
-        }
+        // if (num_removed_per_group[i] > 0)
+        // {
+        //     fprintf(stderr, "\nRemoved %lld particles from group %lld\n", (long long)num_removed_per_group[i],
+        //             (long long)i);
+        //     interrupted = 1;
+        // }
     }
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Now fixing group particle counts ...done\n");
