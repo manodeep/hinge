@@ -117,6 +117,18 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         my_progressbar(ihalo, &interrupted);
         const int64_t *fids = &fofids[offset];
         const int64_t *hids = &haloids[offset];
+        group[ihalo].N = halocat->halos[ihalo].npart;
+        group[ihalo].haloID = halocat->halos[ihalo].halo_id;
+        group[ihalo].fofID = halocat->halos[ihalo].fof_id;
+        group[ihalo].Nsub = halocat->halos[ihalo].nsub;
+        group[ihalo].Mtot = halocat->halos[ihalo].Mvir;
+        group[ihalo].xcen = halocat->halos[ihalo].Xc;
+        group[ihalo].ycen = halocat->halos[ihalo].Yc;
+        group[ihalo].zcen = halocat->halos[ihalo].Zc;
+        group[ihalo].vxcen = halocat->halos[ihalo].VXc;
+        group[ihalo].vycen = halocat->halos[ihalo].VYc;
+        group[ihalo].vzcen = halocat->halos[ihalo].VZc;
+
         group[ihalo].groupnum = ihalo;
         group[ihalo].nodeloc = ihalo;
         group[ihalo].snapshot = snapnum;
