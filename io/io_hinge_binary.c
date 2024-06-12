@@ -40,9 +40,9 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     const int64_t totnpart = halocat->totnpart;
 
     int interrupted = 0;
-    fprintf(stderr,"Assigning group-level properties ...\n");
+    fprintf(stderr, "Assigning group-level properties ...\n");
     init_my_progressbar(nhalos, &interrupted);
-    for(int64_t ihalo=0;ihalo<nhalos;ihalo++)
+    for (int64_t ihalo = 0; ihalo < nhalos; ihalo++)
     {
         my_progressbar(ihalo, &interrupted);
         group[ihalo].N = halocat->halos[ihalo].npart;
@@ -84,7 +84,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         group[ihalo].Rank = 0.0;
         group[ihalo].NpartinParent = 0;
     }
-    fprintf(stderr,"Assigning group-level properties ...done\n");
+    fprintf(stderr, "Assigning group-level properties ...done\n");
 
     /* read individual files for each column */
     /* Can't really automate the process - so need to read in individually and assign */
