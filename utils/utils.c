@@ -527,8 +527,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     int64 nremoved = 0;
     // int64_t offset = 0;
     int interrupted = 0;
-    fprintf(stderr,"Removing duplicate particles ...\n")
-    init_my_progressbar(N, &interrupted);
+    fprintf(stderr, "Removing duplicate particles ...\n") init_my_progressbar(N, &interrupted);
     for (int64 i = 0; i < N; i++)
     {
         my_progressbar(i, &interrupted);
@@ -554,8 +553,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
                 remove_particle_from_group(groupnum[id], i, partindex[id], j, g, &group_to_remove, &part_to_remove);
                 num_removed_per_group[group_to_remove]++;
 
-                //If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
-                if(group_to_remove != i)
+                // If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
+                if (group_to_remove != i)
                 {
                     groupnum[id] = i;
                     partindex[id] = j;
