@@ -39,10 +39,55 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     const int64_t nhalos = halocat->nhalos;
     const int64_t totnpart = halocat->totnpart;
 
+    int interrupted = 0;
+    fprintf(stderr,"Assigning group-level properties ...\n");
+    init_my_progressbar(nhalos, &interrupted);
+    for(int64_t ihalo=0;ihalo<nhalos;ihalo++)
+    {
+        my_progressbar(ihalo, &interrupted);
+        group[ihalo].N = halocat->halos[ihalo].npart;
+        group[ihalo].haloID = halocat->halos[ihalo].halo_id;
+        group[ihalo].fofID = halocat->halos[ihalo].fof_id;
+        group[ihalo].Nsub = halocat->halos[ihalo].nsub;
+        group[ihalo].Mtot = halocat->halos[ihalo].Mvir;
+        group[ihalo].xcen = halocat->halos[ihalo].Xc;
+        group[ihalo].ycen = halocat->halos[ihalo].Yc;
+        group[ihalo].zcen = halocat->halos[ihalo].Zc;
+        group[ihalo].vxcen = halocat->halos[ihalo].VXc;
+        group[ihalo].vycen = halocat->halos[ihalo].VYc;
+        group[ihalo].vzcen = halocat->halos[ihalo].VZc;
+
+        group[ihalo].groupnum = ihalo;
+        group[ihalo].nodeloc = ihalo;
+        group[ihalo].snapshot = snapnum;
+        group[ihalo].redshift = REDSHIFT[snapnum];
+
+        int64_t haloid = group[ihalo].haloID;
+        int64_t hosthaloid = group[ihalo].fofID;
+        int64_t fof_hostnum = -1;
+        if (haloid == hosthaloid)
+        {
+            fof_hostnum = ihalo;
+            // fof_hostid = haloid;
+        }
+        group[ihalo].isFof = (haloid == hosthaloid) ? 1 : 0;
+        group[ihalo].FOFHalo = fof_hostnum;
+        group[ihalo].ContainerIndex = fof_hostnum;
+        group[ihalo].ParentLevel = (group[ihalo].isFof == 1) ? 1 : -1; // subhalos don't have a parentlevel defined yet
+        group[ihalo].N_per_wedge = 0;
+        /* initialise the parent finding variables*/
+        group[ihalo].ParentId = -1;
+        group[ihalo].NParents = 0;
+        group[ihalo].Switched = 0;
+        group[ihalo].ParentSnapshot = -1;
+        group[ihalo].Ncommon = 0;
+        group[ihalo].Rank = 0.0;
+        group[ihalo].NpartinParent = 0;
+    }
+    fprintf(stderr,"Assigning group-level properties ...done\n");
+
     /* read individual files for each column */
-
     /* Can't really automate the process - so need to read in individually and assign */
-
     // const char field_names[][MAXLEN] = {"partid", "xpos", "ypos", "zpos", "haloid", "fofid"};
 #define CHECK_NPART_AND_READ_FIELD(field_name, totnpart, buf)                                                          \
     {                                                                                                                  \
@@ -110,61 +155,21 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     CHECK_NPART_AND_READ_FIELD("fofid", totnpart, fofids);
 
     int64_t offset = 0;
-    int interrupted = 0;
-    init_my_progressbar(nhalos, &interrupted);
+    fprintf(stderr, "Checking the consistency of the halo and fof ids ...\n");
     for (int64_t ihalo = 0; ihalo < nhalos; ihalo++)
     {
         my_progressbar(ihalo, &interrupted);
         const int64_t *fids = &fofids[offset];
         const int64_t *hids = &haloids[offset];
-        group[ihalo].N = halocat->halos[ihalo].npart;
-        group[ihalo].haloID = halocat->halos[ihalo].halo_id;
-        group[ihalo].fofID = halocat->halos[ihalo].fof_id;
-        group[ihalo].Nsub = halocat->halos[ihalo].nsub;
-        group[ihalo].Mtot = halocat->halos[ihalo].Mvir;
-        group[ihalo].xcen = halocat->halos[ihalo].Xc;
-        group[ihalo].ycen = halocat->halos[ihalo].Yc;
-        group[ihalo].zcen = halocat->halos[ihalo].Zc;
-        group[ihalo].vxcen = halocat->halos[ihalo].VXc;
-        group[ihalo].vycen = halocat->halos[ihalo].VYc;
-        group[ihalo].vzcen = halocat->halos[ihalo].VZc;
-
-        group[ihalo].groupnum = ihalo;
-        group[ihalo].nodeloc = ihalo;
-        group[ihalo].snapshot = snapnum;
-        group[ihalo].redshift = REDSHIFT[snapnum];
-
-        int64_t haloid = group[ihalo].haloID;
-        int64_t hosthaloid = group[ihalo].fofID;
-        int64_t fof_hostnum = -1;
-        if (haloid == hosthaloid)
-        {
-            fof_hostnum = ihalo;
-            // fof_hostid = haloid;
-        }
-        group[ihalo].isFof = (haloid == hosthaloid) ? 1 : 0;
-        group[ihalo].FOFHalo = fof_hostnum;
-        group[ihalo].ContainerIndex = fof_hostnum;
         for (int64_t j = 0; j < group[ihalo].N; j++)
         {
             XASSERT(hids[j] == haloid, "Haloid mismatch: %" PRId64 " != %" PRId64, hids[j], haloid);
             XASSERT(fids[j] == hosthaloid, "Fofid mismatch: %" PRId64 " != %" PRId64, fids[j], hosthaloid);
         }
-
-        group[ihalo].ParentLevel = (group[ihalo].isFof == 1) ? 1 : -1; // subhalos don't have a parentlevel defined yet
-        group[ihalo].N_per_wedge = 0;
-        /* initialise the parent finding variables*/
-        group[ihalo].ParentId = -1;
-        group[ihalo].NParents = 0;
-        group[ihalo].Switched = 0;
-        group[ihalo].ParentSnapshot = -1;
-        group[ihalo].Ncommon = 0;
-        group[ihalo].Rank = 0.0;
-        group[ihalo].NpartinParent = 0;
-
         offset += group[ihalo].N;
     }
     finish_myprogressbar(&interrupted);
+    fprintf(stderr, "Checking the consistency of the halo and fof ids ...done\n");
 
     fprintf(stderr, "Removing duplicates ...\n");
     const int64_t num_removed = remove_duplicates(group, nhalos);
