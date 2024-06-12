@@ -4,7 +4,8 @@
 #include "read_param.h"
 #include "sglib.h"
 
-static void remove_particle_from_group(const int64 group1, const int64 group2, const int64 part1, const int64 part2, struct group_data *g, int64_t *num_removed_per_group);
+static void remove_particle_from_group(const int64 group1, const int64 group2, const int64 part1, const int64 part2,
+                                       struct group_data *g, int64_t *num_removed_per_group);
 
 // A real wrapper to snprintf that will exit() if the allocated buffer length
 // was not sufficient. Usage is the same as snprintf
@@ -481,14 +482,14 @@ int64 get_ncommon(struct group_data *prev, struct group_data *next)
     return ncommon;
 }
 
-void remove_particle_from_group(const int64 group1, const int64 group2, const int64 part1, const int64 part2, struct group_data *g, int64_t *num_removed_per_group)
+void remove_particle_from_group(const int64 group1, const int64 group2, const int64 part1, const int64 part2,
+                                struct group_data *g, int64_t *num_removed_per_group)
 {
     if (g[group1].fofID == g[group2].fofID)
     {
         fprintf(stderr, "ERROR: Found a duplicate particle in two halos that have the same fofID\n");
         fprintf(stderr, "fofid: %lld, Group1: %lld, Group2: %lld, Part1: %lld, Part2: %lld\n",
-                (long long)g[group1].fofID, (long long)group1, (long long)group2, (long long)part1,
-                (long long)part2);
+                (long long)g[group1].fofID, (long long)group1, (long long)group2, (long long)part1, (long long)part2);
         exit(EXIT_FAILURE);
     }
 
@@ -510,7 +511,6 @@ void remove_particle_from_group(const int64 group1, const int64 group2, const in
     return;
 }
 
-
 int64 remove_duplicates(struct group_data *g, int64 N)
 {
     int64_t totnpart = 0;
@@ -518,7 +518,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     for (int64 i = 0; i < N; i++)
     {
         totnpart += g[i].N;
-        for(int64 j=0; j<g[i].N; j++)
+        for (int64 j = 0; j < g[i].N; j++)
             max_id = g[i].id[j] > max_id ? g[i].id[j] : max_id;
     }
     int8_t *all_ids = my_calloc(sizeof(*all_ids), max_id + 1);
@@ -532,13 +532,13 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         for (int64 j = 0; j < g[i].N; j++)
         {
             id64 id = g[i].id[j];
-            if(id > max_id)
+            if (id > max_id)
             {
-                fprintf(stderr, "ERROR: Particle ID %lld is greater than the maximum particle ID %lld\n",
-                        (long long)id, (long long)max_id);
+                fprintf(stderr, "ERROR: Particle ID %lld is greater than the maximum particle ID %lld\n", (long long)id,
+                        (long long)max_id);
                 exit(EXIT_FAILURE);
             }
-            if(all_ids[id] == 0)
+            if (all_ids[id] == 0)
             {
                 groupnum[offset] = i;
                 partindex[offset] = j;
@@ -546,7 +546,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             }
             else
             {
-                fprintf(stderr,"Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
+                fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
                 remove_particle_from_group(groupnum[offset], i, partindex[offset], j, g, num_removed_per_group);
                 nremoved++;
             }
@@ -555,12 +555,13 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     }
 
     // Now sort the particle ids such that the duplicates appear together
-// #define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)    { SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, all_ids, i, j);  SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, groupnum, i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partindex, i, j); }
+    // #define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)    { SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, all_ids, i, j);
+    // SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, groupnum, i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partindex, i, j); }
 
-//     fprintf(stderr, "In %s> Sorting %lld particle ids ...\n", __FUNCTION__, (long long)totnpart);
-//     SGLIB_ARRAY_HEAP_SORT(id64, all_ids, totnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
-// #undef MULTIPLE_ARRAY_EXCHANGER
-//     fprintf(stderr, "In %s> Sorting %lld particle ids ...done\n", __FUNCTION__, (long long)totnpart);
+    //     fprintf(stderr, "In %s> Sorting %lld particle ids ...\n", __FUNCTION__, (long long)totnpart);
+    //     SGLIB_ARRAY_HEAP_SORT(id64, all_ids, totnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
+    // #undef MULTIPLE_ARRAY_EXCHANGER
+    //     fprintf(stderr, "In %s> Sorting %lld particle ids ...done\n", __FUNCTION__, (long long)totnpart);
 
 #if 0
     int interrupted = 0;
