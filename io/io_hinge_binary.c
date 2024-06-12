@@ -92,7 +92,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     // const char field_names[][MAXLEN] = {"partid", "xpos", "ypos", "zpos", "haloid", "fofid"};
 #define CHECK_NPART_AND_READ_FIELD(field_name, totnpart, buf)                                                          \
     {                                                                                                                  \
-        fprintf(stderr, "Reading field = '%s' ...\n", field_name);                                                     \
+        fprintf(stderr, " '%s', ", field_name);                                                                        \
         int64_t npart_field;                                                                                           \
         char field_fname[MAXLEN];                                                                                      \
         my_snprintf(field_fname, MAXLEN, "%s/%s_particles_z%0.3f_%s.bin", params->GROUP_DIR, params->GROUP_BASE,       \
@@ -110,21 +110,15 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         }                                                                                                              \
         const size_t sizeof_every_field = 8;                                                                           \
         buf = my_malloc(sizeof_every_field, totnpart);                                                                 \
-        my_fread(buf, sizeof_every_field, totnpart,                                                                    \
-                 fp); /* all the fields are of type int64_t or double (i.e., 8 bytes) */                               \
+        my_fread(buf, sizeof_every_field, totnpart, fp);/* all the fields are of type int64_t or double (i.e., 8 bytes) */ \
         fclose(fp);                                                                                                    \
-        fprintf(stderr, "Reading field = '%s' ...done\n", field_name);                                                 \
     }
 
 #define ASSIGN_FIELD_TO_GROUPS(field_name, field_type, nhalos, buf, dst_field)                                         \
     {                                                                                                                  \
         int64_t offset = 0;                                                                                            \
-        interrupted = 0;                                                                                               \
-        fprintf(stderr, "Assigning field '%s' to groups ...\n", field_name);                                           \
-        init_my_progressbar(nhalos, &interrupted);                                                                     \
         for (int64_t i = 0; i < nhalos; i++)                                                                           \
         {                                                                                                              \
-            my_progressbar(i, &interrupted);                                                                           \
             const int64_t npart_field = group[i].N;                                                                    \
             group[i].dst_field = my_malloc(sizeof(field_type), npart_field);                                           \
             for (int64_t j = 0; j < npart_field; j++)                                                                  \
@@ -134,10 +128,9 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
             offset += npart_field;                                                                                     \
         }                                                                                                              \
         free(buf);                                                                                                     \
-        finish_myprogressbar(&interrupted);                                                                            \
-        fprintf(stderr, "Assigning field '%s' to groups ...done\n", field_name);                                       \
     }
     void *buf;
+    fprintf(stderr,"Reading and assigning field: ");
     CHECK_NPART_AND_READ_FIELD("partid", totnpart, buf);
     ASSIGN_FIELD_TO_GROUPS("partid", int64_t, nhalos, buf, id);
 
@@ -155,11 +148,12 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     CHECK_NPART_AND_READ_FIELD("haloid", totnpart, haloids);
     CHECK_NPART_AND_READ_FIELD("fofid", totnpart, fofids);
 
+    fprintf(stderr," ... done\n");
+
     int64_t offset = 0;
     fprintf(stderr, "Checking the consistency of the halo and fof ids ...\n");
     for (int64_t ihalo = 0; ihalo < nhalos; ihalo++)
     {
-        my_progressbar(ihalo, &interrupted);
         const int64_t *fids = &fofids[offset];
         const int64_t *hids = &haloids[offset];
         const int64_t haloid = group[ihalo].haloID;
@@ -171,7 +165,6 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         }
         offset += group[ihalo].N;
     }
-    finish_myprogressbar(&interrupted);
     fprintf(stderr, "Checking the consistency of the halo and fof ids ...done\n");
 
     fprintf(stderr, "Removing duplicates ...\n");
