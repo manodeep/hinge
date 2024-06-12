@@ -1,9 +1,9 @@
 #include "utils.h"
 #include "defs.h"
+#include "macros.h"
 #include "progressbar.h"
 #include "read_param.h"
 #include "sglib.h"
-#include "macros.h"
 
 static void remove_particle_from_group(const int64 group1, const int64 group2, const int64 part1, const int64 part2,
                                        struct group_data *g, int64 *group_to_remove, int64 *part_to_remove);
@@ -587,21 +587,26 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         if (num_removed_per_group[i] == 0)
             continue;
 
-
-#define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j) {    \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, thisgroup->id, i, j);          \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->x, i, j);          \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->y, i, j);          \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->z, i, j);          \
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)                                                                     \
+    {                                                                                                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, thisgroup->id, i, j);                                                     \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->x, i, j);                                                     \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->y, i, j);                                                     \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->z, i, j);                                                     \
     }
         struct group_data *thisgroup = &g[i];
         SGLIB_ARRAY_QUICK_SORT(id64, g[i].id, g[i].N, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 #undef MULTIPLE_ARRAY_EXCHANGER
 
-        const int64 start = 0, end=num_removed_per_group[i]-1;
-        XASSERT(num_removed_per_group[i] <= g[i].N, "Error: Can remove at most %lld particles (i.e., all particles) from groupnum = %lld. Instead found = %lld\n", (long long)g[i].N, (long long)i, (long long)num_removed_per_group[i]);
-        XASSERT(thisgroup->id[start] == -1, "Error: First particle ID should be -1. Instead found = %lld\n", (long long)thisgroup->id[start]);
-        XASSERT(thisgroup->id[end] == -1, "Error: Last particle ID should  be -1. Instead found = %lld\n", (long long)thisgroup->id[end]);
+        const int64 start = 0, end = num_removed_per_group[i] - 1;
+        XASSERT(num_removed_per_group[i] <= g[i].N,
+                "Error: Can remove at most %lld particles (i.e., all particles) from groupnum = %lld. Instead found = "
+                "%lld\n",
+                (long long)g[i].N, (long long)i, (long long)num_removed_per_group[i]);
+        XASSERT(thisgroup->id[start] == -1, "Error: First particle ID should be -1. Instead found = %lld\n",
+                (long long)thisgroup->id[start]);
+        XASSERT(thisgroup->id[end] == -1, "Error: Last particle ID should  be -1. Instead found = %lld\n",
+                (long long)thisgroup->id[end]);
         const int64_t nmove = g[i].N - num_removed_per_group[i];
         // Do a memmove to preserve the ordering of the particles
         memmove(&g[i].id[start], &g[i].id[end + 1], nmove * sizeof(g[i].id[0]));
@@ -619,12 +624,13 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             const double dz = periodic(g[i].z[j] - g[i].zcen);
             sqr_radius[j] = dx * dx + dy * dy + dz * dz;
         }
-#define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j) {    \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, thisgroup->id, i, j);          \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->x, i, j);          \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->y, i, j);          \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->z, i, j);          \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, sqr_radius, i, j);            \
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)                                                                     \
+    {                                                                                                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, thisgroup->id, i, j);                                                     \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->x, i, j);                                                     \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->y, i, j);                                                     \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->z, i, j);                                                     \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, sqr_radius, i, j);                                                       \
     }
 
         SGLIB_ARRAY_HEAP_SORT(float, sqr_radius, g[i].N, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
