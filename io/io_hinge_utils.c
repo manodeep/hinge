@@ -111,7 +111,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
                 fclose(fp);
                 return NULL;
             }
-            fprintf(stderr, "Reallocating memory for the halo catalog to %"PRId64"\n", nallocated);
+            fprintf(stderr, "Reallocating memory for the halo catalog to %" PRId64 "\n", nallocated);
             halos = halocat->halos + index;
         }
 
