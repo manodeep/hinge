@@ -522,11 +522,11 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             max_id = g[i].id[j] > max_id ? g[i].id[j] : max_id;
     }
     int8_t *all_ids = my_calloc(sizeof(*all_ids), max_id + 1);
-    int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
-    int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
+    int64 *groupnum = my_malloc(sizeof(*groupnum), max_id + 1);
+    int64 *partindex = my_malloc(sizeof(*partindex), max_id + 1);
     int64_t *num_removed_per_group = my_calloc(sizeof(*num_removed_per_group), N);
     int64 nremoved = 0;
-    int64_t offset = 0;
+    // int64_t offset = 0;
     for (int64 i = 0; i < N; i++)
     {
         for (int64 j = 0; j < g[i].N; j++)
@@ -540,17 +540,17 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             }
             if (all_ids[id] == 0)
             {
-                groupnum[offset] = i;
-                partindex[offset] = j;
+                groupnum[id] = i;
+                partindex[id] = j;
                 all_ids[id] = 1;
             }
             else
             {
                 fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
-                remove_particle_from_group(groupnum[offset], i, partindex[offset], j, g, num_removed_per_group);
+                remove_particle_from_group(groupnum[id], i, partindex[id], j, g, num_removed_per_group);
                 nremoved++;
             }
-            offset++;
+            // offset++;
         }
     }
     free(all_ids);
