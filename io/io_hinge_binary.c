@@ -72,7 +72,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     {                                                                                                                  \
         int64_t offset = 0;                                                                                            \
         int interrupted = 0;                                                                                           \
-        fprintf(stderr, "Assigning field %s to groups ...\n", field_name);                                             \
+        fprintf(stderr, "Assigning field '%s' to groups ...\n", field_name);                                           \
         init_my_progressbar(nhalos, &interrupted);                                                                     \
         for (int64_t i = 0; i < nhalos; i++)                                                                           \
         {                                                                                                              \
@@ -87,7 +87,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         }                                                                                                              \
         free(buf);                                                                                                     \
         finish_myprogressbar(&interrupted);                                                                            \
-        fprintf(stderr, "Assigning field %s to groups ...done\n", field_name);                                         \
+        fprintf(stderr, "Assigning field '%s' to groups ...done\n", field_name);                                       \
     }
     void *buf;
     CHECK_NPART_AND_READ_FIELD("partid", totnpart, buf);
