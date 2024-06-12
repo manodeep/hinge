@@ -67,7 +67,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     }
     const off_t offset = ftell(fp);
     fprintf(stderr, "offset = %ld\n", offset);
-    XASSERT((buffer, BUFSIZ, fp) != NULL, "Could not read the first data line from file '%s'\n", fname);
+    XASSERT(fgets(buffer, BUFSIZ, fp) != NULL, "Could not read the first data line from file '%s'\n", fname);
     const size_t buflen = strnlen(buffer, BUFSIZ);
     fprintf(stderr, "buffer = '%s'\n", buffer);
     fseek(fp, 0L, SEEK_END);
