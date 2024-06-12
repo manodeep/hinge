@@ -546,7 +546,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             }
             else
             {
-                fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
+                // fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
                 remove_particle_from_group(groupnum[id], i, partindex[id], j, g, num_removed_per_group);
                 nremoved++;
             }
