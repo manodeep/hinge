@@ -527,8 +527,12 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     int64_t *num_removed_per_group = my_calloc(sizeof(*num_removed_per_group), N);
     int64 nremoved = 0;
     // int64_t offset = 0;
+    int interrupted = 0;
+    fprintf(stderr,"Removing duplicate particles ...\n")
+    init_my_progressbar(N, &interrupted);
     for (int64 i = 0; i < N; i++)
     {
+        my_progressbar(i, &interrupted);
         for (int64 j = 0; j < g[i].N; j++)
         {
             id64 id = g[i].id[j];
@@ -553,6 +557,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             // offset++;
         }
     }
+    finish_myprogressbar(&interrupted);
+    fprintf(stderr, "Removing duplicate particles ...done. Removed %lld particles ...\n", (long long)nremoved);
     free(all_ids);
     free(groupnum);
     free(partindex);
@@ -587,8 +593,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     fprintf(stderr, "Marking duplicates ...done\n");
 #endif
 
-    int interrupted = 0;
-    fprintf(stderr, "Removed %lld particles ...\n", (long long)nremoved);
+    // int interrupted = 0;
+    // fprintf(stderr, "Removed %lld particles ...\n", (long long)nremoved);
     fprintf(stderr, "Now fixing group particle counts ...\n");
     init_my_progressbar(N, &interrupted);
     for (int64 i = 0; i < N; i++)
