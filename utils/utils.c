@@ -527,7 +527,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     int64 nremoved = 0;
     // int64_t offset = 0;
     int interrupted = 0;
-    fprintf(stderr,"Removing duplicate particles ...\n");
+    fprintf(stderr, "Removing duplicate particles ...\n");
     init_my_progressbar(N, &interrupted);
     for (int64 i = 0; i < N; i++)
     {
