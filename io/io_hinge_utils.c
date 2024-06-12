@@ -115,7 +115,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
             halos = halocat->halos + index;
         }
 
-        fprintf(stderr,"before sscanf. buffer = '%s'\n", buffer);
+        fprintf(stderr, "before sscanf. buffer = '%s'\n", buffer);
         int nread = sscanf(buffer, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %lf %" SCNd64 " %lf %lf %lf %lf %lf %lf %lf",
                            &(halos->halo_id), &halos->fof_id, &halos->nsub, &halos->Mvir, &halos->npart, &halos->Xc,
                            &halos->Yc, &halos->Zc, &halos->VXc, &halos->VYc, &halos->VZc, &halos->Rvir);
