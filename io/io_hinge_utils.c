@@ -66,7 +66,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
         colnum++;
     }
     const off_t offset = ftell(fp);
-    fprintf(stderr, "offset = %ld\n", offset);
+    fprintf(stderr, "offset = %lld\n", offset);
     XASSERT(fgets(buffer, BUFSIZ, fp) != NULL, "Could not read the first data line from file '%s'\n", fname);
     const size_t buflen = strnlen(buffer, BUFSIZ);
     fprintf(stderr, "buffer = '%s'\n", buffer);
@@ -111,7 +111,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
                 fclose(fp);
                 return NULL;
             }
-            fprintf(stderr, "Reallocating memory for the halo catalog to %" PRID64 "\n", nallocated);
+            fprintf(stderr, "Reallocating memory for the halo catalog to %"PRId64"\n", nallocated);
             halos = halocat->halos + index;
         }
 
