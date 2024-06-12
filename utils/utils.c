@@ -520,12 +520,16 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         for (int64 j = 0; j < g[i].N; j++)
             max_id = g[i].id[j] > max_id ? g[i].id[j] : max_id;
     }
-    int8_t *all_ids = my_calloc(sizeof(*all_ids), max_id + 1);
-    int64 *groupnum = my_malloc(sizeof(*groupnum), max_id + 1);
-    int64 *partindex = my_malloc(sizeof(*partindex), max_id + 1);
+    int64_t *all_id_offset = my_calloc(sizeof(*all_ids), max_id + 1);
+    for(int64 i = 0; i <= max_id + 1; i++)
+    {
+        all_id_offset[i] = -1;
+    }
+    int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
+    int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
     int64_t *num_removed_per_group = my_calloc(sizeof(*num_removed_per_group), N);
     int64 nremoved = 0;
-    // int64_t offset = 0;
+    int64_t offset = 0;
     int interrupted = 0;
     fprintf(stderr, "Removing duplicate particles ...\n");
     init_my_progressbar(N, &interrupted);
@@ -541,28 +545,30 @@ int64 remove_duplicates(struct group_data *g, int64 N)
                         (long long)max_id);
                 exit(EXIT_FAILURE);
             }
-            if (all_ids[id] == 0)
+            if (all_ids[id] == -1)
             {
-                groupnum[id] = i;
-                partindex[id] = j;
-                all_ids[id] = 1;
+                groupnum[offset] = i;
+                partindex[offset] = j;
+                all_id_offset[id] = offset;
             }
             else
             {
                 // fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
                 int64 group_to_remove, part_to_remove;
-                remove_particle_from_group(groupnum[id], i, partindex[id], j, g, &group_to_remove, &part_to_remove);
+                int64_t prev_offset = all_id_offset[id];
+                remove_particle_from_group(groupnum[prev_offset], i, partindex[prev_offset], j, g, &group_to_remove, &part_to_remove);
                 num_removed_per_group[group_to_remove]++;
 
                 // If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
                 if (group_to_remove != i)
                 {
-                    groupnum[id] = i;
-                    partindex[id] = j;
+                    groupnum[offset] = i;
+                    partindex[offset] = j;
+                    all_id_offset[id] = offset;
                 }
                 nremoved++;
             }
-            // offset++;
+            offset++;
         }
     }
     finish_myprogressbar(&interrupted);
