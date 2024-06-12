@@ -2,6 +2,7 @@
 #include "progressbar.h"
 #include "read_param.h"
 #include "utils.h"
+#include "macros.h"
 
 // private functions
 void print_fofassign(int64 thisnum, struct group_data *prevgroup, struct group_data *nextgroup, int64 NextNsub,
@@ -124,6 +125,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     {
         for (j = 0; j < nextgroup[i].N; j++)
         {
+            XASSERT(nextgroup[i].id[j] >= 0, "Error: Particle id is negative %" STR_ID_FMT "\n", nextgroup[i].id[j]);
             if (nextgroup[i].id[j] > NextMaxPartId)
             {
                 NextMaxPartId = nextgroup[i].id[j];
