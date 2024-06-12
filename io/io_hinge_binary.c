@@ -173,4 +173,5 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
 
     free(haloids);
     free(fofids);
+    free_hinge_halocat(halocat);
 }
