@@ -98,7 +98,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     halocat->nfofs = 0;
     halocat->totnpart = 0;
     int64_t index = 0;
-    struct hinge_halo *halos = halocat->halos;
+    // struct hinge_halo *halos = halocat->halos;
     while (fgets(buffer, BUFSIZ, fp) != NULL)
     {
         if (index == nallocated)
@@ -112,7 +112,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
                 return NULL;
             }
             fprintf(stderr, "Reallocating memory for the halo catalog to %" PRId64 "\n", nallocated);
-            halos = halocat->halos + index;
+            // halos = halocat->halos + index;
         }
 
         fprintf(stderr, "before sscanf. index = %" PRId64 " nallocated = %" PRId64 " buffer = '%s'\n", index,
@@ -131,18 +131,9 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
             exit(EXIT_FAILURE);
         }
 
-        if (fof_only && halos->fof_id != halos->halo_id)
-        {
-            continue;
-        }
+        halocat->totnpart += npart;
 
-        if (halos->fof_id == halos->halo_id)
-        {
-            halocat->nfofs++;
-        }
-        halocat->totnpart += halos->npart;
-
-        halos++;
+        // halos++;
         index++;
     }
     fclose(fp);
