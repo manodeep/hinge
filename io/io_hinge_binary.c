@@ -118,7 +118,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
 #define ASSIGN_FIELD_TO_GROUPS(field_name, field_type, nhalos, buf, dst_field)                                         \
     {                                                                                                                  \
         int64_t offset = 0;                                                                                            \
-        int interrupted = 0;                                                                                           \
+        interrupted = 0;                                                                                               \
         fprintf(stderr, "Assigning field '%s' to groups ...\n", field_name);                                           \
         init_my_progressbar(nhalos, &interrupted);                                                                     \
         for (int64_t i = 0; i < nhalos; i++)                                                                           \
@@ -161,6 +161,8 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         my_progressbar(ihalo, &interrupted);
         const int64_t *fids = &fofids[offset];
         const int64_t *hids = &haloids[offset];
+        const int64_t haloid = group[ihalo].haloID;
+        const int64_t hosthaloid = group[ihalo].fofID;
         for (int64_t j = 0; j < group[ihalo].N; j++)
         {
             XASSERT(hids[j] == haloid, "Haloid mismatch: %" PRId64 " != %" PRId64, hids[j], haloid);
