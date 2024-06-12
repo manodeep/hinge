@@ -78,7 +78,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     // go back to the beginning of the first data line
     fseek(fp, offset, SEEK_SET);
 
-    struct hinge_catalog *halocat = my_calloc(sizeof(halocat), 1);
+    struct hinge_catalog *halocat = my_calloc(sizeof(*halocat), 1);
     if (halocat == NULL)
     {
         fprintf(stderr, "Could not allocate memory for the halo catalog\n");
@@ -86,7 +86,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
         return NULL;
     }
 
-    halocat->halos = my_malloc(sizeof(*halocat->halos), nallocated);
+    halocat->halos = my_malloc(sizeof(struct hinge_halo), nallocated);
     if (halocat->halos == NULL)
     {
         fprintf(stderr, "Could not allocate memory for the halo catalog\n");
@@ -104,7 +104,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
         if (index == nallocated)
         {
             nallocated *= 1.1;
-            halocat->halos = realloc(halocat->halos, nallocated * sizeof(*halocat->halos));
+            halocat->halos = realloc(halocat->halos, nallocated * sizeof(struct hinge_halo));
             if (halocat->halos == NULL)
             {
                 fprintf(stderr, "Could not allocate memory for the halo catalog\n");
