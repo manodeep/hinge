@@ -1,8 +1,8 @@
 #include "findallparents.h"
+#include "macros.h"
 #include "progressbar.h"
 #include "read_param.h"
 #include "utils.h"
-#include "macros.h"
 
 // private functions
 void print_fofassign(int64 thisnum, struct group_data *prevgroup, struct group_data *nextgroup, int64 NextNsub,
