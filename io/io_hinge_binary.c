@@ -87,7 +87,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         }                                                                                                              \
         free(buf);                                                                                                     \
         finish_myprogressbar(&interrupted);                                                                            \
-        fprintf(stderr, "Assigning field %s to groups ...\n", field_name);                                             \
+        fprintf(stderr, "Assigning field %s to groups ...done\n", field_name);                                         \
     }
     void *buf;
     CHECK_NPART_AND_READ_FIELD("partid", totnpart, buf);
@@ -151,6 +151,10 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         offset += group[ihalo].N;
     }
     finish_myprogressbar(&interrupted);
+
+    fprintf(stderr,"Removing duplicates ...\n");
+    const int64_t num_removed = remove_duplicates(group, nhalos);
+    fprintf(stderr,"Removing duplicates ...done. Removed %"PRId64" duplicates out of %"PRId64" total particles\n", num_removed, halocat->totnpart);
 
     free(haloids);
     free(fofids);
