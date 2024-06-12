@@ -638,7 +638,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
 
         if (num_removed_per_group[i] > 0)
         {
-            fprintf(stderr, "Removed %lld particles from group %lld\n", (long long)num_removed_per_group[i],
+            fprintf(stderr, "\nRemoved %lld particles from group %lld\n", (long long)num_removed_per_group[i],
                     (long long)i);
             interrupted = 1;
         }
