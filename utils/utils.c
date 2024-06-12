@@ -520,7 +520,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         for (int64 j = 0; j < g[i].N; j++)
             max_id = g[i].id[j] > max_id ? g[i].id[j] : max_id;
     }
-    int64_t *all_id_offset = my_calloc(sizeof(*all_ids), max_id + 1);
+    int64_t *all_id_offset = my_calloc(sizeof(*all_id_offset), max_id + 1);
     for (int64 i = 0; i <= max_id + 1; i++)
     {
         all_id_offset[i] = -1;
@@ -574,49 +574,17 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     }
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Removing duplicate particles ...done. Removed %lld particles ...\n", (long long)nremoved);
-    free(all_ids);
+    free(all_id_offset);
     free(groupnum);
     free(partindex);
 
-    // Now sort the particle ids such that the duplicates appear together
-    // #define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)    { SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, all_ids, i, j);
-    // SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, groupnum, i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partindex, i, j); }
-
-    //     fprintf(stderr, "In %s> Sorting %lld particle ids ...\n", __FUNCTION__, (long long)totnpart);
-    //     SGLIB_ARRAY_HEAP_SORT(id64, all_ids, totnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
-    // #undef MULTIPLE_ARRAY_EXCHANGER
-    //     fprintf(stderr, "In %s> Sorting %lld particle ids ...done\n", __FUNCTION__, (long long)totnpart);
-
-#if 0
-    int interrupted = 0;
-    fprintf(stderr, "Marking duplicates ...\n");
-    init_my_progressbar(totnpart - 1, &interrupted);
-    for (int64_t i = 0; i < totnpart - 1; i++)
-    {
-        my_progressbar(i, &interrupted);
-        if (all_ids[i] == all_ids[i + 1])
-        {
-            int64_t group1 = groupnum[i];
-            int64_t group2 = groupnum[i + 1];
-            int64_t part1 = partindex[i];
-            int64_t part2 = partindex[i + 1];
-            remove_particle_from_group(group1, group2, part1, part2, g, num_removed_per_group);
-            nremoved++;
-        }
-    }
-    finish_myprogressbar(&interrupted);
-    fprintf(stderr, "Marking duplicates ...done\n");
-#endif
-
-    // int interrupted = 0;
-    // fprintf(stderr, "Removed %lld particles ...\n", (long long)nremoved);
     fprintf(stderr, "Now fixing group particle counts ...\n");
     init_my_progressbar(N, &interrupted);
     for (int64 i = 0; i < N; i++)
     {
         my_progressbar(i, &interrupted);
-        if (num_removed_per_group[i] == 0)
-            continue;
+        if (num_removed_per_group[i] == 0) continue;
+
         for (int64 j = 0; j < g[i].N; j++)
         {
             if (g[i].id[j] == -1)
