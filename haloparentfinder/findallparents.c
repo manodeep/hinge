@@ -108,12 +108,6 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     int64 tmp_id, tmp_grpid;
     int64 max_rankid, oldchildid;
 
-    int8_t *NextAllPartIds = NULL;
-    int64 *NextAllGroupIds = NULL;
-    int64 *NextAllRealGroupIds = NULL;
-    int64 *NextAllRealGroupLocs = NULL;
-    double *NextAllRanks = NULL;
-    int64 *NextAllCommon = NULL;
     int64 NextMaxPartId = -1;
     int64 FOF_Parent;
     char buf[MAXLEN];
@@ -132,20 +126,24 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             }
         }
     }
-    fprintf(stderr, "NextMaxPartId = %" STR_ID_FMT "\n", NextMaxPartId);
-    NextMaxPartId++; /* should be able to index with NextMaxPartId -> n+1 elements
-                      */
-    NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
-    NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
-    NextAllRealGroupIds = my_malloc(sizeof(*NextAllRealGroupIds), NextMaxPartId);
-    NextAllRealGroupLocs = my_malloc(sizeof(*NextAllRealGroupLocs), NextMaxPartId);
-    NextAllRanks = my_calloc(sizeof(*NextAllRanks), NextNsub);
-    NextAllCommon = my_calloc(sizeof(*NextAllCommon), NextNsub);
+    NextMaxPartId++; /* should be able to index with NextMaxPartId -> n+1 elements */
+    fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT "\n", __FUNCTION__, NextMaxPartId);
+
+    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
+    int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
+    int64 *NextAllRealGroupIds = my_malloc(sizeof(*NextAllRealGroupIds), NextMaxPartId);
+    int64 *NextAllRealGroupLocs = my_malloc(sizeof(*NextAllRealGroupLocs), NextMaxPartId);
+    double *NextAllRanks = my_calloc(sizeof(*NextAllRanks), NextNsub);
+    int64 *NextAllCommon = my_calloc(sizeof(*NextAllCommon), NextNsub);
 
     FOF_Parent = 0;
     int64 flag = 0;
+    int interrupted = 0;
+    fprintf(stderr,"Finding parents for FOF halos ...\n");
+    init_my_progressbar(NextNsub, &interrupted);
     for (i = 0; i < NextNsub; i++)
     {
+        my_progressbar(i, &interrupted);
         // NextAllRanks[i] = 0.0;
         // NextAllCommon[i] = 0;
         if (nextgroup[i].isFof == 1)
@@ -171,6 +169,9 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             NextAllRealGroupLocs[nextgroup[i].id[j]] = j;
         }
     }
+    finish_myprogressbar(&interrupted);
+    fprintf(stderr,"Finding parents for FOF halos ...done\n");
+
     if (flag > 0)
     {
         fprintf(stderr, "Found %" STR_FMT " duplicate particles. Code might not work properly\n", flag);
@@ -183,7 +184,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     /*   fprintf(stderr,"\n\n"); */
     /* } */
 
-    int interrupted = 0;
+    interrupted = 0;
     init_my_progressbar(PrevNsub, &interrupted);
 
     FOF_Parent = 0;
@@ -383,13 +384,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     double tmp_max_rank;
     int64 tmp_max_rankid;
 
-    int8_t *NextAllPartIds = NULL;
-    int64 *NextAllGroupIds = NULL;
-    int64 *NextAllGroupLocs = NULL;
-    double *NextAllRanks = NULL;
-    int64 *NextAllCommon = NULL;
-
-    int64 NextMaxPartId = 0;
+    int64 NextMaxPartId = -1;
     for (int64 i = 0; i < NextNsub; i++)
     {
         for (int64 j = 0; j < nextgroup[i].N; j++)
@@ -400,22 +395,23 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         }
     }
     NextMaxPartId++;
-
-    NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
-    NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
-    NextAllGroupLocs = my_malloc(sizeof(*NextAllGroupLocs), NextMaxPartId);
-    NextAllRanks = my_malloc(sizeof(*NextAllRanks), NextNsub);
-    NextAllCommon = my_malloc(sizeof(*NextAllCommon), NextNsub);
+    fprintf(stderr,"In %s> NextMaxPartId = %" STR_FMT "\n", __FUNCTION__, NextMaxPartId);
+    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
+    int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
+    int64 *NextAllGroupLocs = my_malloc(sizeof(*NextAllGroupLocs), NextMaxPartId);
+    double *NextAllRanks = my_calloc(sizeof(*NextAllRanks), NextNsub);
+    int64 *NextAllCommon = my_calloc(sizeof(*NextAllCommon), NextNsub);
 
     for (int64 i = 0; i < NextNsub; i++)
     {
-        NextAllRanks[i] = 0.0;
-        NextAllCommon[i] = 0;
+        // NextAllRanks[i] = 0.0;
+        // NextAllCommon[i] = 0;
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
-            NextAllPartIds[nextgroup[i].id[j]] = 1;
-            NextAllGroupIds[nextgroup[i].id[j]] = i;
-            NextAllGroupLocs[nextgroup[i].id[j]] = j;
+            const id64 id = nextgroup[i].id[j];
+            NextAllPartIds[id] = 1;
+            NextAllGroupIds[id] = i;
+            NextAllGroupLocs[id] = j;
         }
     }
 
