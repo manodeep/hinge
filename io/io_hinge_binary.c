@@ -110,7 +110,8 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         }                                                                                                              \
         const size_t sizeof_every_field = 8;                                                                           \
         buf = my_malloc(sizeof_every_field, totnpart);                                                                 \
-        my_fread(buf, sizeof_every_field, totnpart, fp);/* all the fields are of type int64_t or double (i.e., 8 bytes) */ \
+        my_fread(buf, sizeof_every_field, totnpart,                                                                    \
+                 fp); /* all the fields are of type int64_t or double (i.e., 8 bytes) */                               \
         fclose(fp);                                                                                                    \
     }
 
@@ -130,7 +131,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         free(buf);                                                                                                     \
     }
     void *buf;
-    fprintf(stderr,"Reading and assigning field: ");
+    fprintf(stderr, "Reading and assigning field: ");
     CHECK_NPART_AND_READ_FIELD("partid", totnpart, buf);
     ASSIGN_FIELD_TO_GROUPS("partid", int64_t, nhalos, buf, id);
 
@@ -148,7 +149,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     CHECK_NPART_AND_READ_FIELD("haloid", totnpart, haloids);
     CHECK_NPART_AND_READ_FIELD("fofid", totnpart, fofids);
 
-    fprintf(stderr," ... done\n");
+    fprintf(stderr, " ... done\n");
 
     int64_t offset = 0;
     fprintf(stderr, "Checking the consistency of the halo and fof ids ...\n");
