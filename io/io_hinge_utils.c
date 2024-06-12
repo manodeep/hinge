@@ -121,16 +121,19 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
         // double Mvir, Xc, Yc, Zc, VXc, VYc, VZc, Rvir;
         // int nread = sscanf(buffer, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %lf %" SCNd64 " %lf %lf %lf %lf %lf %lf %lf",
         //                    &halo_id, &fof_id, &nsub, &Mvir, &npart, &Xc, &Yc, &Zc, &VXc, &VYc, &VZc, &Rvir);
-        int nread = sscanf(buffer, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %lf %" SCNd64 " %lf %lf %lf %lf %lf %lf %lf",
-                           &(halos->halo_id), &(halos->fof_id), &(halos->nsub), &(halos->Mvir), &(halos->npart),
-                           &(halos->Xc), &(halos->Yc), &(halos->Zc), &(halos->VXc), &(halos->VYc), &(halos->VZc), &(halos->Rvir));
+        int nread =
+            sscanf(buffer, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %lf %" SCNd64 " %lf %lf %lf %lf %lf %lf %lf",
+                   &(halos->halo_id), &(halos->fof_id), &(halos->nsub), &(halos->Mvir), &(halos->npart), &(halos->Xc),
+                   &(halos->Yc), &(halos->Zc), &(halos->VXc), &(halos->VYc), &(halos->VZc), &(halos->Rvir));
         if (nread != num_column_indices)
         {
             fprintf(stderr, "Error: Could not read %d columns from line = '%s'\n", num_column_indices, buffer);
             exit(EXIT_FAILURE);
         }
-        if(fof_only && halos->fof_id != halos->halo_id) continue;
-        if(halos->fof_id == halos->halo_id) halocat->nfofs++;
+        if (fof_only && halos->fof_id != halos->halo_id)
+            continue;
+        if (halos->fof_id == halos->halo_id)
+            halocat->nfofs++;
 
         halocat->totnpart += halos->npart;
 
