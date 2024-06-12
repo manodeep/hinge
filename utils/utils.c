@@ -1,8 +1,8 @@
 #include "utils.h"
 #include "defs.h"
+#include "progressbar.h"
 #include "read_param.h"
 #include "sglib.h"
-#include "progressbar.h"
 
 // A real wrapper to snprintf that will exit() if the allocated buffer length
 // was not sufficient. Usage is the same as snprintf
@@ -511,14 +511,14 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partindex, i, j);                                                        \
     }
 
-    fprintf(stderr,"In %s> Sorting %lld particle ids ...\n", __FUNCTION__, (long long)totnpart);
+    fprintf(stderr, "In %s> Sorting %lld particle ids ...\n", __FUNCTION__, (long long)totnpart);
     SGLIB_ARRAY_HEAP_SORT(id64, all_ids, totnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 #undef MULTIPLE_ARRAY_EXCHANGER
-    fprintf(stderr,"In %s> Sorting %lld particle ids ...done\n", __FUNCTION__, (long long)totnpart);
+    fprintf(stderr, "In %s> Sorting %lld particle ids ...done\n", __FUNCTION__, (long long)totnpart);
 
     int interrupted = 0;
-    fprintf(stderr,"Marking duplicates ...\n");
-    init_my_progressbar(totnpart-1, &interrupted);
+    fprintf(stderr, "Marking duplicates ...\n");
+    init_my_progressbar(totnpart - 1, &interrupted);
     for (int64_t i = 0; i < totnpart - 1; i++)
     {
         my_progressbar(i, &interrupted);
@@ -556,11 +556,10 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         }
     }
     finish_myprogressbar(&interrupted);
-    fprintf(stderr,"Marking duplicates ...done\n");
+    fprintf(stderr, "Marking duplicates ...done\n");
 
-
-    fprintf(stderr,"Removed %lld particles ...\n", (long long)nremoved);
-    fprintf(stderr,"Now fixing group particle counts ...\n");
+    fprintf(stderr, "Removed %lld particles ...\n", (long long)nremoved);
+    fprintf(stderr, "Now fixing group particle counts ...\n");
     init_my_progressbar(N, &interrupted);
     for (int64 i = 0; i < N; i++)
     {
@@ -593,7 +592,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         }
     }
     finish_myprogressbar(&interrupted);
-    fprintf(stderr,"Now fixing group particle counts ...done\n");
+    fprintf(stderr, "Now fixing group particle counts ...done\n");
 
     free(all_ids);
     free(groupnum);
