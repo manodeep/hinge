@@ -591,7 +591,10 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             if (g[i].id[j] == -1)
             {
                 if (j == (g[i].N - 1))
+                {
+                    g[i].N--;
                     break;
+                }
 
                 const int64_t nmove = g[i].N - (j + 1);
                 // Do a memmove to preserve the ordering of the particles
