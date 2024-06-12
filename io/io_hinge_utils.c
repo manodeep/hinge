@@ -115,11 +115,15 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
             halos = halocat->halos + index;
         }
 
-        fprintf(stderr, "before sscanf. index = %" PRId64 " nallocated = %" PRId64 " buffer = '%s'\n", index,
-                nallocated, buffer);
+        fprintf(stderr,"before sscanf. index = %"PRId64" nallocated = %"PRId64" buffer = '%s'\n", index, nallocated, buffer);
+        int64_t halo_id, fof_id, nsub, npart;
+        double Mvir, Xc, Yc, Zc, VXc, VYc, VZc, Rvir;
         int nread = sscanf(buffer, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %lf %" SCNd64 " %lf %lf %lf %lf %lf %lf %lf",
-                           &(halos->halo_id), &halos->fof_id, &halos->nsub, &halos->Mvir, &halos->npart, &halos->Xc,
-                           &halos->Yc, &halos->Zc, &halos->VXc, &halos->VYc, &halos->VZc, &halos->Rvir);
+                           &halo_id, &fof_id, &nsub, &Mvir, &npart, &Xc,
+                           &Yc, &Zc, &VXc, &VYc, &VZc, &Rvir);
+        // int nread = sscanf(buffer, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %lf %" SCNd64 " %lf %lf %lf %lf %lf %lf %lf",
+        //                    &(halos->halo_id), &(halos->fof_id), &(halos->nsub), &(halos->Mvir), &(halos->npart), &(halos->Xc),
+        //                    &(halos->Yc), &(halos->Zc), &(halos->VXc), &(halos->VYc), &(halos->VZc), &(halos->Rvir));
         if (nread != num_column_indices)
         {
             fprintf(stderr, "Error: Could not read %d columns from line = '%s'\n", num_column_indices, buffer);
