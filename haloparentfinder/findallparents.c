@@ -108,7 +108,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     int64 tmp_id, tmp_grpid;
     int64 max_rankid, oldchildid;
 
-    short int *NextAllPartIds = NULL;
+    int8_t *NextAllPartIds = NULL;
     int64 *NextAllGroupIds = NULL;
     int64 *NextAllRealGroupIds = NULL;
     int64 *NextAllRealGroupLocs = NULL;
@@ -383,7 +383,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     double tmp_max_rank;
     int64 tmp_max_rankid;
 
-    short int *NextAllPartIds = NULL;
+    int8_t *NextAllPartIds = NULL;
     int64 *NextAllGroupIds = NULL;
     int64 *NextAllGroupLocs = NULL;
     double *NextAllRanks = NULL;
@@ -391,10 +391,14 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
     int64 NextMaxPartId = 0;
     for (int64 i = 0; i < NextNsub; i++)
+    {
         for (int64 j = 0; j < nextgroup[i].N; j++)
-            if (nextgroup[i].id[j] > NextMaxPartId)
-                NextMaxPartId = nextgroup[i].id[j];
-
+        {
+            const id64 id = nextgroup[i].id[j];
+            XASSERT(id >= 0, "Error: Particle id is negative %" STR_ID_FMT "\n", id);
+            NextMaxPartId = id > NextMaxPartId ? id : NextMaxPartId;
+        }
+    }
     NextMaxPartId++;
 
     NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
