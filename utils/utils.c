@@ -5,7 +5,7 @@
 #include "sglib.h"
 
 static void remove_particle_from_group(const int64 group1, const int64 group2, const int64 part1, const int64 part2,
-                                       struct group_data *g, int64_t *num_removed_per_group);
+                                       struct group_data *g, int64 *group_to_remove, int64 *part_to_remove);
 
 // A real wrapper to snprintf that will exit() if the allocated buffer length
 // was not sufficient. Usage is the same as snprintf
@@ -483,7 +483,7 @@ int64 get_ncommon(struct group_data *prev, struct group_data *next)
 }
 
 void remove_particle_from_group(const int64 group1, const int64 group2, const int64 part1, const int64 part2,
-                                struct group_data *g, int64_t *num_removed_per_group)
+                                struct group_data *g, int64 *group_to_remove, int64 *part_to_remove)
 {
     if (g[group1].fofID == g[group2].fofID)
     {
@@ -504,10 +504,9 @@ void remove_particle_from_group(const int64 group1, const int64 group2, const in
     const double dist_from_cen2 = dx2 * dx2 + dy2 * dy2 + dz2 * dz2;
 
     // Keep the particle in the halo with the smaller distance from the center
-    int64 group_to_remove = dist_from_cen1 < dist_from_cen2 ? group2 : group1;
-    int64 part_to_remove = dist_from_cen1 < dist_from_cen2 ? part2 : part1;
-    g[group_to_remove].id[part_to_remove] = -1;
-    num_removed_per_group[group_to_remove]++;
+    *group_to_remove = dist_from_cen1 < dist_from_cen2 ? group2 : group1;
+    *part_to_remove = dist_from_cen1 < dist_from_cen2 ? part2 : part1;
+    g[*group_to_remove].id[*part_to_remove] = -1;
     return;
 }
 
@@ -551,7 +550,16 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             else
             {
                 // fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
-                remove_particle_from_group(groupnum[id], i, partindex[id], j, g, num_removed_per_group);
+                int64 group_to_remove, part_to_remove;
+                remove_particle_from_group(groupnum[id], i, partindex[id], j, g, &group_to_remove, &part_to_remove);
+                num_removed_per_group[group_to_remove]++;
+
+                //If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
+                if(group_to_remove != i)
+                {
+                    groupnum[id] = i;
+                    partindex[id] = j;
+                }
                 nremoved++;
             }
             // offset++;
