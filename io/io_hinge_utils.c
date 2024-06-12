@@ -72,10 +72,10 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     fprintf(stderr, "buffer = '%s'\n", buffer);
     fseek(fp, 0L, SEEK_END);
     const off_t sz = ftell(fp);
-    const int64_t nlines = sz/buflen;
-    int64_t nallocated = nlines > 1 ? nlines:1;
+    const int64_t nlines = sz / buflen;
+    int64_t nallocated = nlines > 1 ? nlines : 1;
 
-    //go back to the beginning of the first data line
+    // go back to the beginning of the first data line
     fseek(fp, offset, SEEK_SET);
 
     struct hinge_catalog *halocat = my_calloc(sizeof(halocat), 1);
@@ -101,7 +101,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     struct hinge_halo *halos = halocat->halos;
     while (fgets(buffer, BUFSIZ, fp) != NULL)
     {
-        if(index == nallocated)
+        if (index == nallocated)
         {
             nallocated *= 1.1;
             halocat->halos = realloc(halocat->halos, nallocated * sizeof(struct hinge_halo));
@@ -111,7 +111,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
                 fclose(fp);
                 return NULL;
             }
-            fprintf(stderr, "Reallocating memory for the halo catalog to %"PRID64"\n", nallocated);
+            fprintf(stderr, "Reallocating memory for the halo catalog to %" PRID64 "\n", nallocated);
             halos = halocat->halos + index;
         }
 
@@ -140,7 +140,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     }
     fclose(fp);
 
-    halocat->nhalos = fof_only ? halocat->nfofs:index;
+    halocat->nhalos = fof_only ? halocat->nfofs : index;
     halocat->halos = realloc(halocat->halos, halocat->nhalos * sizeof(struct hinge_halo));
     return halocat;
 }
