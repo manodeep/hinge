@@ -624,9 +624,6 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Now fixing group particle counts ...done\n");
 
-    free(all_ids);
-    free(groupnum);
-    free(partindex);
     free(num_removed_per_group);
     return nremoved;
 }
