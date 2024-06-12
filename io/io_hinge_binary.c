@@ -84,6 +84,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         group[ihalo].Rank = 0.0;
         group[ihalo].NpartinParent = 0;
     }
+    finish_myprogressbar(&interrupted);
     fprintf(stderr, "Assigning group-level properties ...done\n");
 
     /* read individual files for each column */
