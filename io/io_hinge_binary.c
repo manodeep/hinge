@@ -46,6 +46,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     // const char field_names[][MAXLEN] = {"partid", "xpos", "ypos", "zpos", "haloid", "fofid"};
 #define CHECK_NPART_AND_READ_FIELD(field_name, totnpart, buf)                                                          \
     {                                                                                                                  \
+        fprintf(stderr,"Reading field = '%s' ...\n", field_name);                                                      \
         int64_t npart_field;                                                                                           \
         char field_fname[MAXLEN];                                                                                      \
         my_snprintf(field_fname, MAXLEN, "%s/%s_particles_z%0.3f_%s.bin", params->GROUP_DIR, params->GROUP_BASE,       \
@@ -66,6 +67,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         my_fread(buf, sizeof_every_field, totnpart,                                                                    \
                  fp); /* all the fields are of type int64_t or double (i.e., 8 bytes) */                               \
         fclose(fp);                                                                                                    \
+        fprintf(stderr,"Reading field = '%s' ...done\n", field_name);                                                  \
     }
 
 #define ASSIGN_FIELD_TO_GROUPS(field_name, field_type, nhalos, buf, dst_field)                                         \
