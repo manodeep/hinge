@@ -545,7 +545,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
                         (long long)max_id);
                 exit(EXIT_FAILURE);
             }
-            if (all_ids[id] == -1)
+            if (all_id_offset[id] == -1)
             {
                 groupnum[offset] = i;
                 partindex[offset] = j;
