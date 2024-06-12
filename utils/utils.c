@@ -553,6 +553,9 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             offset++;
         }
     }
+    free(all_ids);
+    free(groupnum);
+    free(partindex);
 
     // Now sort the particle ids such that the duplicates appear together
     // #define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)    { SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, all_ids, i, j);
