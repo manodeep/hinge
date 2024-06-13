@@ -465,7 +465,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             const id64 tmp_id = prevgroup[i].id[j];
             if (tmp_id < 0 || tmp_id >= NextMaxPartId)
                 continue;
-            if(NextAllPartIds[tmp_id] != 1)
+            if (NextAllPartIds[tmp_id] != 1)
                 continue;
 
             const int64 tmp_grpid = NextAllGroupIds[tmp_id];
@@ -473,8 +473,8 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
             if ((PARAMS.MAX_RANK_LOC <= 0) ||
                 (PARAMS.MAX_RANK_LOC > 0 && j < PARAMS.MAX_RANK_LOC)) // 0 based indexing -> index
-                                                                        // MAX_RANK_LOC-1 is the
-                                                                        // MAX_RANK_LOC'th element
+                                                                      // MAX_RANK_LOC-1 is the
+                                                                      // MAX_RANK_LOC'th element
                 NextAllRanks[tmp_grpid] += compute_rank(j);
 
             if ((PARAMS.MAX_RANK_LOC <= 0) ||
@@ -485,8 +485,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             prevgroup[i].parentsnapshotforparticle[j] = snapshot;
 
             nextgroup[tmp_grpid].parentgroupforparticle[NextAllGroupLocs[tmp_id]] = i;
-            nextgroup[tmp_grpid].parentsnapshotforparticle[NextAllGroupLocs[tmp_id]] =
-                prevgroup[i].snapshot;
+            nextgroup[tmp_grpid].parentsnapshotforparticle[NextAllGroupLocs[tmp_id]] = prevgroup[i].snapshot;
         }
 
         max_rankid = find_max_rank(NextAllRanks, NextNsub);
@@ -499,16 +498,15 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         {
             tmp_max_rank = NextAllRanks[max_rankid];
             /* Going to exploit the fact that nextgroup FOF finding would have
-                * resulted in their ParentId being filled up */
+             * resulted in their ParentId being filled up */
 
             /* 21st April, 2010: Do I need the following section ? */
             if ((prevgroup[i].isFof == 1) && (prevgroup[i].Nsub > 1) && (nextgroup[max_rankid].isFof != 1) &&
-                (nextgroup[(nextgroup[max_rankid].FOFHalo)].ParentId < 0) &&
-                (snapshot - prevgroup[i].snapshot) == 1)
+                (nextgroup[(nextgroup[max_rankid].FOFHalo)].ParentId < 0) && (snapshot - prevgroup[i].snapshot) == 1)
             {
                 print_reassign(i, prevgroup, nextgroup, NextNsub, NextAllRanks, NextAllCommon, outpath);
                 /* 				  tmp_nfound =
-                    * find_nonzero_ranks(NextAllRanks,NextNsub,tmp_max_rankids); */
+                 * find_nonzero_ranks(NextAllRanks,NextNsub,tmp_max_rankids); */
                 NextAllRanks[max_rankid] = 0.0;
                 tmp_max_rankid = find_max_rank(NextAllRanks, NextNsub);
                 if (tmp_max_rankid == -1)
