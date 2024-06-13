@@ -574,7 +574,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         }
     }
     finish_myprogressbar(&interrupted);
-    fprintf(stderr, "Removing duplicate particles from %lld groups... done. Removed %lld particles \n", N, (long long) nremoved);
+    fprintf(stderr, "Removing duplicate particles from %lld groups... done. Removed %lld particles \n", N,
+            (long long)nremoved);
     free(all_id_offset);
     free(groupnum);
     free(partindex);
