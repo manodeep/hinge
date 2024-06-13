@@ -223,6 +223,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 for (int64 k = 0; k < prevgroup[j].N; k++)
                 {
                     const id64 tmp_id = prevgroup[j].id[k];
+                    fprintf(stderr,"k=%"STR_FMT" tmp_id = %"STR_FMT" NextMaxPartId = %"STR_FMT"\n", k, tmp_id, NextMaxPartId);
                     if (tmp_id < 0 || tmp_id >= NextMaxPartId)
                     {
                         continue;
@@ -232,7 +233,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                         continue;
                     }
 
-                    fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT "\n", k, tmp_id);
+                    fprintf(stderr,"k=%"STR_FMT" tmp_id = %"STR_FMT" ..actually working\n", k, tmp_id);
                     int64 tmp_grpid = NextAllGroupIds[tmp_id];
                     XASSERT(tmp_grpid >= 0 && tmp_grpid < NextNsub,
                             "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grpid, NextNsub);
