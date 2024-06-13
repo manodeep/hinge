@@ -120,7 +120,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         for (j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
-            if(id == -1) continue;
+            if (id == -1)
+                continue;
 
             // XASSERT(nextgroup[i].id[j] >= 0, "Error: Particle id is negative %" STR_ID_FMT "\n", nextgroup[i].id[j]);
             NextMaxPartId = id > NextMaxPartId ? id : NextMaxPartId;
@@ -152,7 +153,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         for (j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
-            if(id == -1) continue;
+            if (id == -1)
+                continue;
 
             /*Check if particle ids are repeated !*/
             if (NextAllPartIds[id] == 1)
@@ -161,8 +163,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 fprintf(stderr,
                         "duplicate id = %" STR_ID_FMT " in group = %" STR_FMT " (with npart=%" STR_FMT ")."
                         "Previously seen in group =%" STR_FMT " (with npart = %" STR_FMT ")\n",
-                        id, i, nextgroup[i].N, NextAllRealGroupIds[id],
-                        nextgroup[NextAllRealGroupIds[id]].N);
+                        id, i, nextgroup[i].N, NextAllRealGroupIds[id], nextgroup[NextAllRealGroupIds[id]].N);
                 flag++;
             }
             NextAllPartIds[id] = 1;
@@ -220,7 +221,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 for (int64 k = 0; k < prevgroup[j].N; k++)
                 {
                     const id64 tmp_id = prevgroup[j].id[k];
-                    if(tmp_id == -1)  continue;
+                    if (tmp_id == -1)
+                        continue;
 
                     if (tmp_id < NextMaxPartId)
                     {
@@ -397,7 +399,8 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
-            if(id == -1) continue;
+            if (id == -1)
+                continue;
 
             // XASSERT(id >= 0, "Error: Particle id is negative %" STR_ID_FMT "\n", id);
             NextMaxPartId = id > NextMaxPartId ? id : NextMaxPartId;
@@ -418,7 +421,8 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
-            if(id == -1) continue;
+            if (id == -1)
+                continue;
 
             NextAllPartIds[id] = 1;
             NextAllGroupIds[id] = i;
@@ -455,7 +459,8 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             for (int64 j = 0; j < prevgroup[i].N; j++)
             {
                 id64 tmp_id = prevgroup[i].id[j];
-                if(tmp_id == -1)  continue;
+                if (tmp_id == -1)
+                    continue;
 
                 int64 tmp_grpid = -1;
                 if (tmp_id < NextMaxPartId)
