@@ -515,10 +515,10 @@ int64 remove_duplicates(struct group_data *g, int64 N)
 {
     int64_t totnpart = 0;
     id64 max_id = 0;
-    for (int64 i=0; i < N; i++)
+    for (int64 i = 0; i < N; i++)
     {
         totnpart += g[i].N;
-        for (int64 j=0; j < g[i].N; j++)
+        for (int64 j = 0; j < g[i].N; j++)
         {
             max_id = g[i].id[j] > max_id ? g[i].id[j] : max_id;
         }
@@ -556,7 +556,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
                 // fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
                 int64 group_to_remove, part_to_remove;
                 int64_t prev_offset = all_id_offset[id];
-                remove_particle_from_group(groupnum[prev_offset], i, partindex[prev_offset], j, g, &group_to_remove, &part_to_remove);
+                remove_particle_from_group(groupnum[prev_offset], i, partindex[prev_offset], j, g, &group_to_remove,
+                                           &part_to_remove);
                 // num_removed_per_group[group_to_remove]++;
 
                 // If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
