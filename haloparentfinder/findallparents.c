@@ -245,9 +245,10 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                                 tmp_grpid, nextgroup[tmp_grpid].snapshot);
                         exit(EXIT_FAILURE);
                     }
-
+                    fprintf(stderr,"Here filling nextallranks and nextallcommon\n");
                     NextAllRanks[tmp_grpid] += 1.0;
                     NextAllCommon[tmp_grpid]++;
+                    fprintf(stderr,"Here filling nextallranks and nextallcommon ...done\n");
 
                     /* stores the real halo number and not the Fof halo number.
                     Group matching is still donebased on the Fof halo number. */
@@ -259,10 +260,13 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                             "Error: Group loc is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", real_grploc,
                             nextgroup[real_grpnum].N);
 
+                    fprintf(stderr,"setting parentgroupforparticle\n");
                     prevgroup[j].parentgroupforparticle[k] = real_grpnum;
                     prevgroup[j].parentsnapshotforparticle[k] = nextgroup[tmp_grpid].snapshot;
                     nextgroup[real_grpnum].parentgroupforparticle[real_grploc] = j;
                     nextgroup[real_grpnum].parentsnapshotforparticle[real_grploc] = prevgroup[j].snapshot;
+                    fprintf(stderr,"setting parentgroupforparticle ...done\n");
+
                 }
                 j++;
             }
