@@ -83,6 +83,9 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         group[ihalo].Ncommon = 0;
         group[ihalo].Rank = 0.0;
         group[ihalo].NpartinParent = 0;
+
+        group[ihalo].parentgroupforparticle = my_malloc(sizeof(*group[ihalo].parentgroupforparticle), group[ihalo].N);
+        group[ihalo].parentsnapshotforparticle = my_malloc(sizeof(*group[ihalo].parentsnapshotforparticle), group[ihalo].N);
     }
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Assigning group-level properties ...done\n");
@@ -166,6 +169,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
             XASSERT(hids[j] == haloid, "Haloid mismatch: %" PRId64 " != %" PRId64, hids[j], haloid);
             XASSERT(fids[j] == hosthaloid, "Fofid mismatch: %" PRId64 " != %" PRId64, fids[j], hosthaloid);
         }
+
         offset += group[ihalo].N;
     }
     fprintf(stderr, "Checking the consistency of the halo and fof ids ...done\n");
