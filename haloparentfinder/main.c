@@ -372,9 +372,10 @@ int main(int argc, char **argv)
         t_sectionstart = time(NULL);
         Nparentsfound = findfofparents(group0, Ngroups0, group1, Ngroups1, PARAMS.OUTPUT_DIR);
         t_sectionend = time(NULL);
-        fprintf(stderr, " done ...\n\n");
+        // fprintf(stderr, " done ...\n\n");
         print_time(t_sectionstart, t_sectionend, "Find FOF parents");
 
+        fprintf(stderr, "Nparentsfound = %" STR_FMT " NFof0 = %"STR_FMT"\n", Nparentsfound, NFof0);
         notfound = NFof0;
         t_sectionstart = time(NULL);
         for (int64 i = 0; i < Ngroups0; i++)
