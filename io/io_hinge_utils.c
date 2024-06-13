@@ -72,8 +72,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     // fprintf(stderr, "buffer = '%s'\n", buffer);
     fseek(fp, 0L, SEEK_END);
     const off_t sz = ftell(fp);
-    const int64_t nlines = sz / buflen;
-    int64_t nallocated = nlines > 1 ? nlines : 1;
+    int64_t nallocated = sz / buflen + 1;
 
     // go back to the beginning of the first data line
     fseek(fp, offset, SEEK_SET);
