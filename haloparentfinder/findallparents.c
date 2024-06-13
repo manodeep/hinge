@@ -209,12 +209,11 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         //         "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", FOF_Parent, PrevNsub);
         if (prevgroup[FOF_Parent].ParentId >= 0)
         {
-            if (prevgroup[i].isFof == 1)
-                NFofHalofound++;
-
+            NFofHalofound++;
             continue;
         }
 
+        init_all_ranks(NextAllRanks, NextAllCommon, NextNsub);
         fprintf(stderr,
                 "Now starting on halo with i= %" STR_FMT " (prevnsub = %" STR_FMT "), NextNsub = %" STR_FMT
                 "  with FOF parent = %" STR_FMT "  prev.fofhalo = %" STR_FMT " prevgroup.Nsub = %" STR_FMT "\n",
@@ -364,7 +363,6 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 }
             }
         }
-        init_all_ranks(NextAllRanks, NextAllCommon, NextNsub);
     }
 
     finish_myprogressbar(&interrupted);
