@@ -66,10 +66,10 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
         colnum++;
     }
     const off_t offset = ftell(fp);
-    fprintf(stderr, "offset = %lld\n", (long long)offset);
+    // fprintf(stderr, "offset = %lld\n", (long long)offset);
     XASSERT(fgets(buffer, BUFSIZ, fp) != NULL, "Could not read the first data line from file '%s'\n", fname);
     const size_t buflen = strnlen(buffer, BUFSIZ);
-    fprintf(stderr, "buffer = '%s'\n", buffer);
+    // fprintf(stderr, "buffer = '%s'\n", buffer);
     fseek(fp, 0L, SEEK_END);
     const off_t sz = ftell(fp);
     const int64_t nlines = sz / buflen;
@@ -143,6 +143,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     fclose(fp);
 
     halocat->nhalos = fof_only ? halocat->nfofs : index;
+    fprintf(stderr,"In %s> Loaded '%s' with %" PRId64 " halos\n", __FUNCTION__, fname, halocat->nhalos);
     halocat->halos = realloc(halocat->halos, halocat->nhalos * sizeof(struct hinge_halo));
     return halocat;
 }
