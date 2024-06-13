@@ -626,6 +626,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             const id64 id = g[i].id[j];
             sqr_radius[j] = (id == -1) ? -1.0 : sqr_sep;
         }
+        const struct group_data *thisgroup = &g[i];
+
 #define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)                                                                     \
     {                                                                                                                  \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, thisgroup->id, i, j);                                                     \
@@ -638,7 +640,6 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         free(sqr_radius);
 #undef MULTIPLE_ARRAY_EXCHANGER
 
-        const struct group_data *thisgroup = &g[i];
         const int64 start = 0, end = num_removed_per_group[i] - 1;
         XASSERT(num_removed_per_group[i] <= g[i].N,
                 "Error: Can remove at most %lld particles (i.e., all particles) from groupnum = %lld. Instead found = "
