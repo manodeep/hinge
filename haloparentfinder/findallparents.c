@@ -516,6 +516,12 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
              * resulted in their ParentId being filled up */
 
             /* 21st April, 2010: Do I need the following section ? */
+            XASSERT(i >= 0 && i < PrevNsub, "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", i, PrevNsub);
+            XASSERT(max_rankid >= 0 && max_rankid < NextNsub,
+                    "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", max_rankid, NextNsub);
+            XASSERT(nextgroup[max_rankid].FOFHalo >= 0 && nextgroup[max_rankid].FOFHalo < NextNsub,
+                    "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", nextgroup[max_rankid].FOFHalo,
+                    NextNsub);
             if ((prevgroup[i].isFof == 1) && (prevgroup[i].Nsub > 1) && (nextgroup[max_rankid].isFof != 1) &&
                 (nextgroup[(nextgroup[max_rankid].FOFHalo)].ParentId < 0) && (snapshot - prevgroup[i].snapshot) == 1)
             {
