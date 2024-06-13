@@ -209,13 +209,16 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         {
             j = i;
 
-            fprintf(stderr,"Now starting on halo with i= %"STR_FMT", NextNsub = %"STR_FMT"  with FOF parent = %"STR_FMT"  prev.fofhalo = %"STR_FMT"\n",
-                            i,PrevNsub,FOF_Parent,prevgroup[j].FOFHalo);
+            fprintf(stderr,
+                    "Now starting on halo with i= %" STR_FMT ", NextNsub = %" STR_FMT "  with FOF parent = %" STR_FMT
+                    "  prev.fofhalo = %" STR_FMT "\n",
+                    i, PrevNsub, FOF_Parent, prevgroup[j].FOFHalo);
             XASSERT(j >= 0 && j < PrevNsub, "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", j,
                     PrevNsub);
             while (j < PrevNsub && prevgroup[j].FOFHalo == FOF_Parent)
             {
-                fprintf(stderr,"j=%"STR_FMT" prevgroup[j].N = %"STR_FMT" FOF_Parent = %"STR_FMT"\n",j,prevgroup[j].N,FOF_Parent);
+                fprintf(stderr, "j=%" STR_FMT " prevgroup[j].N = %" STR_FMT " FOF_Parent = %" STR_FMT "\n", j,
+                        prevgroup[j].N, FOF_Parent);
                 my_progressbar(j, &interrupted);
                 for (int64 k = 0; k < prevgroup[j].N; k++)
                 {
@@ -229,7 +232,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                         continue;
                     }
 
-                    fprintf(stderr,"k=%"STR_FMT" tmp_id = %"STR_FMT"\n", k, tmp_id);
+                    fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT "\n", k, tmp_id);
                     int64 tmp_grpid = NextAllGroupIds[tmp_id];
                     XASSERT(tmp_grpid >= 0 && tmp_grpid < NextNsub,
                             "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grpid, NextNsub);
