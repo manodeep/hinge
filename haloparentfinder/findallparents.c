@@ -468,27 +468,41 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             if (NextAllPartIds[tmp_id] != 1)
                 continue;
 
+            XASSERT(tmp_id >= 0 && tmp_id < NextMaxPartId,
+                    "Error: Particle id is out of bounds %" STR_ID_FMT " [0, %" PRId64 ")\n", tmp_id, NextMaxPartId);
             const int64 tmp_grpid = NextAllGroupIds[tmp_id];
+            XASSERT(tmp_grpid >= 0 && tmp_grpid < NextNsub,
+                    "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grpid, NextNsub);
             NextAllCommon[tmp_grpid]++;
 
             if ((PARAMS.MAX_RANK_LOC <= 0) ||
                 (PARAMS.MAX_RANK_LOC > 0 && j < PARAMS.MAX_RANK_LOC)) // 0 based indexing -> index
-                                                                      // MAX_RANK_LOC-1 is the
-                                                                      // MAX_RANK_LOC'th element
+                                                                        // MAX_RANK_LOC-1 is the
+                                                                        // MAX_RANK_LOC'th element
+            {
                 NextAllRanks[tmp_grpid] += compute_rank(j);
+            }
+
+            const int64 tmp_grploc = NextAllGroupLocs[tmp_id];
+            XASSERT(tmp_grploc >= 0 && tmp_grploc < nextgroup[tmp_grpid].N,
+                    "Error: Group loc is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grploc,
+                    nextgroup[tmp_grpid].N);
 
             if ((PARAMS.MAX_RANK_LOC <= 0) ||
-                (PARAMS.MAX_RANK_LOC > 0 && NextAllGroupLocs[tmp_id] < PARAMS.MAX_RANK_LOC))
-                NextAllRanks[tmp_grpid] += compute_rank(NextAllGroupLocs[tmp_id]);
+                (PARAMS.MAX_RANK_LOC > 0 && tmp_grploc < PARAMS.MAX_RANK_LOC))
+            {
+                NextAllRanks[tmp_grpid] += compute_rank(tmp_grploc);
+            }
 
             prevgroup[i].parentgroupforparticle[j] = tmp_grpid;
             prevgroup[i].parentsnapshotforparticle[j] = snapshot;
 
-            nextgroup[tmp_grpid].parentgroupforparticle[NextAllGroupLocs[tmp_id]] = i;
-            nextgroup[tmp_grpid].parentsnapshotforparticle[NextAllGroupLocs[tmp_id]] = prevgroup[i].snapshot;
+            nextgroup[tmp_grpid].parentgroupforparticle[tmp_grploc] = i;
+            nextgroup[tmp_grpid].parentsnapshotforparticle[tmp_grploc] = prevgroup[i].snapshot;
         }
-
+        fprintf(stderr,"Finding max_rank ...\n");
         max_rankid = find_max_rank(NextAllRanks, NextNsub);
+        fprintf(stderr,"Finding max_rank ...done\n");
 
         /* If a FOF halo is trying to get a subhalo as a parent, then
             check the FOF container of the subhalo actually has a FOF child

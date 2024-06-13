@@ -416,30 +416,6 @@ int main(int argc, char **argv)
                 free_group(group1, Ngroups1);
 
                 Ngroups1 = returnNhalo(&PARAMS, snapshot_number + incr, fof_only);
-                // #ifdef SUBFIND
-                //                 my_snprintf(outfname, MAXLEN, "%s/groups_%03d.subcat", PARAMS.GROUP_DIR,
-                //                 snapshot_number + incr); Ngroups1 = returnNhalo(outfname);
-                // #endif
-
-                // #define RETURN_ONLY_FOFS 0
-                // #ifdef SUSSING_TREES
-                //                 /* my_snprintf(outfname,MAXLEN,"%s/%s_%03d.z%5.3f.AHF_halos",
-                //                  * PARAMS.GROUP_DIR,
-                //                  * PARAMS.GROUP_BASE,snapshot_number+incr,REDSHIFT[snapshot_number+incr]);
-                //                  */
-                //                 my_snprintf(outfname, MAXLEN, "%s/%s%05d.z%5.3f.AHF_halos", PARAMS.GROUP_DIR,
-                //                 PARAMS.GROUP_BASE,
-                //                             snapshot_number + incr, REDSHIFT[snapshot_number + incr]);
-                //                 Ngroups1 = returnNhalo_SUSSING(outfname, RETURN_ONLY_FOFS);
-                // #undef RETURN_ONLY_FOFS
-                // #endif
-
-                // #ifdef BGC2
-                //                 my_snprintf(outfname, MAXLEN, "%s/halos_%03d.0.bgc2", PARAMS.GROUP_DIR,
-                //                 snapshot_number + incr); Ngroups1 = returnNhalo_bgc2(outfname, RETURN_ONLY_FOFS);
-                // #endif
-
-                // #undef RETURN_ONLY_FOFS
 
                 fprintf(stderr, "\nNow looking for subhalo parents \n");
                 group1 = allocate_group(Ngroups1);
