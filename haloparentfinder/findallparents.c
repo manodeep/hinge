@@ -477,8 +477,8 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
             if ((PARAMS.MAX_RANK_LOC <= 0) ||
                 (PARAMS.MAX_RANK_LOC > 0 && j < PARAMS.MAX_RANK_LOC)) // 0 based indexing -> index
-                                                                        // MAX_RANK_LOC-1 is the
-                                                                        // MAX_RANK_LOC'th element
+                                                                      // MAX_RANK_LOC-1 is the
+                                                                      // MAX_RANK_LOC'th element
             {
                 NextAllRanks[tmp_grpid] += compute_rank(j);
             }
@@ -488,8 +488,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                     "Error: Group loc is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grploc,
                     nextgroup[tmp_grpid].N);
 
-            if ((PARAMS.MAX_RANK_LOC <= 0) ||
-                (PARAMS.MAX_RANK_LOC > 0 && tmp_grploc < PARAMS.MAX_RANK_LOC))
+            if ((PARAMS.MAX_RANK_LOC <= 0) || (PARAMS.MAX_RANK_LOC > 0 && tmp_grploc < PARAMS.MAX_RANK_LOC))
             {
                 NextAllRanks[tmp_grpid] += compute_rank(tmp_grploc);
             }
@@ -500,9 +499,9 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             nextgroup[tmp_grpid].parentgroupforparticle[tmp_grploc] = i;
             nextgroup[tmp_grpid].parentsnapshotforparticle[tmp_grploc] = prevgroup[i].snapshot;
         }
-        fprintf(stderr,"Finding max_rank ...\n");
+        fprintf(stderr, "Finding max_rank ...\n");
         max_rankid = find_max_rank(NextAllRanks, NextNsub);
-        fprintf(stderr,"Finding max_rank ...done\n");
+        fprintf(stderr, "Finding max_rank ...done\n");
 
         /* If a FOF halo is trying to get a subhalo as a parent, then
             check the FOF container of the subhalo actually has a FOF child
