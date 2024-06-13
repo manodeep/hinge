@@ -624,7 +624,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             const double dz = periodic(g[i].z[j] - g[i].zcen);
             const float sqr_sep = dx * dx + dy * dy + dz * dz;
             const id64 id = g[i].id[j];
-            sqr_radius[j] = (id == -1) ? -1.0:sqr_sep;
+            sqr_radius[j] = (id == -1) ? -1.0 : sqr_sep;
         }
 #define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)                                                                     \
     {                                                                                                                  \
