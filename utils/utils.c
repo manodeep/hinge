@@ -528,7 +528,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     }
     int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
     int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
-    int64_t *num_removed_per_group = my_calloc(sizeof(*num_removed_per_group), N);
+    // int64_t *num_removed_per_group = my_calloc(sizeof(*num_removed_per_group), N);
     int64 nremoved = 0;
     int64_t offset = 0;
     int interrupted = 0;
@@ -559,7 +559,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
                 int64_t prev_offset = all_id_offset[id];
                 remove_particle_from_group(groupnum[prev_offset], i, partindex[prev_offset], j, g, &group_to_remove,
                                            &part_to_remove);
-                num_removed_per_group[group_to_remove]++;
+                // num_removed_per_group[group_to_remove]++;
 
                 // If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
                 if (group_to_remove != i)
@@ -580,6 +580,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     free(groupnum);
     free(partindex);
 
+#if 0
     fprintf(stderr, "Now fixing group particle counts ...\n");
     init_my_progressbar(N, &interrupted);
     for (int64 i = 0; i < N; i++)
@@ -660,8 +661,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     }
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Now fixing group particle counts ...done\n");
-
-    free(num_removed_per_group);
+#endif
+    // free(num_removed_per_group);
     return nremoved;
 }
 

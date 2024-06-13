@@ -105,7 +105,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     int64 i, j;
     /* int PRINTSTEP=0,SMALLPRINTSTEP=0; */
     int64 NFofHalofound;
-    int64 tmp_id, tmp_grpid;
+    // int64 tmp_id, tmp_grpid;
     int64 max_rankid, oldchildid;
 
     int64 NextMaxPartId = -1;
@@ -119,18 +119,17 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     {
         for (j = 0; j < nextgroup[i].N; j++)
         {
-            XASSERT(nextgroup[i].id[j] >= 0, "Error: Particle id is negative %" STR_ID_FMT "\n", nextgroup[i].id[j]);
-            if (nextgroup[i].id[j] > NextMaxPartId)
-            {
-                NextMaxPartId = nextgroup[i].id[j];
-            }
+            const id64 id = nextgroup[i].id[j];
+            if(id == -1) continue;
+
+            // XASSERT(nextgroup[i].id[j] >= 0, "Error: Particle id is negative %" STR_ID_FMT "\n", nextgroup[i].id[j]);
+            NextMaxPartId = id > NextMaxPartId ? id : NextMaxPartId;
         }
     }
     NextMaxPartId++; /* should be able to index with NextMaxPartId -> n+1 elements */
     fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT "\n", __FUNCTION__, NextMaxPartId);
 
-    int8_t *NextAllPartIds =
-        my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
+    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     int64 *NextAllRealGroupIds = my_malloc(sizeof(*NextAllRealGroupIds), NextMaxPartId);
     int64 *NextAllRealGroupLocs = my_malloc(sizeof(*NextAllRealGroupLocs), NextMaxPartId);
@@ -152,22 +151,25 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
         for (j = 0; j < nextgroup[i].N; j++)
         {
+            const id64 id = nextgroup[i].id[j];
+            if(id == -1) continue;
+
             /*Check if particle ids are repeated !*/
-            if (NextAllPartIds[nextgroup[i].id[j]] == 1)
+            if (NextAllPartIds[id] == 1)
             {
                 // fprintf(stderr,"There are duplicate particle ids - this code will not work \n");
                 fprintf(stderr,
                         "duplicate id = %" STR_ID_FMT " in group = %" STR_FMT " (with npart=%" STR_FMT ")."
                         "Previously seen in group =%" STR_FMT " (with npart = %" STR_FMT ")\n",
-                        nextgroup[i].id[j], i, nextgroup[i].N, NextAllRealGroupIds[nextgroup[i].id[j]],
-                        nextgroup[NextAllRealGroupIds[nextgroup[i].id[j]]].N);
+                        id, i, nextgroup[i].N, NextAllRealGroupIds[id],
+                        nextgroup[NextAllRealGroupIds[id]].N);
                 flag++;
             }
-            NextAllPartIds[nextgroup[i].id[j]] = 1;
-            NextAllGroupIds[nextgroup[i].id[j]] = FOF_Parent; /* Note that all the subhalos are faked as if they are
+            NextAllPartIds[id] = 1;
+            NextAllGroupIds[id] = FOF_Parent; /* Note that all the subhalos are faked as if they are
                                                                  located in the FOF container*/
-            NextAllRealGroupIds[nextgroup[i].id[j]] = i;
-            NextAllRealGroupLocs[nextgroup[i].id[j]] = j;
+            NextAllRealGroupIds[id] = i;
+            NextAllRealGroupLocs[id] = j;
         }
     }
     finish_myprogressbar(&interrupted);
@@ -217,12 +219,14 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
                 for (int64 k = 0; k < prevgroup[j].N; k++)
                 {
-                    tmp_id = prevgroup[j].id[k];
+                    const id64 tmp_id = prevgroup[j].id[k];
+                    if(tmp_id == -1)  continue;
+
                     if (tmp_id < NextMaxPartId)
                     {
                         if (NextAllPartIds[tmp_id] == 1)
                         {
-                            tmp_grpid = NextAllGroupIds[tmp_id];
+                            int64 tmp_grpid = NextAllGroupIds[tmp_id];
                             if (nextgroup[tmp_grpid].isFof != 1)
                             {
                                 /*only execute this check since we are matching FOF->FOF halos*/
@@ -382,7 +386,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
     int64 NumNotFound = 0;
     int64 Nhalofound = 0;
-    int64 tmp_id, tmp_grpid;
+    // int64 tmp_id, tmp_grpid;
     int64 max_rankid;
     double tmp_max_rank;
     int64 tmp_max_rankid;
@@ -393,14 +397,15 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
-            XASSERT(id >= 0, "Error: Particle id is negative %" STR_ID_FMT "\n", id);
+            if(id == -1) continue;
+
+            // XASSERT(id >= 0, "Error: Particle id is negative %" STR_ID_FMT "\n", id);
             NextMaxPartId = id > NextMaxPartId ? id : NextMaxPartId;
         }
     }
     NextMaxPartId++;
     fprintf(stderr, "In %s> NextMaxPartId = %" STR_FMT "\n", __FUNCTION__, NextMaxPartId);
-    int8_t *NextAllPartIds =
-        my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); /* Note use of calloc instead of malloc */
+    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     int64 *NextAllGroupLocs = my_malloc(sizeof(*NextAllGroupLocs), NextMaxPartId);
     double *NextAllRanks = my_calloc(sizeof(*NextAllRanks), NextNsub);
@@ -413,6 +418,8 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
+            if(id == -1) continue;
+
             NextAllPartIds[id] = 1;
             NextAllGroupIds[id] = i;
             NextAllGroupLocs[id] = j;
@@ -447,8 +454,10 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
             for (int64 j = 0; j < prevgroup[i].N; j++)
             {
-                tmp_id = prevgroup[i].id[j];
-                tmp_grpid = -1;
+                id64 tmp_id = prevgroup[i].id[j];
+                if(tmp_id == -1)  continue;
+
+                int64 tmp_grpid = -1;
                 if (tmp_id < NextMaxPartId)
                 { /* NextMaxPartId is actually 1 greater
                      than the actual max particle id. Hence
