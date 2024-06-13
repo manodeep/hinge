@@ -199,7 +199,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     while (i < PrevNsub)
     {
         // fprintf(stderr, "i = %" STR_FMT " PrevNsub = %" STR_FMT "\n", i, PrevNsub);
-        interrupted = 1;
+        // interrupted = 1;
         if (prevgroup[i].isFof == 1)
             FOF_Parent = i;
 
