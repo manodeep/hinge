@@ -131,6 +131,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         free(buf);                                                                                                     \
     }
     void *buf;
+    time_t t0 = time(NULL);
     fprintf(stderr, "Reading and assigning field: ");
     CHECK_NPART_AND_READ_FIELD("partid", totnpart, buf);
     ASSIGN_FIELD_TO_GROUPS("partid", int64_t, nhalos, buf, id);
@@ -148,8 +149,9 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     int64_t *haloids, *fofids;
     CHECK_NPART_AND_READ_FIELD("haloid", totnpart, haloids);
     CHECK_NPART_AND_READ_FIELD("fofid", totnpart, fofids);
-
-    fprintf(stderr, "\rReading and assigning field: 'partid', 'xpos', 'ypos', 'zpos', 'haloid', 'fofid' ... done\n");
+    time_t t1 = time(NULL);
+    fprintf(stderr, "\rReading and assigning field: 'partid', 'xpos', 'ypos', 'zpos', 'haloid', 'fofid' ... done.\n");
+    print_time(t0, t1, "Reading and assigning fields");
 
     int64_t offset = 0;
     fprintf(stderr, "Checking the consistency of the halo and fof ids ...\n");
