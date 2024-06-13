@@ -587,6 +587,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         if (num_removed_per_group[i] == 0)
             continue;
 
+#if 0
 #define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)                                                                     \
     {                                                                                                                  \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, thisgroup->id, i, j);                                                     \
@@ -613,8 +614,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         memmove(&g[i].x[start], &g[i].x[end + 1], nmove * sizeof(g[i].x[0]));
         memmove(&g[i].y[start], &g[i].y[end + 1], nmove * sizeof(g[i].y[0]));
         memmove(&g[i].z[start], &g[i].z[end + 1], nmove * sizeof(g[i].z[0]));
-
-        g[i].N -= num_removed_per_group[i];
+#endif
 
         float *sqr_radius = my_malloc(sizeof(*sqr_radius), g[i].N);
         for (int64 j = 0; j < g[i].N; j++)
@@ -622,7 +622,9 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             const double dx = periodic(g[i].x[j] - g[i].xcen);
             const double dy = periodic(g[i].y[j] - g[i].ycen);
             const double dz = periodic(g[i].z[j] - g[i].zcen);
-            sqr_radius[j] = dx * dx + dy * dy + dz * dz;
+            const float sqr_sep = dx * dx + dy * dy + dz * dz;
+            const id64 id = g[i].id[j];
+            sqr_radius[j] = (id == -1) ? -1.0:sqr_sep;
         }
 #define MULTIPLE_ARRAY_EXCHANGER(vartype, a, i, j)                                                                     \
     {                                                                                                                  \
@@ -632,38 +634,27 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, thisgroup->z, i, j);                                                     \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(float, sqr_radius, i, j);                                                       \
     }
-
         SGLIB_ARRAY_HEAP_SORT(float, sqr_radius, g[i].N, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
         free(sqr_radius);
+#undef MULTIPLE_ARRAY_EXCHANGER
 
-        // for (int64 j = 0; j < g[i].N; j++)
-        // {
-        //     if(g[i].id[j] != -1) continue;
-
-        //     /* This particle needs to be removed */
-        //     if (j == (g[i].N - 1))
-        //     {
-        //         g[i].N--;
-        //         break;
-        //     }
-
-        //     const int64_t nmove = g[i].N - (j + 1);
-        //     // Do a memmove to preserve the ordering of the particles
-        //     memmove(&g[i].id[j], &g[i].id[j + 1], nmove * sizeof(g[i].id[0]));
-        //     memmove(&g[i].x[j], &g[i].x[j + 1], nmove * sizeof(g[i].x[0]));
-        //     memmove(&g[i].y[j], &g[i].y[j + 1], nmove * sizeof(g[i].y[0]));
-        //     memmove(&g[i].z[j], &g[i].z[j + 1], nmove * sizeof(g[i].z[0]));
-
-        //     g[i].N--;
-        //     j--;
-        // }
-
-        // if (num_removed_per_group[i] > 0)
-        // {
-        //     fprintf(stderr, "\nRemoved %lld particles from group %lld\n", (long long)num_removed_per_group[i],
-        //             (long long)i);
-        //     interrupted = 1;
-        // }
+        const struct group_data *thisgroup = &g[i];
+        const int64 start = 0, end = num_removed_per_group[i] - 1;
+        XASSERT(num_removed_per_group[i] <= g[i].N,
+                "Error: Can remove at most %lld particles (i.e., all particles) from groupnum = %lld. Instead found = "
+                "%lld\n",
+                (long long)g[i].N, (long long)i, (long long)num_removed_per_group[i]);
+        XASSERT(thisgroup->id[start] == -1, "Error: First particle ID should be -1. Instead found = %lld\n",
+                (long long)thisgroup->id[start]);
+        XASSERT(thisgroup->id[end] == -1, "Error: Last particle ID should  be -1. Instead found = %lld\n",
+                (long long)thisgroup->id[end]);
+        const int64_t nmove = g[i].N - num_removed_per_group[i];
+        // Do a memmove to preserve the ordering of the particles
+        memmove(&g[i].id[start], &g[i].id[end + 1], nmove * sizeof(g[i].id[0]));
+        memmove(&g[i].x[start], &g[i].x[end + 1], nmove * sizeof(g[i].x[0]));
+        memmove(&g[i].y[start], &g[i].y[end + 1], nmove * sizeof(g[i].y[0]));
+        memmove(&g[i].z[start], &g[i].z[end + 1], nmove * sizeof(g[i].z[0]));
+        g[i].N -= num_removed_per_group[i];
     }
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Now fixing group particle counts ...done\n");
