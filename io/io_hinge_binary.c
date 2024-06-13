@@ -85,7 +85,8 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
         group[ihalo].NpartinParent = 0;
 
         group[ihalo].parentgroupforparticle = my_malloc(sizeof(*group[ihalo].parentgroupforparticle), group[ihalo].N);
-        group[ihalo].parentsnapshotforparticle = my_malloc(sizeof(*group[ihalo].parentsnapshotforparticle), group[ihalo].N);
+        group[ihalo].parentsnapshotforparticle =
+            my_malloc(sizeof(*group[ihalo].parentsnapshotforparticle), group[ihalo].N);
     }
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Assigning group-level properties ...done\n");
