@@ -102,7 +102,7 @@ time flag FOF_ONLY].
 int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_data *nextgroup, int64 NextNsub,
                      const char *outpath)
 {
-    int64 i, j;
+    // int64 i, j;
     /* int PRINTSTEP=0,SMALLPRINTSTEP=0; */
     int64 NFofHalofound;
     // int64 tmp_id, tmp_grpid;
@@ -115,9 +115,9 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     my_snprintf(buf, MAXLEN, "rm -f %s/fofassigned_%03d.txt", outpath, prevgroup->snapshot);
     system(buf);
 
-    for (i = 0; i < NextNsub; i++)
+    for (int64 i = 0; i < NextNsub; i++)
     {
-        for (j = 0; j < nextgroup[i].N; j++)
+        for (int64 j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
             if (id == -1)
@@ -142,7 +142,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     int interrupted = 0;
     fprintf(stderr, "Finding parents for FOF halos ...\n");
     init_my_progressbar(NextNsub, &interrupted);
-    for (i = 0; i < NextNsub; i++)
+    for (int64 i = 0; i < NextNsub; i++)
     {
         my_progressbar(i, &interrupted);
         // NextAllRanks[i] = 0.0;
@@ -150,7 +150,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         if (nextgroup[i].isFof == 1)
             FOF_Parent = i;
 
-        for (j = 0; j < nextgroup[i].N; j++)
+        for (int64 j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
             if (id < 0)
@@ -195,181 +195,178 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     */
 
     FOF_Parent = 0;
-    i = 0;
-    while (i < PrevNsub)
+    // i = 0;
+    // while (i < PrevNsub)
+    for(int64 i=0;i<PrevNsub;i+=prevgroup[i].Nsub)
     {
         // fprintf(stderr, "i = %" STR_FMT " PrevNsub = %" STR_FMT "\n", i, PrevNsub);
         // interrupted = 1;
-        if (prevgroup[i].isFof == 1)
-            FOF_Parent = i;
+        XASSERT(prevgroup[i].isFof == 1, "Error: Group is not a FOF group %" STR_FMT " isFof = %d\n", i, prevgroup[i].isFof);
+        FOF_Parent = i;
 
-        XASSERT(FOF_Parent >= 0 && FOF_Parent < PrevNsub,
-                "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", FOF_Parent, PrevNsub);
-        if (prevgroup[FOF_Parent].ParentId < 0)
+        // XASSERT(FOF_Parent >= 0 && FOF_Parent < PrevNsub,
+        //         "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", FOF_Parent, PrevNsub);
+        if (prevgroup[FOF_Parent].ParentId >= 0)
         {
-            j = i;
+            if (prevgroup[i].isFof == 1)
+                NFofHalofound++;
 
-            fprintf(stderr,
-                    "Now starting on halo with i= %" STR_FMT ", NextNsub = %" STR_FMT "  with FOF parent = %" STR_FMT
-                    "  prev.fofhalo = %" STR_FMT "\n",
-                    i, PrevNsub, FOF_Parent, prevgroup[j].FOFHalo);
-            interrupted = 1;
-            XASSERT(j >= 0 && j < PrevNsub, "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", j,
-                    PrevNsub);
-            while (j < PrevNsub && prevgroup[j].FOFHalo == FOF_Parent)
+            continue;
+        }
+
+        fprintf(stderr,
+                "Now starting on halo with i= %" STR_FMT ", NextNsub = %" STR_FMT "  with FOF parent = %" STR_FMT
+                "  prev.fofhalo = %" STR_FMT " prevgroup.Nsub = %"STR_FMT"\n",
+                i, PrevNsub, FOF_Parent, prevgroup[i].FOFHalo, prevgroup[i].Nsub);
+        interrupted = 1;
+        // XASSERT(j >= 0 && j < PrevNsub, "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", j,
+        //         PrevNsub);
+        // while (j < PrevNsub && prevgroup[j].FOFHalo == FOF_Parent)
+        for(int64 jj=0;jj<prevgroup[i].Nsub;jj++)
+        {
+            int64 j = i+jj;
+            // fprintf(stderr, "j=%" STR_FMT " prevgroup[j].N = %" STR_FMT " FOF_Parent = %" STR_FMT "\n", j,
+            //         prevgroup[j].N, FOF_Parent);
+            my_progressbar(j, &interrupted);
+            for (int64 k = 0; k < prevgroup[j].N; k++)
             {
-                // fprintf(stderr, "j=%" STR_FMT " prevgroup[j].N = %" STR_FMT " FOF_Parent = %" STR_FMT "\n", j,
-                //         prevgroup[j].N, FOF_Parent);
-                my_progressbar(j, &interrupted);
-                for (int64 k = 0; k < prevgroup[j].N; k++)
+                const id64 tmp_id = prevgroup[j].id[k];
+                // fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " NextMaxPartId = %" STR_FMT "\n", k, tmp_id,
+                //         NextMaxPartId);
+                if (tmp_id < 0 || tmp_id >= NextMaxPartId)
                 {
-                    const id64 tmp_id = prevgroup[j].id[k];
-                    // fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " NextMaxPartId = %" STR_FMT "\n", k, tmp_id,
-                    //         NextMaxPartId);
-                    if (tmp_id < 0 || tmp_id >= NextMaxPartId)
-                    {
-                        continue;
-                    }
-                    if (NextAllPartIds[tmp_id] != 1)
-                    {
-                        continue;
-                    }
-
-                    // fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " ..actually working\n", k, tmp_id);
-                    int64 tmp_grpid = NextAllGroupIds[tmp_id];
-                    XASSERT(tmp_grpid >= 0 && tmp_grpid < NextNsub,
-                            "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grpid, NextNsub);
-                    if (nextgroup[tmp_grpid].isFof != 1)
-                    {
-                        /*only execute this check since we are matching FOF->FOF halos*/
-                        fprintf(stderr,
-                                "\n\n\n Groupnum %" STR_FMT " at snapshot %d is not a FOF parent..exiting \n\n\n",
-                                tmp_grpid, nextgroup[tmp_grpid].snapshot);
-                        exit(EXIT_FAILURE);
-                    }
-                    // fprintf(stderr, "Here filling nextallranks and nextallcommon\n");
-                    NextAllRanks[tmp_grpid] += 1.0;
-                    NextAllCommon[tmp_grpid]++;
-                    // fprintf(stderr, "Here filling nextallranks and nextallcommon ...done\n");
-
-                    /* stores the real halo number and not the Fof halo number.
-                    Group matching is still donebased on the Fof halo number. */
-                    const int64 real_grpnum = NextAllRealGroupIds[tmp_id];
-                    XASSERT(real_grpnum >= 0 && real_grpnum < NextNsub,
-                            "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", real_grpnum, NextNsub);
-                    const int64 real_grploc = NextAllRealGroupLocs[tmp_id];
-                    XASSERT(real_grploc >= 0 && real_grploc < nextgroup[real_grpnum].N,
-                            "Error: Group loc is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", real_grploc,
-                            nextgroup[real_grpnum].N);
-
-                    // fprintf(stderr, "setting parentgroupforparticle\n");
-                    prevgroup[j].parentgroupforparticle[k] = real_grpnum;
-                    prevgroup[j].parentsnapshotforparticle[k] = nextgroup[tmp_grpid].snapshot;
-                    nextgroup[real_grpnum].parentgroupforparticle[real_grploc] = j;
-                    nextgroup[real_grpnum].parentsnapshotforparticle[real_grploc] = prevgroup[j].snapshot;
-                    // fprintf(stderr, "setting parentgroupforparticle ...done\n");
+                    continue;
                 }
-                j++;
+                if (NextAllPartIds[tmp_id] != 1)
+                {
+                    continue;
+                }
+
+                // fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " ..actually working\n", k, tmp_id);
+                int64 tmp_grpid = NextAllGroupIds[tmp_id];
+                XASSERT(tmp_grpid >= 0 && tmp_grpid < NextNsub,
+                        "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grpid, NextNsub);
+                if (nextgroup[tmp_grpid].isFof != 1)
+                {
+                    /*only execute this check since we are matching FOF->FOF halos*/
+                    fprintf(stderr,
+                            "\n\n\n Groupnum %" STR_FMT " at snapshot %d is not a FOF parent..exiting \n\n\n",
+                            tmp_grpid, nextgroup[tmp_grpid].snapshot);
+                    exit(EXIT_FAILURE);
+                }
+                // fprintf(stderr, "Here filling nextallranks and nextallcommon\n");
+                NextAllRanks[tmp_grpid] += 1.0;
+                NextAllCommon[tmp_grpid]++;
+                // fprintf(stderr, "Here filling nextallranks and nextallcommon ...done\n");
+
+                /* stores the real halo number and not the Fof halo number.
+                Group matching is still donebased on the Fof halo number. */
+                const int64 real_grpnum = NextAllRealGroupIds[tmp_id];
+                XASSERT(real_grpnum >= 0 && real_grpnum < NextNsub,
+                        "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", real_grpnum, NextNsub);
+                const int64 real_grploc = NextAllRealGroupLocs[tmp_id];
+                XASSERT(real_grploc >= 0 && real_grploc < nextgroup[real_grpnum].N,
+                        "Error: Group loc is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", real_grploc,
+                        nextgroup[real_grpnum].N);
+
+                // fprintf(stderr, "setting parentgroupforparticle\n");
+                prevgroup[j].parentgroupforparticle[k] = real_grpnum;
+                prevgroup[j].parentsnapshotforparticle[k] = nextgroup[tmp_grpid].snapshot;
+                nextgroup[real_grpnum].parentgroupforparticle[real_grploc] = j;
+                nextgroup[real_grpnum].parentsnapshotforparticle[real_grploc] = prevgroup[j].snapshot;
+                // fprintf(stderr, "setting parentgroupforparticle ...done\n");
             }
-            // fprintf(stderr, "Now calling max_rankid for FOF_Parent = %" STR_FMT " i = %" STR_FMT " j = %" STR_FMT
-            // "\n",
-            //         FOF_Parent, i, j);
-            max_rankid = find_max_rank(NextAllRanks, NextNsub);
-            if (max_rankid != -1)
+            j++;
+        }
+        // fprintf(stderr, "Now calling max_rankid for FOF_Parent = %" STR_FMT " i = %" STR_FMT " j = %" STR_FMT
+        // "\n",
+        //         FOF_Parent, i, j);
+        max_rankid = find_max_rank(NextAllRanks, NextNsub);
+        if (max_rankid != -1)
+        {
+            /*
+                        Only assign if this next FOF halo doesnt already have a parent.
+                This does require the groups to be processed in decreasing particle
+                number but that does not NECESSARILY hold true.
+
+                    */
+            XASSERT(max_rankid >= 0 && max_rankid < NextNsub,
+                    "Error: max_rankid is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", max_rankid, NextNsub);
+            if (nextgroup[max_rankid].ParentId < 0)
+            {
+                prevgroup[i].ParentId = max_rankid;
+                prevgroup[i].ParentSnapshot = nextgroup[max_rankid].snapshot;
+                prevgroup[i].Ncommon = NextAllCommon[max_rankid];
+                prevgroup[i].Rank = NextAllRanks[max_rankid];
+                prevgroup[i].NpartinParent = nextgroup[max_rankid].N;
+                prevgroup[i].NParents = 1; /* not required but for completeness sake*/
+
+                nextgroup[max_rankid].ParentId = FOF_Parent;
+                nextgroup[max_rankid].Ncommon = NextAllCommon[max_rankid];
+                nextgroup[max_rankid].ParentSnapshot = prevgroup[i].snapshot;
+                nextgroup[max_rankid].NpartinParent = prevgroup[i].N;
+                nextgroup[max_rankid].Rank = NextAllRanks[max_rankid]; /* Assumes that the rank is something
+                                                                            that is reversible e.g., binding
+                                                                            energy rank would not work */
+                nextgroup[max_rankid].NParents++; /* does the next halo have multiple progenitors ->
+                                                        initialisation in loadgroups.c is important */
+                print_fofassign(FOF_Parent, prevgroup, nextgroup, NextNsub, NextAllRanks, NextAllCommon, outpath);
+                NFofHalofound++;
+            }
+            else
             {
                 /*
-                         Only assign if this next FOF halo doesnt already have a parent.
-                   This does require the groups to be processed in decreasing particle
-                   number but that does not NECESSARILY hold true.
+                    some other FOF halo already claims that max_rankid is the parent
+                    halo for them. Now I have to compare the goodness of the match and
+                    determine the true child.
 
-                      */
-                XASSERT(max_rankid >= 0 && max_rankid < NextNsub,
-                        "Error: max_rankid is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", max_rankid, NextNsub);
-                if (nextgroup[max_rankid].ParentId < 0)
+                */
+                if (nextgroup[max_rankid].Rank < NextAllRanks[max_rankid])
                 {
+                    /* This new match is better. Switch children. */
+                    oldchildid = nextgroup[max_rankid].ParentId;
+
                     prevgroup[i].ParentId = max_rankid;
                     prevgroup[i].ParentSnapshot = nextgroup[max_rankid].snapshot;
                     prevgroup[i].Ncommon = NextAllCommon[max_rankid];
                     prevgroup[i].Rank = NextAllRanks[max_rankid];
                     prevgroup[i].NpartinParent = nextgroup[max_rankid].N;
-                    prevgroup[i].NParents = 1; /* not required but for completeness sake*/
+
+                    /* reset the earlier found halo */
+                    prevgroup[oldchildid].ParentId = -1;
+                    prevgroup[oldchildid].ParentSnapshot = -1;
+                    prevgroup[oldchildid].Ncommon = 0;
+                    prevgroup[oldchildid].Rank = 0.0;
+                    prevgroup[oldchildid].NpartinParent = 0;
 
                     nextgroup[max_rankid].ParentId = FOF_Parent;
                     nextgroup[max_rankid].Ncommon = NextAllCommon[max_rankid];
                     nextgroup[max_rankid].ParentSnapshot = prevgroup[i].snapshot;
                     nextgroup[max_rankid].NpartinParent = prevgroup[i].N;
-                    nextgroup[max_rankid].Rank = NextAllRanks[max_rankid]; /* Assumes that the rank is something
-                                                                              that is reversible e.g., binding
-                                                                              energy rank would not work */
-                    nextgroup[max_rankid].NParents++; /* does the next halo have multiple progenitors ->
-                                                         initialisation in loadgroups.c is important */
-                    print_fofassign(FOF_Parent, prevgroup, nextgroup, NextNsub, NextAllRanks, NextAllCommon, outpath);
-                    NFofHalofound++;
+                    nextgroup[max_rankid].Rank = NextAllRanks[max_rankid]; /* Assumes that the rank is Ncommon */
+
+                    print_fofassign(FOF_Parent, prevgroup, nextgroup, NextNsub, NextAllRanks, NextAllCommon,
+                                    outpath);
+                    /* 					  NFofHalofound++; */ /* Dont
+                                                                                    update
+                                                                                    NFofHalofound
+                                                                                    since
+                                                                                    one
+                                                                                    halo is
+                                                                                    being
+                                                                                    rejected
+                                                                                */
                 }
                 else
                 {
                     /*
-                       some other FOF halo already claims that max_rankid is the parent
-                       halo for them. Now I have to compare the goodness of the match and
-                       determine the true child.
-
+                        Here I could potentially assign it to some other FOF group. But I
+                        will leave this prevgroup[i] halo to be assigned by subfind.
                     */
-                    if (nextgroup[max_rankid].Rank < NextAllRanks[max_rankid])
-                    {
-                        /* This new match is better. Switch children. */
-                        oldchildid = nextgroup[max_rankid].ParentId;
-
-                        prevgroup[i].ParentId = max_rankid;
-                        prevgroup[i].ParentSnapshot = nextgroup[max_rankid].snapshot;
-                        prevgroup[i].Ncommon = NextAllCommon[max_rankid];
-                        prevgroup[i].Rank = NextAllRanks[max_rankid];
-                        prevgroup[i].NpartinParent = nextgroup[max_rankid].N;
-
-                        /* reset the earlier found halo */
-                        prevgroup[oldchildid].ParentId = -1;
-                        prevgroup[oldchildid].ParentSnapshot = -1;
-                        prevgroup[oldchildid].Ncommon = 0;
-                        prevgroup[oldchildid].Rank = 0.0;
-                        prevgroup[oldchildid].NpartinParent = 0;
-
-                        nextgroup[max_rankid].ParentId = FOF_Parent;
-                        nextgroup[max_rankid].Ncommon = NextAllCommon[max_rankid];
-                        nextgroup[max_rankid].ParentSnapshot = prevgroup[i].snapshot;
-                        nextgroup[max_rankid].NpartinParent = prevgroup[i].N;
-                        nextgroup[max_rankid].Rank = NextAllRanks[max_rankid]; /* Assumes that the rank is Ncommon */
-
-                        print_fofassign(FOF_Parent, prevgroup, nextgroup, NextNsub, NextAllRanks, NextAllCommon,
-                                        outpath);
-                        /* 					  NFofHalofound++; */ /* Dont
-                                                                                     update
-                                                                                     NFofHalofound
-                                                                                     since
-                                                                                     one
-                                                                                     halo is
-                                                                                     being
-                                                                                     rejected
-                                                                                   */
-                    }
-                    else
-                    {
-                        /*
-                           Here I could potentially assign it to some other FOF group. But I
-                           will leave this prevgroup[i] halo to be assigned by subfind.
-                        */
-                    }
                 }
             }
-            init_all_ranks(NextAllRanks, NextAllCommon, NextNsub);
-            i = j;
         }
-        else
-        {
-            if (prevgroup[i].isFof == 1)
-                NFofHalofound++;
-
-            while (prevgroup[i].FOFHalo == FOF_Parent)
-                i++;
-        }
+        init_all_ranks(NextAllRanks, NextAllCommon, NextNsub);
     }
 
     finish_myprogressbar(&interrupted);
