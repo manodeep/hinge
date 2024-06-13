@@ -499,9 +499,9 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             nextgroup[tmp_grpid].parentgroupforparticle[tmp_grploc] = i;
             nextgroup[tmp_grpid].parentsnapshotforparticle[tmp_grploc] = prevgroup[i].snapshot;
         }
-        fprintf(stderr, "Finding max_rank ... for i = %"STR_FMT"\n", i);
+        fprintf(stderr, "Finding max_rank ... for i = %" STR_FMT "\n", i);
         max_rankid = find_max_rank(NextAllRanks, NextNsub);
-        fprintf(stderr, "Finding max_rank ... for i = %"STR_FMT"done\n", i);
+        fprintf(stderr, "Finding max_rank ... for i = %" STR_FMT "done\n", i);
 
         /* If a FOF halo is trying to get a subhalo as a parent, then
             check the FOF container of the subhalo actually has a FOF child
