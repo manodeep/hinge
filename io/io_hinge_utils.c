@@ -143,7 +143,7 @@ struct hinge_catalog *read_hinge_ascii_halo_catalog(const char *fname, const int
     fclose(fp);
 
     halocat->nhalos = fof_only ? halocat->nfofs : index;
-    fprintf(stderr,"In %s> Loaded '%s' with %" PRId64 " halos\n", __FUNCTION__, fname, halocat->nhalos);
+    fprintf(stderr, "In %s> Loaded '%s' with %" PRId64 " halos\n", __FUNCTION__, fname, halocat->nhalos);
     halocat->halos = realloc(halocat->halos, halocat->nhalos * sizeof(struct hinge_halo));
     return halocat;
 }
