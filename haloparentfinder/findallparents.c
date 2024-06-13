@@ -270,7 +270,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 }
                 j++;
             }
-            // fprintf(stderr, "Now calling max_rankid for FOF_Parent = %" STR_FMT " i = %" STR_FMT " j = %" STR_FMT "\n",
+            // fprintf(stderr, "Now calling max_rankid for FOF_Parent = %" STR_FMT " i = %" STR_FMT " j = %" STR_FMT
+            // "\n",
             //         FOF_Parent, i, j);
             max_rankid = find_max_rank(NextAllRanks, NextNsub);
             if (max_rankid != -1)
