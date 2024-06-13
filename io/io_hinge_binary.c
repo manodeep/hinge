@@ -170,7 +170,8 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
 
     // fprintf(stderr, "Removing duplicates ...\n");
     const int64_t num_removed = remove_duplicates(group, nhalos);
-    // fprintf(stderr, "Removing duplicates ...done. Removed %" PRId64 " duplicates out of %" PRId64 " total particles\n",
+    // fprintf(stderr, "Removing duplicates ...done. Removed %" PRId64 " duplicates out of %" PRId64 " total
+    // particles\n",
     //         num_removed, halocat->totnpart);
 
     free(haloids);
