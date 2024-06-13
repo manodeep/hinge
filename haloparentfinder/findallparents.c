@@ -216,8 +216,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         }
 
         fprintf(stderr,
-                "Now starting on halo with i= %" STR_FMT " (prevnsub = %"STR_FMT"), NextNsub = %" STR_FMT "  with FOF parent = %" STR_FMT
-                "  prev.fofhalo = %" STR_FMT " prevgroup.Nsub = %"STR_FMT"\n",
+                "Now starting on halo with i= %" STR_FMT " (prevnsub = %" STR_FMT "), NextNsub = %" STR_FMT
+                "  with FOF parent = %" STR_FMT "  prev.fofhalo = %" STR_FMT " prevgroup.Nsub = %" STR_FMT "\n",
                 i, PrevNsub, NextNsub, FOF_Parent, prevgroup[i].FOFHalo, prevgroup[i].Nsub);
         interrupted = 1;
         // XASSERT(j >= 0 && j < PrevNsub, "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", j,
