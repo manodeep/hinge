@@ -197,11 +197,12 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     FOF_Parent = 0;
     // i = 0;
     // while (i < PrevNsub)
-    for(int64 i=0;i<PrevNsub;i+=prevgroup[i].Nsub)
+    for (int64 i = 0; i < PrevNsub; i += prevgroup[i].Nsub)
     {
         // fprintf(stderr, "i = %" STR_FMT " PrevNsub = %" STR_FMT "\n", i, PrevNsub);
         // interrupted = 1;
-        XASSERT(prevgroup[i].isFof == 1, "Error: Group is not a FOF group %" STR_FMT " isFof = %d\n", i, prevgroup[i].isFof);
+        XASSERT(prevgroup[i].isFof == 1, "Error: Group is not a FOF group %" STR_FMT " isFof = %d\n", i,
+                prevgroup[i].isFof);
         FOF_Parent = i;
 
         // XASSERT(FOF_Parent >= 0 && FOF_Parent < PrevNsub,
@@ -216,15 +217,15 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
         fprintf(stderr,
                 "Now starting on halo with i= %" STR_FMT ", NextNsub = %" STR_FMT "  with FOF parent = %" STR_FMT
-                "  prev.fofhalo = %" STR_FMT " prevgroup.Nsub = %"STR_FMT"\n",
+                "  prev.fofhalo = %" STR_FMT " prevgroup.Nsub = %" STR_FMT "\n",
                 i, PrevNsub, FOF_Parent, prevgroup[i].FOFHalo, prevgroup[i].Nsub);
         interrupted = 1;
         // XASSERT(j >= 0 && j < PrevNsub, "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", j,
         //         PrevNsub);
         // while (j < PrevNsub && prevgroup[j].FOFHalo == FOF_Parent)
-        for(int64 jj=0;jj<prevgroup[i].Nsub;jj++)
+        for (int64 jj = 0; jj < prevgroup[i].Nsub; jj++)
         {
-            int64 j = i+jj;
+            int64 j = i + jj;
             // fprintf(stderr, "j=%" STR_FMT " prevgroup[j].N = %" STR_FMT " FOF_Parent = %" STR_FMT "\n", j,
             //         prevgroup[j].N, FOF_Parent);
             my_progressbar(j, &interrupted);
@@ -249,8 +250,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 if (nextgroup[tmp_grpid].isFof != 1)
                 {
                     /*only execute this check since we are matching FOF->FOF halos*/
-                    fprintf(stderr,
-                            "\n\n\n Groupnum %" STR_FMT " at snapshot %d is not a FOF parent..exiting \n\n\n",
+                    fprintf(stderr, "\n\n\n Groupnum %" STR_FMT " at snapshot %d is not a FOF parent..exiting \n\n\n",
                             tmp_grpid, nextgroup[tmp_grpid].snapshot);
                     exit(EXIT_FAILURE);
                 }
@@ -345,8 +345,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                     nextgroup[max_rankid].NpartinParent = prevgroup[i].N;
                     nextgroup[max_rankid].Rank = NextAllRanks[max_rankid]; /* Assumes that the rank is Ncommon */
 
-                    print_fofassign(FOF_Parent, prevgroup, nextgroup, NextNsub, NextAllRanks, NextAllCommon,
-                                    outpath);
+                    print_fofassign(FOF_Parent, prevgroup, nextgroup, NextNsub, NextAllRanks, NextAllCommon, outpath);
                     /* 					  NFofHalofound++; */ /* Dont
                                                                                     update
                                                                                     NFofHalofound
