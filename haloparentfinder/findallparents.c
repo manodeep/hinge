@@ -429,7 +429,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
-            if (id == -1)
+            if (id < 0)
                 continue;
 
             NextAllPartIds[id] = 1;
@@ -450,150 +450,129 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
     for (int64 i = 0; i < PrevNsub; i++)
     {
-        /* if(PrevNsub > 100) { */
-        /*   if(i%PRINTSTEP == 0) */
-        /* 	fprintf(stderr,"%d%%",(int)ceil(i/PRINTSTEP)*10); */
-        /*   else */
-        /* 	if(i%SMALLPRINTSTEP==0) */
-        /* 	  fprintf(stderr,"."); */
-        /* } */
-
         my_progressbar(i, &interrupted);
-
-        if (prevgroup[i].ParentId < 0)
+        if (prevgroup[i].ParentId >= 0)
         {
-            /* so we dont have a parent for this prev group yet  */
+            /* some previous iteration  of findallparents actually found a parent */
+            Nhalofound++;
+            continue;
+        }
+        init_all_ranks(NextAllRanks, NextAllCommon, NextNsub);
 
-            for (int64 j = 0; j < prevgroup[i].N; j++)
+        /* so we dont have a parent for this prev group yet  */
+        for (int64 j = 0; j < prevgroup[i].N; j++)
+        {
+            const id64 tmp_id = prevgroup[i].id[j];
+            if (tmp_id < 0 || tmp_id >= NextMaxPartId)
+                continue;
+            if(NextAllPartIds[tmp_id] != 1)
+                continue;
+
+            const int64 tmp_grpid = NextAllGroupIds[tmp_id];
+            NextAllCommon[tmp_grpid]++;
+
+            if ((PARAMS.MAX_RANK_LOC <= 0) ||
+                (PARAMS.MAX_RANK_LOC > 0 && j < PARAMS.MAX_RANK_LOC)) // 0 based indexing -> index
+                                                                        // MAX_RANK_LOC-1 is the
+                                                                        // MAX_RANK_LOC'th element
+                NextAllRanks[tmp_grpid] += compute_rank(j);
+
+            if ((PARAMS.MAX_RANK_LOC <= 0) ||
+                (PARAMS.MAX_RANK_LOC > 0 && NextAllGroupLocs[tmp_id] < PARAMS.MAX_RANK_LOC))
+                NextAllRanks[tmp_grpid] += compute_rank(NextAllGroupLocs[tmp_id]);
+
+            prevgroup[i].parentgroupforparticle[j] = tmp_grpid;
+            prevgroup[i].parentsnapshotforparticle[j] = snapshot;
+
+            nextgroup[tmp_grpid].parentgroupforparticle[NextAllGroupLocs[tmp_id]] = i;
+            nextgroup[tmp_grpid].parentsnapshotforparticle[NextAllGroupLocs[tmp_id]] =
+                prevgroup[i].snapshot;
+        }
+
+        max_rankid = find_max_rank(NextAllRanks, NextNsub);
+
+        /* If a FOF halo is trying to get a subhalo as a parent, then
+            check the FOF container of the subhalo actually has a FOF child
+            and then assign it to the subhalo.
+        */
+        if (max_rankid != -1)
+        {
+            tmp_max_rank = NextAllRanks[max_rankid];
+            /* Going to exploit the fact that nextgroup FOF finding would have
+                * resulted in their ParentId being filled up */
+
+            /* 21st April, 2010: Do I need the following section ? */
+            if ((prevgroup[i].isFof == 1) && (prevgroup[i].Nsub > 1) && (nextgroup[max_rankid].isFof != 1) &&
+                (nextgroup[(nextgroup[max_rankid].FOFHalo)].ParentId < 0) &&
+                (snapshot - prevgroup[i].snapshot) == 1)
             {
-                id64 tmp_id = prevgroup[i].id[j];
-                if (tmp_id == -1)
-                    continue;
-
-                int64 tmp_grpid = -1;
-                if (tmp_id < NextMaxPartId)
-                { /* NextMaxPartId is actually 1 greater
-                     than the actual max particle id. Hence
-                     the < instead of an <= */
-                    if (NextAllPartIds[tmp_id] == 1)
-                    {
-                        tmp_grpid = NextAllGroupIds[tmp_id];
-                        NextAllCommon[tmp_grpid]++;
-
-                        if ((PARAMS.MAX_RANK_LOC <= 0) ||
-                            (PARAMS.MAX_RANK_LOC > 0 && j < PARAMS.MAX_RANK_LOC)) // 0 based indexing -> index
-                                                                                  // MAX_RANK_LOC-1 is the
-                                                                                  // MAX_RANK_LOC'th element
-                            NextAllRanks[tmp_grpid] += compute_rank(j);
-
-                        if ((PARAMS.MAX_RANK_LOC <= 0) ||
-                            (PARAMS.MAX_RANK_LOC > 0 && NextAllGroupLocs[tmp_id] < PARAMS.MAX_RANK_LOC))
-                            NextAllRanks[tmp_grpid] += compute_rank(NextAllGroupLocs[tmp_id]);
-
-                        prevgroup[i].parentgroupforparticle[j] = tmp_grpid;
-                        prevgroup[i].parentsnapshotforparticle[j] = snapshot;
-
-                        nextgroup[tmp_grpid].parentgroupforparticle[NextAllGroupLocs[tmp_id]] = i;
-                        nextgroup[tmp_grpid].parentsnapshotforparticle[NextAllGroupLocs[tmp_id]] =
-                            prevgroup[i].snapshot;
-                    }
+                print_reassign(i, prevgroup, nextgroup, NextNsub, NextAllRanks, NextAllCommon, outpath);
+                /* 				  tmp_nfound =
+                    * find_nonzero_ranks(NextAllRanks,NextNsub,tmp_max_rankids); */
+                NextAllRanks[max_rankid] = 0.0;
+                tmp_max_rankid = find_max_rank(NextAllRanks, NextNsub);
+                if (tmp_max_rankid == -1)
+                {
+                    fprintf(stderr, "\n\n WARNING: IT MAY BE THAT A FOF HALO NEEDS TO "
+                                    "BE ASSIGNED TO A SUBHALO AFTER ALL\n\n");
+                    fprintf(stderr,
+                            "original  group loc = %" STR_FMT "  the to be parent subhalo is %" STR_FMT
+                            " at snapshot %d\n ",
+                            i, max_rankid, snapshot);
+                    NumNotFound++;
+                }
+                else
+                {
+                    fprintf(stderr, "Force switching subhalo to point to fof at next step:\n");
+                    fprintf(stderr, "prevgroupnum = %" STR_FMT "  with nextgroupnum = %" STR_FMT "   \n", i,
+                            max_rankid);
+                    fprintf(stderr,
+                            "instead prevgroup will get assigned to fof halonum = %" STR_FMT " with rank = %g\n",
+                            nextgroup[max_rankid].FOFHalo, NextAllRanks[max_rankid]);
+                    max_rankid = nextgroup[max_rankid].FOFHalo;
+                    tmp_max_rank = NextAllRanks[max_rankid];
                 }
             }
 
-            max_rankid = find_max_rank(NextAllRanks, NextNsub);
+            prevgroup[i].ParentId = max_rankid;
+            prevgroup[i].ParentSnapshot = snapshot;
+            prevgroup[i].Ncommon = NextAllCommon[max_rankid];
+            prevgroup[i].Rank = tmp_max_rank; /*NextAllRank might have gotten reset. */
+            prevgroup[i].NpartinParent = nextgroup[max_rankid].N;
+            prevgroup[i].NParents = 1; /* not reqd. but for completeness sake.
+                                            (don't make the code time reversible) */
 
-            /* If a FOF halo is trying to get a subhalo as a parent, then
-               check the FOF container of the subhalo actually has a FOF child
-               and then assign it to the subhalo.
-            */
-            if (max_rankid != -1)
+            if (nextgroup[max_rankid].ParentId >= 0 && nextgroup[max_rankid].ParentId < PrevNsub)
             {
-                tmp_max_rank = NextAllRanks[max_rankid];
-                /* Going to exploit the fact that nextgroup FOF finding would have
-                 * resulted in their ParentId being filled up */
-
-                /* 21st April, 2010: Do I need the following section ? */
-                if ((prevgroup[i].isFof == 1) && (prevgroup[i].Nsub > 1) && (nextgroup[max_rankid].isFof != 1) &&
-                    (nextgroup[(nextgroup[max_rankid].FOFHalo)].ParentId < 0) &&
-                    (snapshot - prevgroup[i].snapshot) == 1)
-                {
-                    print_reassign(i, prevgroup, nextgroup, NextNsub, NextAllRanks, NextAllCommon, outpath);
-                    /* 				  tmp_nfound =
-                     * find_nonzero_ranks(NextAllRanks,NextNsub,tmp_max_rankids); */
-                    NextAllRanks[max_rankid] = 0.0;
-                    tmp_max_rankid = find_max_rank(NextAllRanks, NextNsub);
-                    if (tmp_max_rankid == -1)
-                    {
-                        fprintf(stderr, "\n\n WARNING: IT MAY BE THAT A FOF HALO NEEDS TO "
-                                        "BE ASSIGNED TO A SUBHALO AFTER ALL\n\n");
-                        fprintf(stderr,
-                                "original  group loc = %" STR_FMT "  the to be parent subhalo is %" STR_FMT
-                                " at snapshot %d\n ",
-                                i, max_rankid, snapshot);
-                        NumNotFound++;
-                    }
-                    else
-                    {
-                        fprintf(stderr, "Force switching subhalo to point to fof at next step:\n");
-                        fprintf(stderr, "prevgroupnum = %" STR_FMT "  with nextgroupnum = %" STR_FMT "   \n", i,
-                                max_rankid);
-                        fprintf(stderr,
-                                "instead prevgroup will get assigned to fof halonum = %" STR_FMT " with rank = %g\n",
-                                nextgroup[max_rankid].FOFHalo, NextAllRanks[max_rankid]);
-                        max_rankid = nextgroup[max_rankid].FOFHalo;
-                        tmp_max_rank = NextAllRanks[max_rankid];
-                    }
-                }
-
-                prevgroup[i].ParentId = max_rankid;
-                prevgroup[i].ParentSnapshot = snapshot;
-                prevgroup[i].Ncommon = NextAllCommon[max_rankid];
-                prevgroup[i].Rank = tmp_max_rank; /*NextAllRank might have gotten reset. */
-                prevgroup[i].NpartinParent = nextgroup[max_rankid].N;
-                prevgroup[i].NParents = 1; /* not reqd. but for completeness sake.
-                                              (don't make the code time reversible) */
-
-                if (nextgroup[max_rankid].ParentId >= 0 && nextgroup[max_rankid].ParentId < PrevNsub)
-                {
-                    if (prevgroup[i].N > prevgroup[nextgroup[max_rankid].ParentId].N)
-                    {
-                        nextgroup[max_rankid].ParentId = i;
-                        nextgroup[max_rankid].Ncommon = NextAllCommon[max_rankid];
-                        nextgroup[max_rankid].ParentSnapshot = prevgroup[i].snapshot;
-                    }
-                }
-                else
+                if (prevgroup[i].N > prevgroup[nextgroup[max_rankid].ParentId].N)
                 {
                     nextgroup[max_rankid].ParentId = i;
                     nextgroup[max_rankid].Ncommon = NextAllCommon[max_rankid];
                     nextgroup[max_rankid].ParentSnapshot = prevgroup[i].snapshot;
                 }
-
-                nextgroup[max_rankid].NParents++; /* does the next halo have multiple progenitors ->
-                                                     initialisation in loadgroups.c is important */
             }
             else
             {
-                /* so max_rank id was -1 -> this can be a side-effect of using
-                   some `N' most bound particles. Should check Ncommon and see if there
-                   is a possibility of assigning a parent.
-                */
+                nextgroup[max_rankid].ParentId = i;
+                nextgroup[max_rankid].Ncommon = NextAllCommon[max_rankid];
+                nextgroup[max_rankid].ParentSnapshot = prevgroup[i].snapshot;
             }
 
-            if (prevgroup[i].ParentId >= 0)
-                Nhalofound++;
+            nextgroup[max_rankid].NParents++; /* does the next halo have multiple progenitors ->
+                                                    initialisation in loadgroups.c is important */
         }
         else
         {
-            /* some previous iteration  of findallparents actually found a parent */
-            Nhalofound++;
+            /* so max_rank id was -1 -> this can be a side-effect of using
+                some `N' most bound particles. Should check Ncommon and see if there
+                is a possibility of assigning a parent.
+            */
         }
 
-        init_all_ranks(NextAllRanks, NextAllCommon, NextNsub);
+        if (prevgroup[i].ParentId >= 0)
+            Nhalofound++;
     }
-
     finish_myprogressbar(&interrupted);
-
     fprintf(stderr, "\nTotal number not found %" STR_FMT " \n", NumNotFound);
 
     /*   fprintf(stderr,"done...hence aborting\n"); */
