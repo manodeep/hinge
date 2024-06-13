@@ -34,9 +34,9 @@ OPT += -DWMAP5
 ### Set the compiler -- options are icc/gcc/clang.
 CC=gcc
 #### Add any compiler specific flags you want
-CFLAGS=#-fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
+CFLAGS=-fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
 #### Add any compiler specific link flags you want
-CLINK=#-fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
+CLINK=-fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
 
 ### You should NOT edit below this line
 DISTNAME=HINGE
@@ -85,7 +85,7 @@ else
   endif
 
   #### common options for gcc and clang
-  CFLAGS  += -march=native
+#  CFLAGS  += -march=native
 	CFLAGS  += -Wformat=2  -Wpacked  -Wnested-externs -Wpointer-arith  -Wredundant-decls  -Wfloat-equal -Wcast-qual
   CFLAGS  +=  -Wcast-align -Wmissing-declarations -Wmissing-prototypes  -Wnested-externs -Wstrict-prototypes  #-D_POSIX_C_SOURCE=2 -Wpadded -Wconversion
   CLINK += -lm
