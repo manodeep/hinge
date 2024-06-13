@@ -192,6 +192,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     i = 0;
     while (i < PrevNsub)
     {
+        fprintf(stderr,"i = %" STR_FMT " PrevNsub = %" STR_FMT "\n", i, PrevNsub);
+        interrupted = 1;
         if (prevgroup[i].isFof == 1)
             FOF_Parent = i;
 
@@ -232,7 +234,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                             }
 
                             NextAllRanks[tmp_grpid] += 1.0;
-                            NextAllCommon[tmp_grpid] += 1;
+                            NextAllCommon[tmp_grpid]++;
 
                             prevgroup[j].parentgroupforparticle[k] =
                                 NextAllRealGroupIds[tmp_id]; /* stores the real halo number
