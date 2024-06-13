@@ -225,7 +225,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         // while (j < PrevNsub && prevgroup[j].FOFHalo == FOF_Parent)
         for (int64 jj = 0; jj < prevgroup[i].Nsub; jj++)
         {
-            int64 j = i + jj;
+            const int64 j = i + jj;
             // fprintf(stderr, "j=%" STR_FMT " prevgroup[j].N = %" STR_FMT " FOF_Parent = %" STR_FMT "\n", j,
             //         prevgroup[j].N, FOF_Parent);
             my_progressbar(j, &interrupted);
@@ -276,7 +276,6 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 nextgroup[real_grpnum].parentsnapshotforparticle[real_grploc] = prevgroup[j].snapshot;
                 // fprintf(stderr, "setting parentgroupforparticle ...done\n");
             }
-            j++;
         }
         // fprintf(stderr, "Now calling max_rankid for FOF_Parent = %" STR_FMT " i = %" STR_FMT " j = %" STR_FMT
         // "\n",
