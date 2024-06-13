@@ -509,6 +509,8 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         */
         if (max_rankid != -1)
         {
+            XASSERT(max_rankid >= 0 && max_rankid < NextNsub,
+                    "Error: max_rankid is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", max_rankid, NextNsub);
             tmp_max_rank = NextAllRanks[max_rankid];
             /* Going to exploit the fact that nextgroup FOF finding would have
              * resulted in their ParentId being filled up */
