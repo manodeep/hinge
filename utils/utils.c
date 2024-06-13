@@ -522,7 +522,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             max_id = g[i].id[j] > max_id ? g[i].id[j] : max_id;
     }
     int64_t *all_id_offset = my_calloc(sizeof(*all_id_offset), max_id + 1);
-    for (int64 i = 0; i <= max_id + 1; i++)
+    for (int64 i = 0; i <= max_id; i++)
     {
         all_id_offset[i] = -1;
     }
