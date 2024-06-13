@@ -198,7 +198,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     i = 0;
     while (i < PrevNsub)
     {
-        fprintf(stderr, "i = %" STR_FMT " PrevNsub = %" STR_FMT "\n", i, PrevNsub);
+        // fprintf(stderr, "i = %" STR_FMT " PrevNsub = %" STR_FMT "\n", i, PrevNsub);
         interrupted = 1;
         if (prevgroup[i].isFof == 1)
             FOF_Parent = i;
@@ -209,22 +209,22 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         {
             j = i;
 
-            fprintf(stderr,
-                    "Now starting on halo with i= %" STR_FMT ", NextNsub = %" STR_FMT "  with FOF parent = %" STR_FMT
-                    "  prev.fofhalo = %" STR_FMT "\n",
-                    i, PrevNsub, FOF_Parent, prevgroup[j].FOFHalo);
+            // fprintf(stderr,
+            //         "Now starting on halo with i= %" STR_FMT ", NextNsub = %" STR_FMT "  with FOF parent = %" STR_FMT
+            //         "  prev.fofhalo = %" STR_FMT "\n",
+            //         i, PrevNsub, FOF_Parent, prevgroup[j].FOFHalo);
             XASSERT(j >= 0 && j < PrevNsub, "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", j,
                     PrevNsub);
             while (j < PrevNsub && prevgroup[j].FOFHalo == FOF_Parent)
             {
-                fprintf(stderr, "j=%" STR_FMT " prevgroup[j].N = %" STR_FMT " FOF_Parent = %" STR_FMT "\n", j,
-                        prevgroup[j].N, FOF_Parent);
+                // fprintf(stderr, "j=%" STR_FMT " prevgroup[j].N = %" STR_FMT " FOF_Parent = %" STR_FMT "\n", j,
+                //         prevgroup[j].N, FOF_Parent);
                 my_progressbar(j, &interrupted);
                 for (int64 k = 0; k < prevgroup[j].N; k++)
                 {
                     const id64 tmp_id = prevgroup[j].id[k];
-                    fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " NextMaxPartId = %" STR_FMT "\n", k, tmp_id,
-                            NextMaxPartId);
+                    // fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " NextMaxPartId = %" STR_FMT "\n", k, tmp_id,
+                    //         NextMaxPartId);
                     if (tmp_id < 0 || tmp_id >= NextMaxPartId)
                     {
                         continue;
@@ -234,7 +234,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                         continue;
                     }
 
-                    fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " ..actually working\n", k, tmp_id);
+                    // fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " ..actually working\n", k, tmp_id);
                     int64 tmp_grpid = NextAllGroupIds[tmp_id];
                     XASSERT(tmp_grpid >= 0 && tmp_grpid < NextNsub,
                             "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grpid, NextNsub);
@@ -246,10 +246,10 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                                 tmp_grpid, nextgroup[tmp_grpid].snapshot);
                         exit(EXIT_FAILURE);
                     }
-                    fprintf(stderr, "Here filling nextallranks and nextallcommon\n");
+                    // fprintf(stderr, "Here filling nextallranks and nextallcommon\n");
                     NextAllRanks[tmp_grpid] += 1.0;
                     NextAllCommon[tmp_grpid]++;
-                    fprintf(stderr, "Here filling nextallranks and nextallcommon ...done\n");
+                    // fprintf(stderr, "Here filling nextallranks and nextallcommon ...done\n");
 
                     /* stores the real halo number and not the Fof halo number.
                     Group matching is still donebased on the Fof halo number. */
@@ -261,17 +261,17 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                             "Error: Group loc is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", real_grploc,
                             nextgroup[real_grpnum].N);
 
-                    fprintf(stderr, "setting parentgroupforparticle\n");
+                    // fprintf(stderr, "setting parentgroupforparticle\n");
                     prevgroup[j].parentgroupforparticle[k] = real_grpnum;
                     prevgroup[j].parentsnapshotforparticle[k] = nextgroup[tmp_grpid].snapshot;
                     nextgroup[real_grpnum].parentgroupforparticle[real_grploc] = j;
                     nextgroup[real_grpnum].parentsnapshotforparticle[real_grploc] = prevgroup[j].snapshot;
-                    fprintf(stderr, "setting parentgroupforparticle ...done\n");
+                    // fprintf(stderr, "setting parentgroupforparticle ...done\n");
                 }
                 j++;
             }
-            fprintf(stderr, "Now calling max_rankid for FOF_Parent = %" STR_FMT " i = %" STR_FMT " j = %" STR_FMT "\n",
-                    FOF_Parent, i, j);
+            // fprintf(stderr, "Now calling max_rankid for FOF_Parent = %" STR_FMT " i = %" STR_FMT " j = %" STR_FMT "\n",
+            //         FOF_Parent, i, j);
             max_rankid = find_max_rank(NextAllRanks, NextNsub);
             if (max_rankid != -1)
             {
