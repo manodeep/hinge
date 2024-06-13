@@ -97,6 +97,7 @@ struct params_data
     int64 MIN_NUMPART_IN_SWITCHFOF_HALO; // switchfof
 
     /* Populated from the GADGET snapshots (not read in from parameter file) */
+    /* Can be set in the parameter file now: MS 13th June, 2024 */
     double BOXSIZE;
     double MASSARR[6]; // Gadget massarr
 

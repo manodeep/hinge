@@ -149,6 +149,10 @@ void read_params(const char *fname, struct params_data *params,
     addr[nt] = params->OUTPUT_DIR;
     id[nt++] = STRING;
 
+    my_snprintf(tag[nt], MAXLEN, "BOXSIZE");
+    addr[nt] = params->BOXSIZE;
+    id[nt++] = DOUBLE;
+
     special_params(params, MAXTAGS, addr, id, tag, &nt);
 
     fd = my_fopen(fname, "r");

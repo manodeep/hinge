@@ -196,7 +196,7 @@ int main(int argc, char **argv)
 
     // copy Boxsize and massarr to the params structure
     /* PARAMS.BOXSIZE = header.BoxSize; */
-    PARAMS.BOXSIZE = 50.0e3;
+    // PARAMS.BOXSIZE = 50.0e3;
     /* for(int i=0;i<6;i++) { */
     /*   if(header.npart[i] > 0 && header.mass[i] <= 0.0 && PARAMS.fof_only == 1)
      * { */
