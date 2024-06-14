@@ -3,6 +3,7 @@
 #include "io.h"
 #include "read_param.h"
 #include "utils.h"
+#include "macros.h"
 #include <gsl/gsl_integration.h>
 
 void set_cosmology(struct cosmology_data *CP)
@@ -57,6 +58,7 @@ void set_cosmology(struct cosmology_data *CP)
 
 double get_age(float z)
 {
+    XASSERT(PARAMS.COSMO != NULL, "Cosmology struct not set\n");
     const int NWORKSPACE = 1000;
     const double RECOMBINATION_REDSHIFT = 1e3;
     const double AGE_AT_RECOMBINATION = 0.37 * 1e-3; /*in Gyr ( recombination = 0.37 Myr)*/

@@ -143,10 +143,16 @@ struct params_data
     struct cosmology_data *COSMO;
     double *Age;
     float *RedShift;
+    double LINKLENGTH;
+    double PhysicalLinkLength;
+    int INDIVIDUAL_MERGERS;
 };
 
 /* #ifdef SUSSING_TREES */
 extern float *REDSHIFT;
 extern struct params_data PARAMS;
 extern int64 NUMPART;
+extern double ActualMassUnits;
+extern int Nbins;
+
 /* #endif */
