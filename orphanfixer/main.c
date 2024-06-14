@@ -21,23 +21,24 @@ April, 2012:  Complete with a parameter file for the upcoming public release.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "hinge.h"
 #include "fillprogenitors.h"
+#include "hinge.h"
 #include "io.h"
 #include "loadgroups.h"
 #include "loadsnapshot.h"
+#include "macros.h"
 #include "maketree.h"
 #include "missinghalos.h"
 #include "proto.h"
 #include "read_param.h"
 #include "set_cosmology.h"
 #include "utils.h"
-#include "macros.h"
 #include "utils_read_params.h"
 
-struct params_data PARAMS; //global variable
+struct params_data PARAMS; // global variable
 float *REDSHIFT;
-int64 NUMPART;//Can not figure out how NUMPART is/was calculated but it is used in the code. Needs further investigation.
+int64 NUMPART; // Can not figure out how NUMPART is/was calculated but it is used in the code. Needs further
+               // investigation.
 
 int main(int argc, char **argv)
 {
@@ -117,8 +118,10 @@ int main(int argc, char **argv)
     my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
 #endif
     int nred = read_redshifts(outfname, REDSHIFT, NUM_SNAPSHOTS);
-    XASSERT(nred == NUM_SNAPSHOTS, "Error: Number of redshifts read in = %d is not equal to the number of snapshots = %d. "\
-                                    "Please make sure that '%s' file contains redshifts for all snapshots.\n", nred, NUM_SNAPSHOTS, outfname);
+    XASSERT(nred == NUM_SNAPSHOTS,
+            "Error: Number of redshifts read in = %d is not equal to the number of snapshots = %d. "
+            "Please make sure that '%s' file contains redshifts for all snapshots.\n",
+            nred, NUM_SNAPSHOTS, outfname);
 
     set_cosmology(&COSMO);
     PARAMS.COSMO = &COSMO;
@@ -141,7 +144,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "\n\n Now working on snapshot# %4d \n", isnapshot);
 
         Ngroups0 = returnNhalo(&PARAMS, isnapshot, fof_only);
-        if(Ngroups0 == 0) continue;
+        if (Ngroups0 == 0)
+            continue;
 
         if (isnapshot < PARAMS.MAX_SNAPSHOT_NUM)
         {

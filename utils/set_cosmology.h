@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "hinge.h" //for struct cosmology_data definition
-#include "io.h" //for struct group_data definition
+#include "io.h"    //for struct group_data definition
 
 /* functions in set_cosmology */
 double agefunc(double z, void *params);
