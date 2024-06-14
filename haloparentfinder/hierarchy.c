@@ -1,5 +1,6 @@
 #include "hierarchy.h"
 #include "utils.h"
+#include "progressbar.h"
 
 /*
 This function will match the sub-subhalos (and under) to their
@@ -95,11 +96,11 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
     int octant;
     int flag_no_match = 1;
     /* int PRINTSTEP=0,SMALLPRINTSTEP=0,PRINTLEN = 100; */
-    int SMALLPRINTSTEP = 0, PRINTLEN = 100;
-    float percent_done = 0.0;
+    // int SMALLPRINTSTEP = 0, PRINTLEN = 100;
+    // float percent_done = 0.0;
     /* char octant_flag[NWEDGES+1],final_flag[NWEDGES+1]; */
-    time_t t_start, t_now, time_taken;
-    int hr, min, sec;
+    // time_t t_start, time_t t_now, time_taken;
+    // int hr, min, sec;
     int N_per_wedge;
     int Min_Nsub_forPBar = 300; /* >= 100 */
 
@@ -118,8 +119,10 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
         /* octant_flag[NWEDGES] = '\0'; */
 
         /* Displaying the rotating progress bar */
+        int interrupted = 0;
         if (Nsub > Min_Nsub_forPBar)
         {
+#if 0
             /* PRINTSTEP = (int) floor(0.1*Nsub); */
             SMALLPRINTSTEP = ceil(0.01 * Nsub) > 1 ? ceil(0.01 * Nsub) : 1;
             fprintf(stderr, "\n\n");
@@ -129,9 +132,11 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
             print_char(' ', PRINTLEN);
             fprintf(stderr, "\b|");
             fprintf(stderr, "ETA: --:--:--");
+#endif
+            init_my_progressbar(Nsub, &interrupted);
         }
 
-        t_start = time(NULL);
+        // t_start = time(NULL);
         for (int64 igroup = (StartFofId + Nsub - 1); igroup > StartFofId + 1; igroup--)
         {
             N_per_wedge = (int)sqrt((double)group[igroup].N) / NWEDGES;
@@ -208,6 +213,8 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
             /* For displaying the rotating bar */
             if (Nsub > Min_Nsub_forPBar)
             {
+                my_progressbar(igroup, &interrupted);
+#if 0
                 if (((igroup - StartFofId) % SMALLPRINTSTEP) == 0)
                 {
                     percent_done = 100.0 - (double)(igroup - StartFofId) / Nsub * 100.0;
@@ -226,11 +233,13 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
                     estimate_eta(time_taken, percent_done, &hr, &min, &sec);
                     fprintf(stderr, "ETA:: %02dh:%02dm:%02ds", hr, min, sec);
                 }
+#endif
             }
         }
 
         if (Nsub > Min_Nsub_forPBar)
         {
+#if 0
             fprintf(stderr, "\r %3d%% ", 100);
             fprintf(stderr, "\b|");
             print_char('|', PRINTLEN);
@@ -239,6 +248,8 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
             time_taken = difftime(t_now, t_start);
             estimate_eta(time_taken, 100.0, &hr, &min, &sec);
             fprintf(stderr, "Time: %02dh:%02dm:%02ds DONE", hr, min, sec);
+#endif
+            finish_myprogressbar(&interrupted);
         }
 
         /* Now figure out the actual value of the levels */
