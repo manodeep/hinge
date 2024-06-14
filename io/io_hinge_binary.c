@@ -71,7 +71,9 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
             // fof_hostid = haloid;
         }
         group[ihalo].isFof = (haloid == hosthaloid) ? 1 : 0;
-        XASSERT(fof_hostnum >= 0 && fof_hostnum < nhalos, "Invalid fofnum = %" PRId64 " for halo = %" PRId64 " hosthalo = %"STR_FMT"\n", fof_hostnum, ihalo, hosthaloid);
+        XASSERT(fof_hostnum >= 0 && fof_hostnum < nhalos,
+                "Invalid fofnum = %" PRId64 " for halo = %" PRId64 " hosthalo = %" STR_FMT "\n", fof_hostnum, ihalo,
+                hosthaloid);
         group[ihalo].FOFHalo = fof_hostnum;
         group[ihalo].ContainerIndex = fof_hostnum;
         group[ihalo].ParentLevel = (group[ihalo].isFof == 1) ? 1 : -1; // subhalos don't have a parentlevel defined yet
@@ -96,7 +98,8 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     // for (int64 i = 0; i < nhalos; i++)
     // {
     //     const int64 fofnum = group[i].FOFHalo;
-    //     XASSERT(fofnum >= 0 && fofnum < nhalos, "Invalid fofnum = %" PRId64 " for halo = %" PRId64 " hosthalo = %"STR_FMT"\n", fofnum, i, );
+    //     XASSERT(fofnum >= 0 && fofnum < nhalos, "Invalid fofnum = %" PRId64 " for halo = %" PRId64 " hosthalo =
+    //     %"STR_FMT"\n", fofnum, i, );
     // }
     // fprintf(stderr, "Checking FOFHalo consistency ...done\n");
 
