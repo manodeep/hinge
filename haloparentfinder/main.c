@@ -157,7 +157,9 @@ int main(int argc, char **argv)
 #else
     my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
 #endif
+    int nred = read_redshifts(outfname, REDSHIFT, NUM_SNAPSHOTS);
 
+#if 0
     {
         fprintf(stderr, "Reading redshifts from file `%s'\n", outfname);
         FILE *fp = my_fopen(outfname, "rt");
@@ -182,6 +184,7 @@ int main(int argc, char **argv)
         }
         fclose(fp);
     }
+#endif
 
     // read in boxsize and massarr from Gadget header
     // my_snprintf(outfname,MAXLEN,"%s/%s_%03d",PARAMS.SNAPSHOT_DIR,PARAMS.SNAPSHOT_BASE,snapshot_number);

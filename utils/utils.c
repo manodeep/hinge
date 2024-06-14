@@ -204,6 +204,39 @@ void my_free(void **x)
     *x = NULL;
 }
 
+int read_redshifts(const char *outfname, float *redshift, const int num_snapshots)
+{
+    fprintf(stderr, "Reading redshifts from file `%s'\n", outfname);
+    FILE *fd = my_fopen(outfname, "rt");
+    int line = 0;
+    char buffer[MAXLINESIZE];
+    while (line < num_snapshots)
+    {
+        if (fgets(buffer, MAXLINESIZE, fd) != NULL)
+        {
+            int nread = sscanf(buffer, " %f ", &redshift[line]);
+            if (nread == 1)
+            {
+                fprintf(stderr, "REDSHIFT[%d] = %g \n", line, redshift[line]);
+                line++;
+            }
+        }
+        else
+        {
+            fprintf(stderr,
+                    "WARNING: DID not find enough redshifts (expected %d, found "
+                    "%d) in the redshift file `%s'\n",
+                    num_snapshots, line, outfname);
+            break;
+        }
+    }
+    fclose(fd);
+    return line;
+}
+
+
+
+
 struct io_header get_gadget_header(const char *fname)
 {
     FILE *fp = NULL;
