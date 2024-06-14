@@ -27,6 +27,8 @@
 #include <strings.h>
 #include <time.h>
 
+#include "macros.h"
+
 #ifdef BIGSIM
 #define int64 int64_t
 #define STR_FMT PRId64
