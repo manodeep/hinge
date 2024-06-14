@@ -71,7 +71,9 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
             // fof_hostid = haloid;
         }
         group[ihalo].isFof = (haloid == hosthaloid) ? 1 : 0;
-        XASSERT(fof_hostnum >= 0 && fof_hostnum < nhalos, "Invalid fofnum = %" PRId64 " for halo = %" PRId64 " hosthalo = %"STR_FMT" haloid = %"STR_FMT"\n", fof_hostnum, ihalo, hosthaloid, haloid);
+        XASSERT(fof_hostnum >= 0 && fof_hostnum < nhalos,
+                "Invalid fofnum = %" PRId64 " for halo = %" PRId64 " hosthalo = %" STR_FMT " haloid = %" STR_FMT "\n",
+                fof_hostnum, ihalo, hosthaloid, haloid);
         group[ihalo].FOFHalo = fof_hostnum;
         group[ihalo].ContainerIndex = fof_hostnum;
         group[ihalo].ParentLevel = (group[ihalo].isFof == 1) ? 1 : -1; // subhalos don't have a parentlevel defined yet
