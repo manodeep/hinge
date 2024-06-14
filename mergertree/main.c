@@ -31,19 +31,19 @@ entry is seen in NDisruptions.
 */
 
 // check 64 bit
-#include "hinge.h"
 #include "genplotdata.h"
+#include "hinge.h"
 #include "loadfillprogenitors.h"
 #include "loadgroups.h"
 #include "loadparents.h"
 #include "loadsnapshot.h"
+#include "macros.h"
 #include "progressbar.h"
 #include "proto.h"
 #include "read_param.h"
 #include "set_cosmology.h"
 #include "utils.h"
 #include "utils_read_params.h"
-#include "macros.h"
 
 struct params_data PARAMS;
 float *REDSHIFT = NULL;
@@ -154,7 +154,8 @@ int main(int argc, char **argv)
 
         Ngroups0 = returnNhalo(&PARAMS, isnapshot, fof_only);
         Ngroups[isnapshot] = Ngroups0;
-        if(Ngroups0 == 0) continue;
+        if (Ngroups0 == 0)
+            continue;
 
         if (isnapshot < PARAMS.MAX_SNAPSHOT_NUM)
         {

@@ -1,8 +1,8 @@
 #include <strings.h>
 
+#include "set_cosmology.h"
 #include "utils.h"
 #include "utils_read_params.h"
-#include "set_cosmology.h"
 
 void sanity_check_params(struct params_data *params);
 void fill_config_params(struct params_data *params);

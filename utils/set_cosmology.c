@@ -1,9 +1,9 @@
 #include "set_cosmology.h"
 #include "hinge.h"
 #include "io.h"
+#include "macros.h"
 #include "read_param.h"
 #include "utils.h"
-#include "macros.h"
 #include <gsl/gsl_integration.h>
 
 void set_cosmology(struct cosmology_data *CP)
