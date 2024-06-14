@@ -113,7 +113,6 @@ int main(int argc, char **argv)
     output_params(outfname, &PARAMS);
     fprintf(stderr, "..done\n");
 
-
 #ifdef SUSSING_TREES
     my_snprintf(outfname, MAXLEN, "%s/redshifts.list", PARAMS.GROUP_DIR);
 #else
