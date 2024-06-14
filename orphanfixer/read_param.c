@@ -5,17 +5,6 @@
 #include "utils.h"
 #include "utils_read_params.h"
 
-void set_simulation_params(struct params_data *params)
-{
-    params->RedShift = REDSHIFT;
-    params->Age = my_malloc(sizeof(*(params->Age)), PARAMS.MAX_SNAPSHOT_NUM + 1);
-    for (int i = PARAMS.MIN_SNAPSHOT_NUM; i <= PARAMS.MAX_SNAPSHOT_NUM; i++)
-    {
-        params->Age[i] = get_age(REDSHIFT[i]); /* Age of the Universe in GYR
-                                                  corresponding to the redshifts */
-        fprintf(stderr, "redshift = %10.4g    age = %12.4g Gyr\n", REDSHIFT[i], params->Age[i]);
-    }
-}
 
 void orphanfixer_fill_params(struct params_data *params, const int maxtags, void **addr, int *id, char (*tag)[MAXLEN],
                              int *nt_out)
