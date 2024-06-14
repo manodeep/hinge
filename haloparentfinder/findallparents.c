@@ -591,8 +591,8 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
         XASSERT(i >= 0 && i < PrevNsub, "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", i,
                 PrevNsub);
-        fprintf(stderr, "i = %" STR_FMT " PrevNsub = %" STR_FMT " prevgroup[%" STR_FMT "].ParentId = %" STR_FMT "\n", i,
-                PrevNsub, i, prevgroup[i].ParentId);
+        // fprintf(stderr, "i = %" STR_FMT " PrevNsub = %" STR_FMT " prevgroup[%" STR_FMT "].ParentId = %" STR_FMT "\n", i,
+        //         PrevNsub, i, prevgroup[i].ParentId);
         if (prevgroup[i].ParentId >= 0)
             Nhalofound++;
     }
