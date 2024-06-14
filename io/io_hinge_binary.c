@@ -71,6 +71,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
             // fof_hostid = haloid;
         }
         group[ihalo].isFof = (haloid == hosthaloid) ? 1 : 0;
+        XASSERT(fof_hostnum >= 0 && fof_hostnum < nhalos, "Invalid fofnum = %" PRId64 " for halo = %" PRId64 " hosthalo = %"STR_FMT"\n", fof_hostnum, ihalo, hosthaloid);
         group[ihalo].FOFHalo = fof_hostnum;
         group[ihalo].ContainerIndex = fof_hostnum;
         group[ihalo].ParentLevel = (group[ihalo].isFof == 1) ? 1 : -1; // subhalos don't have a parentlevel defined yet
@@ -92,12 +93,12 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     fprintf(stderr, "Assigning group-level properties ...done\n");
 
     fprintf(stderr, "Checking FOFHalo consistency ...\n");
-    for (int64 i = 0; i < nhalos; i++)
-    {
-        const int64 fofnum = group[i].FOFHalo;
-        XASSERT(fofnum >= 0 && fofnum < nhalos, "Invalid fofnum = %" PRId64 " for halo = %" PRId64 "\n", fofnum, i);
-    }
-    fprintf(stderr, "Checking FOFHalo consistency ...done\n");
+    // for (int64 i = 0; i < nhalos; i++)
+    // {
+    //     const int64 fofnum = group[i].FOFHalo;
+    //     XASSERT(fofnum >= 0 && fofnum < nhalos, "Invalid fofnum = %" PRId64 " for halo = %" PRId64 " hosthalo = %"STR_FMT"\n", fofnum, i, );
+    // }
+    // fprintf(stderr, "Checking FOFHalo consistency ...done\n");
 
     /* read individual files for each column */
     /* Can't really automate the process - so need to read in individually and assign */
