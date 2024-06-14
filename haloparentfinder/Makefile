@@ -4,12 +4,13 @@ include ../common.mk
 EXEC   = HaloParentFinder
 
 IO_SRC := ../io/io.c ../io/loadgroups.c ../io/io_subfind_binary.c ../io/io_hinge_ascii.c ../io/io_hinge_binary.c ../io/io_hinge_utils.c
-SRC    := hierarchy.c  findallparents.c switchfof.c findprogenitor.c read_param.c main.c ../utils/utils.c ../utils/progressbar.c ../utils/utils_read_params.c
-SRC    += $(IO_SRC)
-OBJS   := $(SRC:.c=.o)
+SRC := hierarchy.c  findallparents.c switchfof.c findprogenitor.c read_param.c ../utils/utils.c ../utils/progressbar.c ../utils/utils_read_params.c
+INCL := $(SRC:.c=.h)
 
-INCL   := $(IO_SRC:.c=.h)
-INCL   += Makefile defs.h
+SRC  += $(IO_SRC) main.c
+INCL += $(IO_SRC:.c=.h) Makefile defs.h
+
+OBJS   := $(SRC:.c=.o)
 
 all = $(EXEC)
 
