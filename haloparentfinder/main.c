@@ -152,10 +152,10 @@ int main(int argc, char **argv)
     NUM_SNAPSHOTS = PARAMS.MAX_SNAPSHOT_NUM + 1;
     REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);
 
-#ifndef SUSSING_TREES
-    my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
-#else
+#ifdef SUSSING_TREES
     my_snprintf(outfname, MAXLEN, "%s/redshifts.list", PARAMS.GROUP_DIR);
+#else
+    my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
 #endif
 
     {

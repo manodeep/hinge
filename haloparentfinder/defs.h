@@ -101,6 +101,12 @@ struct params_data
     double BOXSIZE;
     double MASSARR[6]; // Gadget massarr
 
+    /* Options for Orphanfixer */
+    int MAX_DECR_GROUPS;
+    int LOAD_FOUND_PROGENITORS;
+    int LOAD_PARTIAL_FOUND_PROGENITORS;
+    double MIN_FCOMMON_THRESH;
+
     // Makefile options
     int fof_only;
     int get_groupvel;
