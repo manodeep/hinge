@@ -91,13 +91,13 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Assigning group-level properties ...done\n");
 
-    fprintf(stderr,"Checking FOFHalo consistency ...\n");
-    for(int64 i=0;i<nhalos;i++)
+    fprintf(stderr, "Checking FOFHalo consistency ...\n");
+    for (int64 i = 0; i < nhalos; i++)
     {
         const int64 fofnum = group[i].FOFHalo;
         XASSERT(fofnum >= 0 && fofnum < nhalos, "Invalid fofnum = %" PRId64 " for halo = %" PRId64 "\n", fofnum, i);
     }
-    fprintf(stderr,"Checking FOFHalo consistency ...done\n");
+    fprintf(stderr, "Checking FOFHalo consistency ...done\n");
 
     /* read individual files for each column */
     /* Can't really automate the process - so need to read in individually and assign */
