@@ -158,8 +158,10 @@ int main(int argc, char **argv)
     my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
 #endif
     const int nred = read_redshifts(outfname, REDSHIFT, NUM_SNAPSHOTS);
-    XASSERT(nred == NUM_SNAPSHOTS, "Error: Number of redshifts read in = %d is not equal to the number of snapshots = %d. "\
-                                    "Please make sure that '%s' file contains redshifts for all snapshots.\n", nred, NUM_SNAPSHOTS, outfname);
+    XASSERT(nred == NUM_SNAPSHOTS,
+            "Error: Number of redshifts read in = %d is not equal to the number of snapshots = %d. "
+            "Please make sure that '%s' file contains redshifts for all snapshots.\n",
+            nred, NUM_SNAPSHOTS, outfname);
 
     // output the parameter file
     my_snprintf(outfname, MAXLEN, "%s/fofmatch.params", PARAMS.OUTPUT_DIR);
