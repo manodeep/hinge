@@ -98,6 +98,9 @@ int main(int argc, char **argv)
     // If MAX_SNAPSHOT_NUM is too large, consider mallocing these
     NUM_SNAPSHOTS = PARAMS.MAX_SNAPSHOT_NUM + 1;
     REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);
+
+    set_simulation_params(&PARAMS);
+
     int64 Ngroups[NUM_SNAPSHOTS];                            // there are groups corresponding to
                                                              // MAX_SNAPSHOT_NUM
     struct parent_data *allparents[PARAMS.MAX_SNAPSHOT_NUM]; // parents_??? files only go up to
@@ -110,7 +113,6 @@ int main(int argc, char **argv)
     output_params(outfname, &PARAMS);
     fprintf(stderr, "..done\n");
 
-    REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);
 
 #ifdef SUSSING_TREES
     my_snprintf(outfname, MAXLEN, "%s/redshifts.list", PARAMS.GROUP_DIR);

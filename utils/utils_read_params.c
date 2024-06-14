@@ -9,6 +9,7 @@ void fill_config_params(struct params_data *params);
 
 void set_simulation_params(struct params_data *params)
 {
+    XASSERT(REDSHIFT != NULL, "REDSHIFT is not set\n");
     params->RedShift = REDSHIFT;
     params->Age = my_malloc(sizeof(*(params->Age)), PARAMS.MAX_SNAPSHOT_NUM + 1);
     for (int i = PARAMS.MIN_SNAPSHOT_NUM; i <= PARAMS.MAX_SNAPSHOT_NUM; i++)
@@ -263,7 +264,6 @@ void read_params(const char *fname, struct params_data *params,
 
     sanity_check_params(params);
     fill_config_params(params);
-    set_simulation_params(params);
 
     return;
 }
