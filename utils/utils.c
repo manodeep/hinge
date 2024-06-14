@@ -234,9 +234,6 @@ int read_redshifts(const char *outfname, float *redshift, const int num_snapshot
     return line;
 }
 
-
-
-
 struct io_header get_gadget_header(const char *fname)
 {
     FILE *fp = NULL;
