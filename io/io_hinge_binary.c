@@ -42,6 +42,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     int interrupted = 0;
     fprintf(stderr, "Assigning group-level properties ...\n");
     init_my_progressbar(nhalos, &interrupted);
+    int64_t fof_hostnum = 0;
     for (int64_t ihalo = 0; ihalo < nhalos; ihalo++)
     {
         my_progressbar(ihalo, &interrupted);
@@ -64,7 +65,6 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
 
         int64_t haloid = group[ihalo].haloID;
         int64_t hosthaloid = group[ihalo].fofID;
-        int64_t fof_hostnum = -1;
         if (haloid == hosthaloid)
         {
             fof_hostnum = ihalo;
