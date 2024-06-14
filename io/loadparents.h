@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "hinge.h"
-#include "io.h"
 
 struct parent_data
 {

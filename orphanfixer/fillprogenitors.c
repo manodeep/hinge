@@ -1,7 +1,7 @@
 #ifndef FOF_ONLY
 
 #include "fillprogenitors.h"
-#include "defs.h"
+#include "hinge.h"
 #include "io.h"         //for definition of groups struct
 #include "loadgroups.h" //for loadgroups function definition
 #include "read_param.h"
@@ -314,7 +314,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             "Ngroups = %" STR_FMT "....\n",
                             snapshot, Ngroups[snapshot]);
                     group0 = allocate_group(Ngroups[snapshot]);
-                    loadgroups(snapshot, group0);
+                    loadgroups(&PARAMS, snapshot, group0);
                     fprintf(stderr,
                             "\nIn fillprogenitor: Loading groups for snapshot  %4d, "
                             "Ngroups = %" STR_FMT "....done\n",

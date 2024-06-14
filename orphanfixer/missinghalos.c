@@ -1,5 +1,5 @@
 #include "missinghalos.h"
-#include "defs.h"
+#include "hinge.h"
 #include "loadgroups.h"
 #include "read_param.h"
 #include "sglib.h"
@@ -138,7 +138,7 @@ void output_missing_halo_centres(struct node_data *tree[], int64 *Ngroups)
             EarliestSnapshot = PARAMS.MAX_SNAPSHOT_NUM;
             BaseNode = tree[isnapshot];
             group0 = allocate_group(Ngroups[isnapshot]);
-            loadgroups(isnapshot, group0);
+            loadgroups(&PARAMS, isnapshot, group0);
 
             for (int64 igroup = 0; igroup < Ngroups[isnapshot]; igroup++)
             {

@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 
 #ifdef BIGSIM
@@ -35,6 +36,11 @@
 #define STR_FMT "d"
 #define RD_FMT "d"
 #endif
+
+#define SQR(X) ((X) * (X))
+#define CUBE(X) ((X) * (X) * (X))
+#define PI (4.0 * atan(1.0))
+#define DOUBLE_EPS (1e-10)
 
 // Do not defined IDs to be unsigned. Code assigns -1 to ids to mark particles
 // for deletion later.
@@ -75,6 +81,22 @@ enum valid_group_formats
     hinge_ascii = 1,
     hinge_binary = 2,
     num_group_formats
+};
+
+struct cosmology_data
+{
+    double G;
+    double H0;
+    double h100;
+    double Omega_0;
+    double Omega_b;
+    double Omega_dm;
+    double Omega_m;
+    double Omega_lambda;
+    double Omega_rad;
+    double Omega_k;
+    float K_fit; /* Maccio et al. 2008 fitting parameters*/
+    float F_fit;
 };
 
 struct params_data
@@ -118,9 +140,13 @@ struct params_data
     int bigsim;
     int longids;
     int make_lean;
+    struct cosmology_data *COSMO;
+    double *Age;
+    float *RedShift;
 };
 
 /* #ifdef SUSSING_TREES */
 extern float *REDSHIFT;
 extern struct params_data PARAMS;
+extern int64 NUMPART;
 /* #endif */

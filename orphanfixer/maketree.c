@@ -1,9 +1,5 @@
 #include "maketree.h"
-#include "defs.h"
 #include "loadparents.h"
-#include "proto.h"
-#include "read_param.h"
-#include <assert.h>
 
 void assign_parent(struct node_data *halo, int64 haloid, struct node_data *parenthalo, int64 parentid)
 {
@@ -191,5 +187,5 @@ void assign_haloid(struct node_data *tree[], int64 *Ngroups)
             }
         }
     }
-    MaxHaloId = haloid - 1;
+    // MaxHaloId = haloid - 1;
 }
