@@ -54,10 +54,10 @@ Reduces the clutter at the low mass parent matching.
 #include <string.h>
 #include <time.h>
 
-#include "hinge.h"
 #include "findallparents.h"
 #include "findprogenitor.h"
 #include "hierarchy.h"
+#include "hinge.h"
 #include "io.h"
 #include "loadgroups.h"
 #include "read_param.h"
