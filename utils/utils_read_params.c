@@ -104,8 +104,6 @@ void read_params(const char *fname, struct params_data *params,
                  void special_params(struct params_data *params, const int maxtags, void **addr, int *id,
                                      char (*tag)[MAXLEN], int *nt))
 {
-
-    FILE *fd = NULL;
     char buf[MAXLINESIZE], buf1[MAXLINESIZE], buf2[MAXLINESIZE], buf3[MAXLINESIZE];
     int i, j, nt = 0;
     int id[MAXTAGS];
@@ -155,11 +153,10 @@ void read_params(const char *fname, struct params_data *params,
 
     special_params(params, MAXTAGS, addr, id, tag, &nt);
 
-    fd = my_fopen(fname, "r");
-    while (!feof(fd))
+    FILE *fd = my_fopen(fname, "r");
+    *buf = '\0';
+    while (fgets(buf, MAXLEN, fd) != NULL)
     {
-        *buf = 0;
-        fgets(buf, MAXLEN, fd);
         if (sscanf(buf, "%s%s%s", buf1, buf2, buf3) < 2)
             continue;
 
@@ -201,6 +198,7 @@ void read_params(const char *fname, struct params_data *params,
             fprintf(stderr, "Error in file %s:   Tag '%s' not allowed or multiple defined.\n", fname, buf1);
             errorFlag = 1;
         }
+        *buf = '\0';
     }
     fclose(fd);
 
@@ -251,12 +249,6 @@ void read_params(const char *fname, struct params_data *params,
 
     sanity_check_params(params);
     fill_config_params(params);
-
-    // #undef DOUBLE
-    // #undef STRING
-    // #undef INT
-    // #undef LONG
-    // #undef MAXTAGS
 
     return;
 }
