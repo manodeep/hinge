@@ -1,6 +1,6 @@
 #include "hierarchy.h"
-#include "utils.h"
 #include "progressbar.h"
+#include "utils.h"
 
 /*
 This function will match the sub-subhalos (and under) to their
