@@ -3,7 +3,7 @@ extern "C"
 {
 #endif
 
-#include "defs.h"
+#include "hinge.h"
 #include "io.h"
 
     extern int64 returnNhalo_subfind_binary(const struct params_data *params, const int snapnum, const int fof_only);

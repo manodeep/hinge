@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "defs.h"
+#include "hinge.h"
 #include "macros.h"
 #include "progressbar.h"
 #include "read_param.h"
@@ -24,7 +24,7 @@ int my_snprintf(char *buffer, int len, const char *format, ...)
                 "ERROR: printing to string failed (wrote %d characters while only "
                 "%d characters were allocated)\n",
                 nwritten, len);
-        fprintf(stderr, "Increase maxlen in `defs.h' ..exiting\n");
+        fprintf(stderr, "Increase maxlen in `hinge.h' ..exiting\n");
         exit(EXIT_FAILURE);
     }
     return nwritten;

@@ -5,7 +5,6 @@ extern "C"
 {
 #endif
 
-#include "defs.h"
 #include "io.h"
 
     extern int64 returnNhalo_hinge_binary(const struct params_data *params, const int snapnum, const int fof_only);

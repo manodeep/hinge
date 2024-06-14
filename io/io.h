@@ -5,7 +5,7 @@ extern "C"
 {
 #endif
 
-#include "defs.h"
+#include "hinge.h"
 
     struct group_data
     {

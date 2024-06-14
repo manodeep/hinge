@@ -56,8 +56,13 @@
 #define GROUPMINLEN (100)
 #define ABS_PERIODIC(x, y) (fabs(periodic(x - y)))
 
+#ifndef MAXLEN
 #define MAXLEN (1000)
+#endif
+
+#ifndef MAXLINESIZE
 #define MAXLINESIZE (10000)
+#endif
 
 enum valid_group_formats
 {

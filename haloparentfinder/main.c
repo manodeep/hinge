@@ -54,7 +54,7 @@ Reduces the clutter at the low mass parent matching.
 #include <string.h>
 #include <time.h>
 
-#include "defs.h"
+#include "hinge.h"
 #include "findallparents.h"
 #include "findprogenitor.h"
 #include "hierarchy.h"
@@ -159,58 +159,6 @@ int main(int argc, char **argv)
 #endif
     int nred = read_redshifts(outfname, REDSHIFT, NUM_SNAPSHOTS);
 
-#if 0
-    {
-        fprintf(stderr, "Reading redshifts from file `%s'\n", outfname);
-        FILE *fp = my_fopen(outfname, "rt");
-        int line = 0;
-        char buffer[MAXLINESIZE];
-        while (line < NUM_SNAPSHOTS)
-        {
-            if (fgets(buffer, MAXLINESIZE, fp) != NULL)
-            {
-                int nread = sscanf(buffer, " %f ", &REDSHIFT[line]);
-                if (nread == 1)
-                    line++;
-            }
-            else
-            {
-                fprintf(stderr,
-                        "WARNING: DID not find enough redshifts (expected %d, found "
-                        "%d) in the redshift file `%s'\n",
-                        NUM_SNAPSHOTS, line, outfname);
-                break;
-            }
-        }
-        fclose(fp);
-    }
-#endif
-
-    // read in boxsize and massarr from Gadget header
-    // my_snprintf(outfname,MAXLEN,"%s/%s_%03d",PARAMS.SNAPSHOT_DIR,PARAMS.SNAPSHOT_BASE,snapshot_number);
-    /* #ifndef SUSSING_TREES */
-    /*   my_snprintf(outfname,MAXLEN,"%s/%s_%03d",PARAMS.SNAPSHOT_DIR,PARAMS.SNAPSHOT_BASE,PARAMS.MAX_SNAPSHOT_NUM);//use
-     * this line if only one snapshot is available. */
-    /* #else */
-    /*   my_snprintf(outfname,MAXLEN,"%s/snapdir_%03d/%s_%03d",PARAMS.SNAPSHOT_DIR,PARAMS.MAX_SNAPSHOT_NUM,PARAMS.SNAPSHOT_BASE,PARAMS.MAX_SNAPSHOT_NUM);//use
-     * this line if only one snapshot is available. */
-    /* #endif   */
-    /*   header = get_gadget_header(outfname); */
-
-    // copy Boxsize and massarr to the params structure
-    /* PARAMS.BOXSIZE = header.BoxSize; */
-    // PARAMS.BOXSIZE = 50.0e3;
-    /* for(int i=0;i<6;i++) { */
-    /*   if(header.npart[i] > 0 && header.mass[i] <= 0.0 && PARAMS.fof_only == 1)
-     * { */
-    /*     fprintf(stderr,"ERROR: Gadget snapshot has individual masses. This code
-     * can not handle that yet\n");//loadgroups with fof_only will not be able to
-     * handle this. */
-    /*     exit(EXIT_FAILURE); */
-    /*   } */
-    /*   PARAMS.MASSARR[i] = header.mass[i]; */
-    /* } */
-
     // output the parameter file
     my_snprintf(outfname, MAXLEN, "%s/fofmatch.params", PARAMS.OUTPUT_DIR);
     fprintf(stderr, "output parameter file to `%s'...", outfname);
@@ -218,74 +166,10 @@ int main(int argc, char **argv)
     fprintf(stderr, "..done\n");
 
     NFof0 = returnNhalo(&PARAMS, snapshot_number, 1);
-    // #ifdef SUBFIND
-    //     my_snprintf(outfname, MAXLEN, "%s/groups_%03d.fofcat", PARAMS.GROUP_DIR, snapshot_number);
-    //     NFof0 = returnNhalo(outfname);
-    // #endif
-
-    // #ifndef FOF_ONLY
-    // #define RETURN_ONLY_FOFS 1
-    // #endif
-
-    // #ifdef SUSSING_TREES
-    //     /* my_snprintf(outfname,MAXLEN,"%s/%s_%03d.z%5.3f.AHF_halos",
-    //      * PARAMS.GROUP_DIR,
-    //      * PARAMS.GROUP_BASE,snapshot_number,REDSHIFT[snapshot_number]); */
-    //     my_snprintf(outfname, MAXLEN, "%s/%s%05d.z%5.3f.AHF_halos", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,
-    //     snapshot_number,
-    //                 REDSHIFT[snapshot_number]);
-    //     NFof0 = returnNhalo_SUSSING(outfname, RETURN_ONLY_FOFS);
-    // #endif
-
-    // #ifdef BGC2
-    //     my_snprintf(outfname, MAXLEN, "%s/halos_%03d.0.bgc2", PARAMS.GROUP_DIR, snapshot_number);
-    //     NFof0 = returnNhalo_bgc2(outfname, RETURN_ONLY_FOFS);
-    // #endif
-
-    // #ifndef FOF_ONLY
-    // #undef RETURN_ONLY_FOFS
-    // #endif
-
     fprintf(stderr, "NFof0 = %" STR_FMT " outfname = `%s'\n", NFof0, outfname);
 
     /*Now to actually allocate the memory and load the halos */
     Ngroups0 = returnNhalo(&PARAMS, snapshot_number, fof_only);
-    // Subfind halos
-    // #ifdef SUBFIND
-    // #ifdef FOF_ONLY
-    //     /* read in Ngroups. */
-    //     my_snprintf(outfname, MAXLEN, "%s/groups_%03d.fofcat", PARAMS.GROUP_DIR, snapshot_number);
-    // #else
-    //     /* read in Nsub. */
-    //     my_snprintf(outfname, MAXLEN, "%s/groups_%03d.subcat", PARAMS.GROUP_DIR, snapshot_number);
-    // #endif
-    //     Ngroups0 = returnNhalo(outfname);
-    // #endif
-
-    // #ifdef FOF_ONLY
-    // #define RETURN_ONLY_FOFS 1
-    // #else
-    // #define RETURN_ONLY_FOFS 0
-    // #endif
-
-    //     // For the Sussing Merger trees
-    // #ifdef SUSSING_TREES
-    //     /* my_snprintf(outfname,MAXLEN,"%s/%s_%03d.z%5.3f.AHF_halos",
-    //      * PARAMS.GROUP_DIR,
-    //      * PARAMS.GROUP_BASE,snapshot_number,REDSHIFT[snapshot_number]);   */
-    //     my_snprintf(outfname, MAXLEN, "%s/%s%05d.z%5.3f.AHF_halos", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,
-    //     snapshot_number,
-    //                 REDSHIFT[snapshot_number]);
-    //     Ngroups0 = returnNhalo_SUSSING(outfname, RETURN_ONLY_FOFS);
-    // #endif
-
-    //     // Rockstar halos
-    // #ifdef BGC2
-    //     my_snprintf(outfname, MAXLEN, "%s/halos_%03d.0.bgc2", PARAMS.GROUP_DIR, snapshot_number);
-    //     Ngroups0 = returnNhalo_bgc2(outfname, RETURN_ONLY_FOFS);
-    // #endif
-
-    // #undef RETURN_ONLY_FOFS
 
     notfound = NFof0;
     if (Ngroups0 > 0)
@@ -298,39 +182,6 @@ int main(int argc, char **argv)
         fprintf(stderr, " done ...\n\n");
         print_time(t_sectionstart, t_sectionend, "loadgroups");
         Ngroups1 = returnNhalo(&PARAMS, snapshot_number + incr, fof_only);
-        // #ifdef SUBFIND
-        // #ifdef FOF_ONLY
-        //         my_snprintf(outfname, MAXLEN, "%s/groups_%03d.fofcat", PARAMS.GROUP_DIR, snapshot_number + incr);
-        // #else
-        //         my_snprintf(outfname, MAXLEN, "%s/groups_%03d.subcat", PARAMS.GROUP_DIR, snapshot_number + incr);
-        // #endif
-        //         Ngroups1 = returnNhalo(outfname);
-        // #endif
-
-        // #ifdef FOF_ONLY
-        // #define RETURN_ONLY_FOFS 1
-        // #else
-        // #define RETURN_ONLY_FOFS 0
-        // #endif
-
-        // #ifdef SUSSING_TREES
-        //         /* my_snprintf(outfname,MAXLEN,"%s/%s_%03d.z%5.3f.AHF_halos",
-        //          * PARAMS.GROUP_DIR,
-        //          * PARAMS.GROUP_BASE,snapshot_number+incr,REDSHIFT[snapshot_number+incr]);
-        //          */
-        //         my_snprintf(outfname, MAXLEN, "%s/%s%05d.z%5.3f.AHF_halos", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,
-        //                     snapshot_number + incr, REDSHIFT[snapshot_number + incr]);
-        //         Ngroups1 = returnNhalo_SUSSING(outfname, RETURN_ONLY_FOFS);
-        // #endif
-
-        // Rockstar halos
-        // #ifdef BGC2
-        //         my_snprintf(outfname, MAXLEN, "%s/halos_%03d.0.bgc2", PARAMS.GROUP_DIR, snapshot_number + incr);
-        //         Ngroups1 = returnNhalo_bgc2(outfname, RETURN_ONLY_FOFS);
-        // #endif
-
-        // #undef RETURN_ONLY_FOFS
-
         group1 = allocate_group(Ngroups1);
         fprintf(stderr, "loading group for snapshot # %d with %" STR_FMT " halos\n", snapshot_number + incr, Ngroups1);
         t_sectionstart = time(NULL);
@@ -363,7 +214,6 @@ int main(int argc, char **argv)
         t_sectionstart = time(NULL);
         find_hierarchy_level(group1, Ngroups1, PARAMS.OUTPUT_DIR);
         t_sectionend = time(NULL);
-        /* 	  fprintf(stderr," done ...\n\n"); */
         print_time(t_sectionstart, t_sectionend, "hierarchy level at next snapshot ");
         /* #endif */
 
@@ -375,7 +225,6 @@ int main(int argc, char **argv)
         t_sectionstart = time(NULL);
         Nparentsfound = findfofparents(group0, Ngroups0, group1, Ngroups1, PARAMS.OUTPUT_DIR);
         t_sectionend = time(NULL);
-        // fprintf(stderr, " done ...\n\n");
         print_time(t_sectionstart, t_sectionend, "Find FOF parents");
 
         fprintf(stderr, "Nparentsfound = %" STR_FMT " NFof0 = %" STR_FMT "\n", Nparentsfound, NFof0);

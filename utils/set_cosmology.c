@@ -1,5 +1,5 @@
 #include "set_cosmology.h"
-#include "defs.h"
+#include "hinge.h"
 #include "io.h"
 #include "read_param.h"
 #include "utils.h"

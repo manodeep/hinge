@@ -1,8 +1,8 @@
 
 #ifndef FOF_ONLY
 
+#include "hinge.h"
 #include "findprogenitor.h"
-#include "defs.h"
 #include "read_param.h"
 #include "utils.h"
 

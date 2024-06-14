@@ -1,4 +1,4 @@
-#include "defs.h"
+#include "hinge.h"
 #include "io.h"
 
 #define DOUBLE 1

@@ -5,8 +5,7 @@ extern "C"
 {
 #endif
 
-#include "defs.h"
-#include "io.h"
+#include <stdint.h>
 
     struct hinge_halo
     {

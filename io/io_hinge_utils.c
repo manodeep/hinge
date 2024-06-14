@@ -5,6 +5,7 @@
 #include <string.h>
 #include <strings.h>
 
+#include "hinge.h"
 #include "io_hinge_utils.h"
 #include "macros.h"
 #include "utils.h"

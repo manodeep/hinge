@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "defs.h"
+#include "hinge.h"
 #include "io.h"
 
 struct parent_data
