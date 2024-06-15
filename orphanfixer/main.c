@@ -126,7 +126,6 @@ int main(int argc, char **argv)
     output_params(outfname, &PARAMS);
     fprintf(stderr, "..done\n");
 
-
 #ifdef FOF_ONLY
     const int fof_only = 1;
 #else
