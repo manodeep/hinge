@@ -223,9 +223,9 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     xcen = group->xcen; // or use group->x[0]??
     ycen = group->ycen;
     zcen = group->zcen;
-    assert(xcen >= 0 && xcen <= PARAMS.BOXSIZE && "xcen must be in [0.0, BoxSize]");
-    assert(ycen >= 0 && ycen <= PARAMS.BOXSIZE && "ycen must be in [0.0, BoxSize]");
-    assert(zcen >= 0 && zcen <= PARAMS.BOXSIZE && "zcen must be in [0.0, BoxSize]");
+    XASSERT(xcen >= 0 && xcen <= PARAMS.BOXSIZE, "xcen = %f must be in [0.0, %f]", xcen, PARAMS.BOXSIZE);
+    XASSERT(ycen >= 0 && ycen <= PARAMS.BOXSIZE, "ycen = %f must be in [0.0, %f]", ycen, PARAMS.BOXSIZE);
+    XASSERT(zcen >= 0 && zcen <= PARAMS.BOXSIZE, "zcen = %f must be in [0.0, %f]", zcen, PARAMS.BOXSIZE);
 
     /*
            Needs proper handling of box-wrapping -- taken from Groupfinder.
