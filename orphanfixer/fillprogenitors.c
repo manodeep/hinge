@@ -159,7 +159,8 @@ int64 get_best_groupnum_wids(id64 *sourceIds, int64 Nids, struct group_data *des
     for (int64 i = 0; i < Nids; i++)
     {
         const id64 index = sourceIds[i];
-        if(destNgroups <= 0 || index >= DestMaxPartId || index < 0) continue;
+        if (destNgroups <= 0 || index >= DestMaxPartId || index < 0)
+            continue;
         if (DestPartIds[index] == 1)
         {
             const int64 grp_index = DestGroupIds[index];
@@ -170,8 +171,7 @@ int64 get_best_groupnum_wids(id64 *sourceIds, int64 Nids, struct group_data *des
                 if (PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && i < PARAMS.MAX_RANK_LOC))
                     DestRanks[grp_index] += compute_rank(i); /* matching based on rank */
 
-                if (PARAMS.MAX_RANK_LOC <= 0 ||
-                    (PARAMS.MAX_RANK_LOC > 0 && DestGroupLoc[index] < PARAMS.MAX_RANK_LOC))
+                if (PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && DestGroupLoc[index] < PARAMS.MAX_RANK_LOC))
                     DestRanks[grp_index] += compute_rank(DestGroupLoc[index]);
             }
             else
@@ -326,7 +326,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                         for (int64 j = 0; j < group0[i].N; j++)
                         {
                             const id64 this_id = group0[i].id[j];
-                            if (this_id < 0) continue;
+                            if (this_id < 0)
+                                continue;
                             if (this_id > max_part_id)
                                 max_part_id = this_id;
                         }
@@ -386,7 +387,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             {
                                 s = DestPartIds[snapshot];
                                 const id64 this_id = group0[i].id[j];
-                                if (this_id < 0) continue;
+                                if (this_id < 0)
+                                    continue;
                                 assert(this_id < DestMaxPartId[snapshot] &&
                                        "Particle id must be less than max. particle id - "
                                        "strange things must have happened");

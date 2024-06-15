@@ -295,7 +295,8 @@ void assign_vxcm(struct group_data *group, int64 Ngroups, struct particle_data *
         for (int64 j = 0; j < group[i].N; j++)
         {
             id64 index = group[i].id[j] - 1; // 0 based indexing
-            if(index < 0) continue;
+            if (index < 0)
+                continue;
             float mass = P[index].Mass;
             sumvx += (P[index].Vel[0] * mass);
             sumvy += (P[index].Vel[1] * mass);
