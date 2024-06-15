@@ -284,27 +284,19 @@ int main(int argc, char **argv)
 
 void assign_vxcm(struct group_data *group, int64 Ngroups, struct particle_data *P, float redshift)
 {
-    int64 index;
-    double sumx, sumy, sumz, summ;
-    double sumvx, sumvy, sumvz;
-    float mass = 0.0;
     for (int64 i = 0; i < Ngroups; i++)
     {
-        sumx = 0.0;
-        sumy = 0.0;
-        sumz = 0.0;
-        sumvx = 0.0;
-        sumvy = 0.0;
-        sumvz = 0.0;
-        summ = 0.0;
+        double sumx = 0.0, sumy = 0.0, sumz = 0.0, summ = 0.0;
+        double sumvx = 0.0, sumvy = 0.0, sumvz = 0.0;
 
 #ifdef FOF_ONLY
         group[i].Mtot = 0.0;
 #endif
         for (int64 j = 0; j < group[i].N; j++)
         {
-            index = group[i].id[j] - 1; // 0 based indexing
-            mass = P[index].Mass;
+            id64 index = group[i].id[j] - 1; // 0 based indexing
+            if(index < 0) continue;
+            float mass = P[index].Mass;
             sumvx += (P[index].Vel[0] * mass);
             sumvy += (P[index].Vel[1] * mass);
             sumvz += (P[index].Vel[2] * mass);

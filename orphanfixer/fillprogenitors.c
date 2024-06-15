@@ -20,7 +20,7 @@ do not have a progenitor and return group numbers for all those
 particles that are found in some previous snapshot.
 */
 
-int64 get_best_groupnum_wids(int64 *sourceIds, int64 Nids, struct group_data *dest, int64 destNgroups, int flag,
+int64 get_best_groupnum_wids(id64 *sourceIds, int64 Nids, struct group_data *dest, int64 destNgroups, int flag,
                              double *rank, short *DestPartIds, int64 *DestGroupIds, int64 *DestGroupLoc,
                              int64 DestMaxPartId);
 
@@ -137,13 +137,13 @@ short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const cha
     return min_snapshot;
 }
 
-int64 get_best_groupnum_wids(int64 *sourceIds, int64 Nids, struct group_data *dest, int64 destNgroups, int flag,
+int64 get_best_groupnum_wids(id64 *sourceIds, int64 Nids, struct group_data *dest, int64 destNgroups, int flag,
                              double *rank, short *DestPartIds, int64 *DestGroupIds, int64 *DestGroupLoc,
                              int64 DestMaxPartId)
 {
     double *DestRanks = NULL;
     int64 *DestNcommon = NULL;
-    int64 index, grp_index;
+    // int64 index, grp_index;
     int64 max_ranknum = 0;
     double max_rank = 0.0;
 
@@ -158,33 +158,31 @@ int64 get_best_groupnum_wids(int64 *sourceIds, int64 Nids, struct group_data *de
 
     for (int64 i = 0; i < Nids; i++)
     {
-        index = sourceIds[i];
-        if (destNgroups > 0 && index < DestMaxPartId)
+        const id64 index = sourceIds[i];
+        if(destNgroups <= 0 || index >= DestMaxPartId || index < 0) continue;
+        if (DestPartIds[index] == 1)
         {
-            if (DestPartIds[index] == 1)
+            const int64 grp_index = DestGroupIds[index];
+            DestNcommon[grp_index]++;
+
+            if (flag == 1)
             {
-                grp_index = DestGroupIds[index];
-                DestNcommon[grp_index]++;
+                if (PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && i < PARAMS.MAX_RANK_LOC))
+                    DestRanks[grp_index] += compute_rank(i); /* matching based on rank */
 
-                if (flag == 1)
-                {
-                    if (PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && i < PARAMS.MAX_RANK_LOC))
-                        DestRanks[grp_index] += compute_rank(i); /* matching based on rank */
+                if (PARAMS.MAX_RANK_LOC <= 0 ||
+                    (PARAMS.MAX_RANK_LOC > 0 && DestGroupLoc[index] < PARAMS.MAX_RANK_LOC))
+                    DestRanks[grp_index] += compute_rank(DestGroupLoc[index]);
+            }
+            else
+            {
+                DestRanks[grp_index] += 1.0; /* matching based on Ncommon */
+            }
 
-                    if (PARAMS.MAX_RANK_LOC <= 0 ||
-                        (PARAMS.MAX_RANK_LOC > 0 && DestGroupLoc[index] < PARAMS.MAX_RANK_LOC))
-                        DestRanks[grp_index] += compute_rank(DestGroupLoc[index]);
-                }
-                else
-                {
-                    DestRanks[grp_index] += 1.0; /* matching based on Ncommon */
-                }
-
-                if (DestRanks[grp_index] > max_rank)
-                {
-                    max_rank = DestRanks[grp_index];
-                    max_ranknum = grp_index;
-                }
+            if (DestRanks[grp_index] > max_rank)
+            {
+                max_rank = DestRanks[grp_index];
+                max_ranknum = grp_index;
             }
         }
     }
@@ -217,7 +215,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
     struct group_data *allgroups[NUM_SNAPSHOTS];
     double rank = 0.0, max_rank = 0.0; /*,best_rank=0.0,remaining_best_rank=0.0;*/
     int64 ncommon = 0;
-    int64 *TrackIds = NULL;
+    id64 *TrackIds = NULL;
     int64 startgroup = 0;
     int64 Nids = 0;
     time_t t_sectionstart, t_sectionend;
@@ -328,6 +326,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                         for (int64 j = 0; j < group0[i].N; j++)
                         {
                             const id64 this_id = group0[i].id[j];
+                            if (this_id < 0) continue;
                             if (this_id > max_part_id)
                                 max_part_id = this_id;
                         }
@@ -387,6 +386,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             {
                                 s = DestPartIds[snapshot];
                                 const id64 this_id = group0[i].id[j];
+                                if (this_id < 0) continue;
                                 assert(this_id < DestMaxPartId[snapshot] &&
                                        "Particle id must be less than max. particle id - "
                                        "strange things must have happened");
@@ -418,7 +418,9 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                     Nids = group0[thisnode->nodeloc].N;
                     TrackIds = my_malloc(sizeof(*TrackIds), Nids);
                     for (int64 j = 0; j < Nids; j++)
+                    {
                         TrackIds[j] = group0[thisnode->nodeloc].id[j];
+                    }
 
                     max_rank = 0.0;
                     for (int64 i = 0; i < group0[thisnode->nodeloc].N; i++)
