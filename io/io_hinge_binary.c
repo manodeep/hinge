@@ -94,7 +94,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Assigning group-level properties ...done\n");
 
-    fprintf(stderr, "Checking FOFHalo consistency ...\n");
+    // fprintf(stderr, "Checking FOFHalo consistency ...\n");
     // for (int64 i = 0; i < nhalos; i++)
     // {
     //     const int64 fofnum = group[i].FOFHalo;
