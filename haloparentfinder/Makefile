@@ -16,7 +16,7 @@ OBJS   := $(SRC:.c=.o)
 all = $(EXEC)
 
 $(EXEC): $(OBJS)
-	$(CC) $(GSL_LINK) $(OBJS) $(CLINK) -o  $@
+	$(CC) $(OBJS) $(CLINK) $(GSL_LINK) -o  $@
 
 $(OBJS): $(INCL)
 %.o: %.c
