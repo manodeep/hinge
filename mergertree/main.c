@@ -122,6 +122,9 @@ int main(int argc, char **argv)
     fprintf(stderr, "..done\n");
 
     REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);
+    PARAMS.RedShift = REDSHIFT;
+    set_cosmology(&COSMO);
+    PARAMS.COSMO = &COSMO;
 
 #ifndef SUSSING_TREES
     my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
@@ -137,8 +140,6 @@ int main(int argc, char **argv)
     const int fof_only = 0;
 #endif
 
-    set_cosmology(&COSMO);
-    PARAMS.COSMO = &COSMO;
     set_simulation_params(&PARAMS);
 
     for (int isnapshot = PARAMS.MIN_SNAPSHOT_NUM; isnapshot <= PARAMS.MAX_SNAPSHOT_NUM; isnapshot++)

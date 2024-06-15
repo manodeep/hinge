@@ -99,20 +99,6 @@ int main(int argc, char **argv)
     NUM_SNAPSHOTS = PARAMS.MAX_SNAPSHOT_NUM + 1;
     REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);
 
-    set_simulation_params(&PARAMS);
-
-    int64 Ngroups[NUM_SNAPSHOTS];                            // there are groups corresponding to
-                                                             // MAX_SNAPSHOT_NUM
-    struct parent_data *allparents[PARAMS.MAX_SNAPSHOT_NUM]; // parents_??? files only go up to
-                                                             // MAX_SNAPSHOT_NUM-1
-    struct node_data *tree[NUM_SNAPSHOTS];                   // there are groups in MAX_SNAPSHOT_NUM
-
-    // output the parameter file
-    my_snprintf(outfname, MAXLEN, "%s/orphanfixer.params", PARAMS.OUTPUT_DIR);
-    fprintf(stderr, "output parameter file to `%s'...", outfname);
-    output_params(outfname, &PARAMS);
-    fprintf(stderr, "..done\n");
-
 #ifdef SUSSING_TREES
     my_snprintf(outfname, MAXLEN, "%s/redshifts.list", PARAMS.GROUP_DIR);
 #else
@@ -127,6 +113,19 @@ int main(int argc, char **argv)
     set_cosmology(&COSMO);
     PARAMS.COSMO = &COSMO;
     set_simulation_params(&PARAMS);
+
+    int64 Ngroups[NUM_SNAPSHOTS];                            // there are groups corresponding to
+                                                             // MAX_SNAPSHOT_NUM
+    struct parent_data *allparents[PARAMS.MAX_SNAPSHOT_NUM]; // parents_??? files only go up to
+                                                             // MAX_SNAPSHOT_NUM-1
+    struct node_data *tree[NUM_SNAPSHOTS];                   // there are groups in MAX_SNAPSHOT_NUM
+
+    // output the parameter file
+    my_snprintf(outfname, MAXLEN, "%s/orphanfixer.params", PARAMS.OUTPUT_DIR);
+    fprintf(stderr, "output parameter file to `%s'...", outfname);
+    output_params(outfname, &PARAMS);
+    fprintf(stderr, "..done\n");
+
 
 #ifdef FOF_ONLY
     const int fof_only = 1;

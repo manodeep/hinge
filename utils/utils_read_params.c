@@ -127,6 +127,7 @@ void read_params(const char *fname, struct params_data *params,
     int64 tmp_64_int;
     char group_format_type[MAXLEN];
     params->COSMO = NULL;
+    params->Age = NULL;
 
     nt = 0;
 
