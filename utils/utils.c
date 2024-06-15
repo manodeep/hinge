@@ -495,7 +495,7 @@ int64 get_ncommon(struct group_data *prev, struct group_data *next)
     for (int64 i = 0; i < prev->N; i++)
     {
         const id64 this_id = prev->id[i];
-        if(this_id < 0)
+        if (this_id < 0)
             continue;
         assert(this_id < PrevMaxPartId && "Particle ID must be smaller than max. particle ID");
         PrevAllPartIds[this_id] = 1;
@@ -504,7 +504,7 @@ int64 get_ncommon(struct group_data *prev, struct group_data *next)
     for (int64 i = 0; i < next->N; i++)
     {
         const id64 this_id = next->id[i];
-        if(this_id < 0 || this_id >= PrevMaxPartId)
+        if (this_id < 0 || this_id >= PrevMaxPartId)
             continue;
 
         if (PrevAllPartIds[this_id] == 1)
