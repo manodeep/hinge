@@ -245,7 +245,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
            Switching the convention so that r[0] -> innermost.
      */
 
-    rmax = 0.0;
+    rmax = 0.0, rmin = PARAMS.BOXSIZE;
     for (i = 0; i < Npart; i++)
     {
         const float dx = periodic(group->x[i] - xcen);
@@ -253,11 +253,8 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
         const float dz = periodic(group->z[i] - zcen);
 
         r[i] = sqrt(dx * dx + dy * dy + dz * dz);
-        if (r[i] > rmax)
-            rmax = r[i];
-
-        if (r[i] < rmin && r[i] > 0.0)
-            rmin = r[i];
+        rmax = r[i] > rmax ? r[i] : rmax;
+        rmin = r[i] < rmin ? r[i] : rmin;
     }
 
     XASSERT(rmin > 0, "Error: Min. radius = %f must be non-zero\n", rmin);
