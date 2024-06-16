@@ -216,7 +216,8 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
         fprintf(stderr,
                 "Particle masses may not be set correctly. Npart = %" STR_FMT " Mtot = %e "
                 "Mpart*Npart = %e Mpart = %e. fractional diff = %e \n",
-                Npart, group->Mtot, PARAMS.MASSARR[DM_PART_TYPE] * Npart, PARAMS.MASSARR[DM_PART_TYPE], fabs(PARAMS.MASSARR[DM_PART_TYPE] * Npart - group->Mtot) / group->Mtot);
+                Npart, group->Mtot, PARAMS.MASSARR[DM_PART_TYPE] * Npart, PARAMS.MASSARR[DM_PART_TYPE],
+                fabs(PARAMS.MASSARR[DM_PART_TYPE] * Npart - group->Mtot) / group->Mtot);
         fprintf(stderr, "nodeloc = %" STR_FMT " snapshot = %d\n", group->nodeloc, group->snapshot);
         exit(EXIT_FAILURE);
     }
