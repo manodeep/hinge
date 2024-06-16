@@ -231,7 +231,10 @@ int main(int argc, char **argv)
         FILE *fp = fopen(outfname, "r");
         if (fp == NULL)
         {
-            fprintf(stderr, "Error: Could not open file `%s' for reading (even though the parameter 'LOAD_FOUND_PROGENITORS' is set). Resetting that param\n", outfname);
+            fprintf(stderr,
+                    "Error: Could not open file `%s' for reading (even though the parameter 'LOAD_FOUND_PROGENITORS' "
+                    "is set). Resetting that param\n",
+                    outfname);
             PARAMS.LOAD_FOUND_PROGENITORS = 0;
         }
         else
