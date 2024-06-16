@@ -214,7 +214,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     if (group->Mtot > 0 && fabs(PARAMS.MASSARR[DM_PART_TYPE] * Npart - group->Mtot) / group->Mtot > 0.01)
     {
         fprintf(stderr,
-                "Particle masses may not be set correctly. Npart = %d Mtot = %e "
+                "Particle masses may not be set correctly. Npart = %"STR_FMT" Mtot = %e "
                 "Mpart*Npart = %e Mpart = %e \n",
                 Npart, group->Mtot, PARAMS.MASSARR[DM_PART_TYPE] * Npart, PARAMS.MASSARR[DM_PART_TYPE]);
         exit(EXIT_FAILURE);
