@@ -246,7 +246,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
      */
 
     rmax = 0.0;
-    for (i = 1; i < Npart; i++)
+    for (i = 0; i < Npart; i++)
     {
         const float dx = periodic(group->x[i] - xcen);
         const float dy = periodic(group->y[i] - ycen);
@@ -260,9 +260,9 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
             rmin = r[i];
     }
 
-    assert(rmin > 0 && "Min. radius must be non-zero");
-    assert(rmax > rmin && "Max. radius must be greater than minimum radius");
-    assert(nbins > 0 && "Number of bins must be non-zero");
+    XASSERT(rmin > 0, "Error: Min. radius = %f must be non-zero", rmin);
+    XASSERT(rmax > rmin, "Error: Max. radius = %f must be greater than minimum radius = %f", rmax, rmin);
+    XASSERT(nbins > 0, "Number of bins =%d must be non-zero", nbins);
     rbinsize = (log10(rmax) - log10(rmin)) / nbins;
     /*   for(i=0;i<nbins;i++) */
     /* 	fprintf(stderr,"rmax = %f nbins = %d rbin[%d] = %f
@@ -314,7 +314,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     for (i = 0; i < nbins; i++)
     {
         rbin = pow(10.0, i * rbinsize + log10(rmin));
-        rho[i] /= (4. / 3. * PI * pow(rbin, 3.0)); /* computes average density and NOT actual density */
+        rho[i] /= (4. / 3. * PI * rbin * rbin * rbin); /* computes average density and NOT actual density */
         rho[i] /= RhoCrit;                         /* Convert rho to overdensity  -- have to set Cosmology first*/
     }
 
