@@ -181,16 +181,16 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     */
 
     double *r = NULL, *rho = NULL;
-    float r_minus1, r1;
+    // float r_minus1, r1;
     int64 *numberdensity = NULL;
-    float rmax, rbinsize, rbin;
+    // float rmax, rbinsize, rbin;
     float xcen, ycen, zcen;
-    int i;
-    int index;
-    float maxoverdensity = 0.0;
+    // int i;
+    // int index;
+    double maxoverdensity = 0.0;
     const int64 Npart = group->N;
     const double halfmass = group->Mtot * 0.5;
-    float rmin = PARAMS.BOXSIZE;
+    // float rmin = PARAMS.BOXSIZE;
     int nbins = NBINS;
 
     if (Npart <= 1)
@@ -232,7 +232,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
 
     */
 
-    for (i = 0; i < nbins; i++)
+    for (int i = 0; i < nbins; i++)
     {
         rho[i] = 0.0;
         numberdensity[i] = 0;
@@ -245,8 +245,8 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
            Switching the convention so that r[0] -> innermost.
      */
 
-    rmax = 0.0, rmin = PARAMS.BOXSIZE;
-    for (i = 0; i < Npart; i++)
+    double rmax = 0.0, rmin = PARAMS.BOXSIZE;
+    for (int64 i = 0; i < Npart; i++)
     {
         const float dx = periodic(group->x[i] - xcen);
         const float dy = periodic(group->y[i] - ycen);
@@ -265,8 +265,8 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
                 " nodeloc = %" STR_FMT " snapshot = %d\n",
                 rmax, rmin, Npart, group->nodeloc, group->snapshot);
         fprintf(stderr, "xcen = %f ycen = %f zcen = %f\n", xcen, ycen, zcen);
-        for (i = 0; i < Npart; i++)
-            fprintf(stderr, "x, y, z = (%f, %f, %f) r[%d] = %f id = %lld\n", group->x[i], group->y[i], group->z[i], i,
+        for (int64 i = 0; i < Npart; i++)
+            fprintf(stderr, "x, y, z = (%f, %f, %f) r[%"STR_FMT"] = %f id = %lld\n", group->x[i], group->y[i], group->z[i], i,
                     r[i], group->id[i]);
     }
     XASSERT(rmax > rmin,
@@ -274,7 +274,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
             " snapshot = %d\n",
             rmax, rmin, Npart, group->nodeloc, group->snapshot);
     XASSERT(nbins > 0, "Number of bins =%d must be non-zero", nbins);
-    rbinsize = (log10(rmax) - log10(rmin)) / nbins;
+    double rbinsize = (log10(rmax) - log10(rmin)) / nbins;
     /*   for(i=0;i<nbins;i++) */
     /* 	fprintf(stderr,"rmax = %f nbins = %d rbin[%d] = %f
      * \n",rmax,nbins,i,rmin*pow(10.0,i*rbinsize)); */
@@ -284,11 +284,11 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     //   rho[0] += PARAMS.MASSARR[group->type[0]];
     rho[0] += PARAMS.MASSARR[DM_PART_TYPE];
 
-    for (i = 1; i < Npart; i++)
+    for (int64 i = 1; i < Npart; i++)
     {
-        index = 0;
+        int64 index = 0;
         if (r[i] >= rmin && r[i] <= rmax)
-            index = (int)floor((log10(r[i]) - log10(rmin)) / rbinsize);
+            index = floor((log10(r[i]) - log10(rmin)) / rbinsize);
 
         if (index >= nbins) /* Make sure there are seg. faults */
             index = nbins - 1;
@@ -302,19 +302,19 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     }
 
     /* Now get the cumulative mass, i.e. M( < r) */
-    for (i = 1; i < nbins; i++)
+    for (int i = 1; i < nbins; i++)
         rho[i] += rho[i - 1];
 
     /*rho currently contains mass enclosed within i'th bin -> get half mass radius
      */
-    i = 0;
+    int64 i = 0;
     while (i < nbins && rho[i] < halfmass)
         i++;
 
     if (i < nbins && i > 1 && rho[i] > halfmass && rho[i - 1] < halfmass)
     {
-        r_minus1 = pow(10.0, (i - 1) * rbinsize + log10(rmin));
-        r1 = pow(10.0, i * rbinsize + log10(rmin));
+        double r_minus1 = pow(10.0, (i - 1) * rbinsize + log10(rmin));
+        double r1 = pow(10.0, i * rbinsize + log10(rmin));
         group->Rhalf = r1 * (halfmass - rho[i - 1]) +
                        r_minus1 * (rho[i] - halfmass); /* linear interpolation to half-mass radius */
         group->Rhalf /= (rho[i] - rho[i - 1]);
@@ -324,7 +324,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
 
     for (i = 0; i < nbins; i++)
     {
-        rbin = pow(10.0, i * rbinsize + log10(rmin));
+        double rbin = pow(10.0, i * rbinsize + log10(rmin));
         rho[i] /= (4. / 3. * PI * rbin * rbin * rbin); /* computes average density and NOT actual density */
         rho[i] /= RhoCrit;                             /* Convert rho to overdensity  -- have to set Cosmology first*/
     }
