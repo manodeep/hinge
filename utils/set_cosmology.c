@@ -315,7 +315,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     {
         rbin = pow(10.0, i * rbinsize + log10(rmin));
         rho[i] /= (4. / 3. * PI * rbin * rbin * rbin); /* computes average density and NOT actual density */
-        rho[i] /= RhoCrit;                         /* Convert rho to overdensity  -- have to set Cosmology first*/
+        rho[i] /= RhoCrit;                             /* Convert rho to overdensity  -- have to set Cosmology first*/
     }
 
     /*
