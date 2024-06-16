@@ -188,7 +188,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     int i;
     int index;
     float maxoverdensity = 0.0;
-    const int Npart = group->N;
+    const int64 Npart = group->N;
     const double halfmass = group->Mtot * 0.5;
     float rmin = PARAMS.BOXSIZE;
     int nbins = NBINS;
