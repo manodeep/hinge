@@ -260,8 +260,8 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
             rmin = r[i];
     }
 
-    XASSERT(rmin > 0, "Error: Min. radius = %f must be non-zero", rmin);
-    XASSERT(rmax > rmin, "Error: Max. radius = %f must be greater than minimum radius = %f", rmax, rmin);
+    XASSERT(rmin > 0, "Error: Min. radius = %f must be non-zero\n", rmin);
+    XASSERT(rmax > rmin, "Error: Max. radius = %f must be greater than minimum radius = %f. Npart = %"STR_FMT"\n", rmax, rmin, Npart);
     XASSERT(nbins > 0, "Number of bins =%d must be non-zero", nbins);
     rbinsize = (log10(rmax) - log10(rmin)) / nbins;
     /*   for(i=0;i<nbins;i++) */
