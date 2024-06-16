@@ -228,6 +228,21 @@ int main(int argc, char **argv)
     if (PARAMS.LOAD_FOUND_PROGENITORS == 1)
     {
         my_snprintf(outfname, MAXLEN, "%s/found_progenitors.txt", PARAMS.OUTPUT_DIR);
+        FILE *fp = fopen(outfname, "r");
+        if (fp == NULL)
+        {
+            fprintf(stderr, "Error: Could not open file `%s' for reading (even though the parameter 'LOAD_FOUND_PROGENITORS' is set). Resetting that param\n", outfname);
+            PARAMS.LOAD_FOUND_PROGENITORS = 0;
+        }
+        else
+        {
+            fclose(fp);
+        }
+    }
+
+    if (PARAMS.LOAD_FOUND_PROGENITORS == 1)
+    {
+        my_snprintf(outfname, MAXLEN, "%s/found_progenitors.txt", PARAMS.OUTPUT_DIR);
         t_sectionstart = time(NULL);
         {
             int64 startgroup = 0;
