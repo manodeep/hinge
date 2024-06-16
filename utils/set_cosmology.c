@@ -266,8 +266,8 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
                 rmax, rmin, Npart, group->nodeloc, group->snapshot);
         fprintf(stderr, "xcen = %f ycen = %f zcen = %f\n", xcen, ycen, zcen);
         for (int64 i = 0; i < Npart; i++)
-            fprintf(stderr, "x, y, z = (%f, %f, %f) r[%"STR_FMT"] = %f id = %lld\n", group->x[i], group->y[i], group->z[i], i,
-                    r[i], group->id[i]);
+            fprintf(stderr, "x, y, z = (%f, %f, %f) r[%" STR_FMT "] = %f id = %lld\n", group->x[i], group->y[i],
+                    group->z[i], i, r[i], group->id[i]);
     }
     XASSERT(rmax > rmin,
             "Error: Max. radius = %f must be greater than minimum radius = %f. Npart = %" STR_FMT " nodeloc = %" STR_FMT
