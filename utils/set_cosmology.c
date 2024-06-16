@@ -261,15 +261,20 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     }
 
     XASSERT(rmin > 0, "Error: Min. radius = %f must be non-zero\n", rmin);
-    if(rmax <= rmin)
+    if (rmax <= rmin)
     {
-        fprintf(stderr,"Error: Max. radius = %f must be greater than minimum radius = %f. Npart = %" STR_FMT " nodeloc = %"STR_FMT" snapshot = %d\n",
+        fprintf(stderr,
+                "Error: Max. radius = %f must be greater than minimum radius = %f. Npart = %" STR_FMT
+                " nodeloc = %" STR_FMT " snapshot = %d\n",
                 rmax, rmin, Npart, group->nodeloc, group->snapshot);
-        fprintf(stderr,"xcen = %f ycen = %f zcen = %f\n",xcen,ycen,zcen);
-        for(i=0;i<Npart;i++)
-            fprintf(stderr,"x, y, z = (%f, %f, %f) r[%d] = %f id = %lld\n", group->x[i], group->y[i], group->z[i], i,r[i], group->id[i]);
+        fprintf(stderr, "xcen = %f ycen = %f zcen = %f\n", xcen, ycen, zcen);
+        for (i = 0; i < Npart; i++)
+            fprintf(stderr, "x, y, z = (%f, %f, %f) r[%d] = %f id = %lld\n", group->x[i], group->y[i], group->z[i], i,
+                    r[i], group->id[i]);
     }
-    XASSERT(rmax > rmin, "Error: Max. radius = %f must be greater than minimum radius = %f. Npart = %" STR_FMT " nodeloc = %"STR_FMT" snapshot = %d\n",
+    XASSERT(rmax > rmin,
+            "Error: Max. radius = %f must be greater than minimum radius = %f. Npart = %" STR_FMT " nodeloc = %" STR_FMT
+            " snapshot = %d\n",
             rmax, rmin, Npart, group->nodeloc, group->snapshot);
     XASSERT(nbins > 0, "Number of bins =%d must be non-zero", nbins);
     rbinsize = (log10(rmax) - log10(rmin)) / nbins;
