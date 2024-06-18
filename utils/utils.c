@@ -620,7 +620,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, groupnum, i, j);                                                         \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partindex, i, j);                                                        \
     }
-    SGLIB_ARRAY_HEAP_SORT(id64, all_ids, totnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
+    SGLIB_ARRAY_QUICK_SORT(id64, all_ids, totnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 #undef MULTIPLE_ARRAY_EXCHANGER
     fprintf(stderr, "Sorting particle ids for %lld particles ...done\n", (long long)totnpart);
     time_t t1 = time(NULL);
