@@ -258,7 +258,12 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
     id64 DestMaxPartId[NUM_SNAPSHOTS];
     id64 DestMinPartId[NUM_SNAPSHOTS];
     int64 numpart_in_halos[NUM_SNAPSHOTS];
+    size_t memory_requested[NUM_SNAPSHOTS];
+    size_t group_memory[NUM_SNAPSHOTS];
+    size_t total_memory_requested = 0;
 
+    memset(memory_requested, 0, sizeof(memory_requested));
+    memset(group_memory, 0, sizeof(group_memory));
     /* This can potentially be optimised. In case
            of massive memory requirements, reduce the following to unsigned ints
 
@@ -317,9 +322,11 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
         {
             fprintf(stderr, "freed group (inside original for loop) # %d\n", snapshot);
             free_group(allgroups[snapshot], Ngroups[snapshot]);
+            total_memory_requested -= group_memory[snapshot];
             allgroups[snapshot] = NULL;
         }
 
+#define MEMORY_FOR_THREE_ARRAYS(snap) ((sizeof(*DestPartIds[snap]) + sizeof(*DestGroupIds[snap]) + sizeof(*DestGroupLoc[snap])) * numpart_in_halos[snap])
         /* 	  if(snapshot < startsnapshot && DestPartIds[snapshot] != NULL) */
         if (snapshot <= startsnapshot && DestPartIds[snapshot] != NULL)
         {
@@ -327,6 +334,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
             my_free((void **)&(DestPartIds[snapshot]));
             my_free((void **)&(DestGroupIds[snapshot]));
             my_free((void **)&(DestGroupLoc[snapshot]));
+            total_memory_requested -= MEMORY_FOR_THREE_ARRAYS(snapshot);
         }
 
         if (DestPartIds[isnapshot] != NULL)
@@ -335,6 +343,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
             my_free((void **)&(DestPartIds[isnapshot]));
             my_free((void **)&(DestGroupIds[isnapshot]));
             my_free((void **)&(DestGroupLoc[isnapshot]));
+            total_memory_requested -= MEMORY_FOR_THREE_ARRAYS(isnapshot);
         }
 
         if (Ngroups[isnapshot] > 0)
@@ -361,7 +370,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                     for (int64 i = 0; i < Ngroups[snapshot]; i++)
                     {
                         numpart_in_halos[snapshot] += group0[i].N;
-                        assert(group0[i].nodeloc == i && "nodeloc has been correctly initialized");
+                        XASSERT(group0[i].nodeloc == i, "Error: Expected nodeloc = %"STR_FMT" to be *exactly* equal to i=%"STR_FMT"\n", group0[i].nodeloc, i);
                         for (int64 j = 0; j < group0[i].N; j++)
                         {
                             const id64 this_id = group0[i].id[j];
