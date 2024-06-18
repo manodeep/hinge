@@ -5,8 +5,8 @@
 #include "io.h"         //for definition of groups struct
 #include "loadgroups.h" //for loadgroups function definition
 #include "read_param.h"
-#include "utils.h"
 #include "sglib.h"
+#include "utils.h"
 
 /* given a group in "source", it matches all the groups
 in dest and returns the best match group number [in terms
@@ -21,13 +21,14 @@ do not have a progenitor and return group numbers for all those
 particles that are found in some previous snapshot.
 */
 
-
-// int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
+// int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64
+// destNgroups,
 //                              const int flag, double *rank, id64 *DestPartIds, int64 *DestGroupIds,
 //                              const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId);
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
-                             const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart, const int64 *DestGroupIds,
-                             const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId);
+                             const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart,
+                             const int64 *DestGroupIds, const int64 *DestGroupLoc, const id64 DestMaxPartId,
+                             const id64 DestMinPartId);
 
 int compare_id64(const void *a, const void *b);
 
@@ -150,8 +151,9 @@ int compare_id64(const void *a, const void *b)
 }
 
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
-                             const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart, const int64 *DestGroupIds,
-                             const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId)
+                             const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart,
+                             const int64 *DestGroupIds, const int64 *DestGroupLoc, const id64 DestMaxPartId,
+                             const id64 DestMinPartId)
 {
     double *DestRanks = NULL;
     int64 *DestNcommon = NULL;
@@ -170,17 +172,16 @@ int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct gro
     //     DestRanks[i] = 0.0;
     // }
 
-
     for (int64 i = 0; i < Nids; i++)
     {
         id64 index = sourceIds[i];
         if (index >= DestMaxPartId || index < 0 || index < DestMinPartId)
             continue;
-// #define compare_id64(a, b) ((a) < (b) ? -1 : (a) > (b))
-        id64 *ptr = (id64 *) bsearch(&index, DestPartIds, DestNumPart, sizeof(*DestPartIds), compare_id64);
-// #undef compare_id64
+        // #define compare_id64(a, b) ((a) < (b) ? -1 : (a) > (b))
+        id64 *ptr = (id64 *)bsearch(&index, DestPartIds, DestNumPart, sizeof(*DestPartIds), compare_id64);
+        // #undef compare_id64
         // if (DestPartIds[index] != -1)
-        if(ptr == NULL)
+        if (ptr == NULL)
             continue;
         // if(ptr != NULL)
         // {
@@ -190,7 +191,10 @@ int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct gro
             number of particles located in all previous halos plus the number of particles within the
             originating halo - MS 18th June 2024)
         */
-        XASSERT(*ptr == index, "Error: The particle id = %" STR_ID_FMT " must be equal to the index = %" STR_ID_FMT " in the DestPartIds array\n", index, *ptr);
+        XASSERT(*ptr == index,
+                "Error: The particle id = %" STR_ID_FMT " must be equal to the index = %" STR_ID_FMT
+                " in the DestPartIds array\n",
+                index, *ptr);
         index = ptr - DestPartIds;
         const int64 grp_index = DestGroupIds[index];
         DestNcommon[grp_index]++;
@@ -416,8 +420,10 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                 {
                     group0 = allgroups[snapshot];
                     DestPartIds[snapshot] = my_calloc(sizeof(*DestPartIds[snapshot]), numpart_in_halos[snapshot]);
-                    fprintf(stderr,"Allocating for %" STR_FMT " particles in snapshot %d\n", numpart_in_halos[snapshot], snapshot);
-                    fprintf(stderr,"DestMaxPartId[%d] = %" STR_ID_FMT " DestMinPartId[%d] = %" STR_ID_FMT "\n", snapshot, DestMaxPartId[snapshot], snapshot, DestMinPartId[snapshot]);
+                    fprintf(stderr, "Allocating for %" STR_FMT " particles in snapshot %d\n",
+                            numpart_in_halos[snapshot], snapshot);
+                    fprintf(stderr, "DestMaxPartId[%d] = %" STR_ID_FMT " DestMinPartId[%d] = %" STR_ID_FMT "\n",
+                            snapshot, DestMaxPartId[snapshot], snapshot, DestMinPartId[snapshot]);
                     // for (int i = 0; i < DestMaxPartId[snapshot]; i++)
                     // {
                     //     DestPartIds[snapshot][i] = -1;
@@ -456,10 +462,16 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                         }
                     }
                     // }
-#define MULTIPLE_ARRAY_EXCHANGER(type, varname, i, j) {SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, DestPartIds[snapshot], i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, DestGroupIds[snapshot], i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, DestGroupLoc[snapshot], i, j);}
+#define MULTIPLE_ARRAY_EXCHANGER(type, varname, i, j)                                                                  \
+    {                                                                                                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, DestPartIds[snapshot], i, j);                                             \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, DestGroupIds[snapshot], i, j);                                           \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, DestGroupLoc[snapshot], i, j);                                           \
+    }
 
-                    SGLIB_ARRAY_QUICK_SORT(id64, DestPartIds[snapshot], numpart_in_halos[snapshot], SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
-#undef  MULTIPLE_ARRAY_EXCHANGER
+                    SGLIB_ARRAY_QUICK_SORT(id64, DestPartIds[snapshot], numpart_in_halos[snapshot],
+                                           SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
+#undef MULTIPLE_ARRAY_EXCHANGER
                 }
             }
 
@@ -509,8 +521,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                         group1 = allgroups[searchsnapshot];
                         searchnodenum = get_best_groupnum_wids(
                             TrackIds, Nids, group1, Ngroups[searchsnapshot], MATCH_WITH_RANK, &rank,
-                            DestPartIds[searchsnapshot], numpart_in_halos[searchsnapshot],DestGroupIds[searchsnapshot], DestGroupLoc[searchsnapshot],
-                            DestMaxPartId[searchsnapshot], DestMinPartId[searchsnapshot]);
+                            DestPartIds[searchsnapshot], numpart_in_halos[searchsnapshot], DestGroupIds[searchsnapshot],
+                            DestGroupLoc[searchsnapshot], DestMaxPartId[searchsnapshot], DestMinPartId[searchsnapshot]);
 
                         if (searchnodenum != -1)
                         {
