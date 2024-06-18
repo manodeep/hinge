@@ -6,7 +6,7 @@ SOURCES := maketree.c fillprogenitors.c missinghalos.c read_param.c ../utils/uti
 INCL := $(SOURCES:.c=.h)
 
 IO_SRC := ../io/io.c ../io/loadparents.c ../io/loadgroups.c ../io/io_subfind_binary.c ../io/io_hinge_ascii.c ../io/io_hinge_binary.c ../io/io_hinge_utils.c
-INCL += $(IO_SRC:.c=.h) Makefile
+INCL += $(IO_SRC:.c=.h) ../utils/hinge.h Makefile
 
 SOURCES += $(IO_SRC) main.c
 OBJECTS := $(SOURCES:.c=.o)

@@ -9,7 +9,7 @@ INCL := $(SRC:.c=.h)
 IO_SRC := ../io/io.c ../io/loadgroups.c ../io/io_subfind_binary.c ../io/io_hinge_ascii.c ../io/io_hinge_binary.c ../io/io_hinge_utils.c
 
 SRC  += $(IO_SRC) main.c
-INCL += $(IO_SRC:.c=.h) Makefile
+INCL += $(IO_SRC:.c=.h) ../utils/hinge.h Makefile
 
 OBJS   := $(SRC:.c=.o)
 
