@@ -612,6 +612,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Storing particle ids in %lld groups...\n", (long long)N);
 
+    time_t t0 = time(NULL);
     fprintf(stderr, "Sorting particle ids for %lld particles ...\n", (long long)totnpart);
 #define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)                                                                  \
     {                                                                                                                  \
@@ -622,6 +623,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     SGLIB_ARRAY_HEAP_SORT(id64, all_ids, totnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 #undef MULTIPLE_ARRAY_EXCHANGER
     fprintf(stderr, "Sorting particle ids for %lld particles ...done\n", (long long)totnpart);
+    time_t t1 = time(NULL);
+    print_time(t0, t1, "Sorting particle ids");
 
     fprintf(stderr, "Removing duplicate particles from %lld groups...\n", (long long)N);
     init_my_progressbar(totnpart, &interrupted);
