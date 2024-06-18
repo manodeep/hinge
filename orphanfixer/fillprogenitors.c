@@ -20,9 +20,10 @@ do not have a progenitor and return group numbers for all those
 particles that are found in some previous snapshot.
 */
 
-int64 get_best_groupnum_wids(id64 *sourceIds, int64 Nids, struct group_data *dest, int64 destNgroups, int flag,
-                             double *rank, short *DestPartIds, int64 *DestGroupIds, int64 *DestGroupLoc,
-                             int64 DestMaxPartId);
+int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups, const int flag,
+                             double *rank, id64 *DestPartIds, int64 *DestGroupIds, const int64 *DestGroupLoc,
+                             const id64 DestMaxPartId, const id64 DestMinPartId);
+
 
 short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const char *fname, int64 *startgroupnum)
 {
@@ -137,9 +138,10 @@ short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const cha
     return min_snapshot;
 }
 
-int64 get_best_groupnum_wids(id64 *sourceIds, int64 Nids, struct group_data *dest, int64 destNgroups, int flag,
-                             double *rank, short *DestPartIds, int64 *DestGroupIds, int64 *DestGroupLoc,
-                             int64 DestMaxPartId)
+
+int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups, const int flag,
+                             double *rank, id64 *DestPartIds, int64 *DestGroupIds, const int64 *DestGroupLoc,
+                             const id64 DestMaxPartId, const id64 DestMinPartId)
 {
     double *DestRanks = NULL;
     int64 *DestNcommon = NULL;
@@ -158,11 +160,18 @@ int64 get_best_groupnum_wids(id64 *sourceIds, int64 Nids, struct group_data *des
 
     for (int64 i = 0; i < Nids; i++)
     {
-        const id64 index = sourceIds[i];
-        if (destNgroups <= 0 || index >= DestMaxPartId || index < 0)
+        id64 index = sourceIds[i];
+        if (destNgroups <= 0 || index >= DestMaxPartId || index < 0 || index < DestMinPartId)
             continue;
-        if (DestPartIds[index] == 1)
+        if (DestPartIds[index] != -1)
         {
+            /* DestPartIds is indexed by the particle ID (and hence requires a large amount of RAM )
+                The other arrays are indexed by the *value* in DestPartids - which is really
+                the particle offset where the original particle was found (as in a cumulative count over the
+                number of particles located in all previous halos plus the number of particles within the
+                originating halo - MS 18th June 2024)
+            */
+            index = DestPartIds[index];
             const int64 grp_index = DestGroupIds[index];
             DestNcommon[grp_index]++;
 
@@ -219,10 +228,12 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
     int64 startgroup = 0;
     int64 Nids = 0;
     time_t t_sectionstart, t_sectionend;
-    short *DestPartIds[NUM_SNAPSHOTS];
+    int64 *DestPartIds[NUM_SNAPSHOTS];
     int64 *DestGroupIds[NUM_SNAPSHOTS];
     int64 *DestGroupLoc[NUM_SNAPSHOTS];
     id64 DestMaxPartId[NUM_SNAPSHOTS];
+    id64 DestMinPartId[NUM_SNAPSHOTS];
+    int64 numpart_in_halos[NUM_SNAPSHOTS];
 
     /* This can potentially be optimised. In case
            of massive memory requirements, reduce the following to unsigned ints
@@ -258,13 +269,15 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                     "###########################################\n");
     }
 
-    for (short isnapshot = PARAMS.MAX_SNAPSHOT_NUM; isnapshot >= PARAMS.MIN_SNAPSHOT_NUM; isnapshot--)
+    for (short isnapshot = PARAMS.MIN_SNAPSHOT_NUM; isnapshot <= PARAMS.MAX_SNAPSHOT_NUM; isnapshot++)
     {
         allgroups[isnapshot] = NULL;
         DestPartIds[isnapshot] = NULL;
         DestGroupIds[isnapshot] = NULL;
         DestGroupLoc[isnapshot] = NULL;
-        DestMaxPartId[isnapshot] = NUMPART + 1;
+        DestMaxPartId[isnapshot] = -1;
+        DestMinPartId[isnapshot] = NUMPART + 1;
+        numpart_in_halos[isnapshot] = 0;
     }
 
     short snapshot = 0;
@@ -319,17 +332,18 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             snapshot, Ngroups[snapshot]);
 
                     // Find the max particle id
-                    id64 max_part_id = -1;
+                    id64 max_part_id = -1, min_part_id = NUMPART + 1;
                     for (int64 i = 0; i < Ngroups[snapshot]; i++)
                     {
+                        numpart_in_halos[snapshot] += group0[i].N;
                         assert(group0[i].nodeloc == i && "nodeloc has been correctly initialized");
                         for (int64 j = 0; j < group0[i].N; j++)
                         {
                             const id64 this_id = group0[i].id[j];
                             if (this_id < 0)
                                 continue;
-                            if (this_id > max_part_id)
-                                max_part_id = this_id;
+                            max_part_id = this_id > max_part_id ? this_id : max_part_id;
+                            min_part_id = this_id < min_part_id ? this_id : min_part_id;
                         }
                     }
                     max_part_id++;
@@ -340,6 +354,14 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                                 "\n",
                                 snapshot, DestMaxPartId[snapshot], max_part_id, NUMPART);
                         DestMaxPartId[snapshot] = max_part_id;
+                    }
+                    if (DestMinPartId[snapshot] > min_part_id)
+                    {
+                        fprintf(stderr,
+                                "Replacing DestMinPartId[%d] = %" STR_ID_FMT " with %" STR_ID_FMT " NUMPART = %" STR_FMT
+                                "\n",
+                                snapshot, DestMinPartId[snapshot], min_part_id, NUMPART);
+                        DestMinPartId[snapshot] = min_part_id;
                     }
 
                     fprintf(stderr,
@@ -374,32 +396,41 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                 {
                     group0 = allgroups[snapshot];
                     DestPartIds[snapshot] = my_calloc(sizeof(*DestPartIds[snapshot]), DestMaxPartId[snapshot]);
-                    DestGroupIds[snapshot] = my_malloc(sizeof(*DestGroupIds[snapshot]), DestMaxPartId[snapshot]);
-                    DestGroupLoc[snapshot] = my_calloc(sizeof(*DestGroupLoc[snapshot]), DestMaxPartId[snapshot]);
+                    for(int i=0;i< DestMaxPartId[snapshot];i++)
+                    {
+                        DestPartIds[snapshot][i] = -1;
+                    }
+                    DestGroupIds[snapshot] = my_malloc(sizeof(*DestGroupIds[snapshot]), numpart_in_halos[snapshot]);
+                    DestGroupLoc[snapshot] = my_calloc(sizeof(*DestGroupLoc[snapshot]), numpart_in_halos[snapshot]);
 
                     // new scope tmp and s will disappear outside the closing braces
+                    // {
+                        // int64 *tmp = NULL;
+                        // short *s = NULL;
+                    int64 offset = 0;
+                    for (int64 i = 0; i < Ngroups[snapshot]; i++)
                     {
-                        int64 *tmp = NULL;
-                        short *s = NULL;
-                        for (int64 i = 0; i < Ngroups[snapshot]; i++)
+                        for (int64 j = 0; j < group0[i].N; j++)
                         {
-                            for (int64 j = 0; j < group0[i].N; j++)
-                            {
-                                s = DestPartIds[snapshot];
-                                const id64 this_id = group0[i].id[j];
-                                if (this_id < 0)
-                                    continue;
-                                assert(this_id < DestMaxPartId[snapshot] &&
-                                       "Particle id must be less than max. particle id - "
-                                       "strange things must have happened");
-                                s[this_id] = 1;
-                                tmp = DestGroupIds[snapshot];
-                                tmp[this_id] = i;
-                                tmp = DestGroupLoc[snapshot];
-                                tmp[this_id] = j;
-                            }
+                            // s = DestPartIds[snapshot];
+                            const id64 this_id = group0[i].id[j];
+                            if (this_id < 0)
+                                continue;
+                            XASSERT(this_id >=0 && this_id < DestMaxPartId[snapshot],
+                                    "Error: Particle id = %"STR_ID_FMT "must be less than max. particle id = %"STR_ID_FMT" - "
+                                    "strange things must have happened", this_id, DestMaxPartId[snapshot]);
+                            // s[this_id] = 1;
+                            // tmp = DestGroupIds[snapshot];
+                            // tmp[this_id] = i;
+                            // tmp = DestGroupLoc[snapshot];
+                            // tmp[this_id] = j;
+                            DestPartIds[snapshot][this_id] = offset;
+                            DestGroupIds[snapshot][offset] = i;
+                            DestGroupLoc[snapshot][offset] = j;
+                            offset++;
                         }
                     }
+                    // }
                 }
             }
 
@@ -450,7 +481,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                         searchnodenum =
                             get_best_groupnum_wids(TrackIds, Nids, group1, Ngroups[searchsnapshot], MATCH_WITH_RANK,
                                                    &rank, DestPartIds[searchsnapshot], DestGroupIds[searchsnapshot],
-                                                   DestGroupLoc[searchsnapshot], DestMaxPartId[searchsnapshot]);
+                                                   DestGroupLoc[searchsnapshot], DestMaxPartId[searchsnapshot], DestMinPartId[searchsnapshot]);
 
                         if (searchnodenum != -1)
                         {
