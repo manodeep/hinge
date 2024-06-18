@@ -610,7 +610,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         }
     }
     finish_myprogressbar(&interrupted);
-    fprintf(stderr, "Storing particle ids in %lld groups...\n", (long long)N);
+    fprintf(stderr, "Storing particle ids in %lld groups...done\n", (long long)N);
 
     time_t t0 = time(NULL);
     fprintf(stderr, "Sorting particle ids for %lld particles ...\n", (long long)totnpart);
