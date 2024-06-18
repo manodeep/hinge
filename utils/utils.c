@@ -557,18 +557,19 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     }
     max_id++;
 
-    int64_t *all_id_offset = my_calloc(sizeof(*all_id_offset), max_id);
-    for (int64 i = 0; i < max_id; i++)
-    {
-        all_id_offset[i] = -1;
-    }
+    // int64_t *all_id_offset = my_calloc(sizeof(*all_id_offset), totnpart);
+    // for (int64 i = 0; i < max_id; i++)
+    // {
+    //     all_id_offset[i] = -1;
+    // }
+    id64 *all_ids = my_malloc(sizeof(*all_ids), totnpart);
     int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
     int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
     // int64_t *num_removed_per_group = my_calloc(sizeof(*num_removed_per_group), N);
     int64 nremoved = 0;
     int64_t offset = 0;
     int interrupted = 0;
-    fprintf(stderr, "Removing duplicate particles from %lld groups...\n", (long long)N);
+    fprintf(stderr, "Storing particle ids in %lld groups...\n", (long long)N);
     init_my_progressbar(N, &interrupted);
     for (int64 i = 0; i < N; i++)
     {
@@ -577,37 +578,76 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         {
             id64 id = g[i].id[j];
             XASSERT(id >= 0 && id < max_id, "Error: Particle ID %lld is out of bounds\n", (long long)id);
-            if (all_id_offset[id] == -1)
-            {
-                groupnum[offset] = i;
-                partindex[offset] = j;
-                all_id_offset[id] = offset;
-            }
-            else
-            {
-                // fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
-                int64 group_to_remove, part_to_remove;
-                int64_t prev_offset = all_id_offset[id];
-                remove_particle_from_group(groupnum[prev_offset], i, partindex[prev_offset], j, g, &group_to_remove,
-                                           &part_to_remove);
-                // num_removed_per_group[group_to_remove]++;
+            all_ids[offset] = id;
+            groupnum[offset] = i;
+            partindex[offset] = j;
 
-                // If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
-                if (group_to_remove != i)
-                {
-                    groupnum[offset] = i;
-                    partindex[offset] = j;
-                    all_id_offset[id] = offset;
-                }
-                nremoved++;
-            }
+            // if (all_id_offset[id] == -1)
+            // {
+            //     groupnum[offset] = i;
+            //     partindex[offset] = j;
+            //     all_id_offset[id] = offset;
+            // }
+            // else
+            // {
+            //     // fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
+            //     int64 group_to_remove, part_to_remove;
+            //     int64_t prev_offset = all_id_offset[id];
+            //     remove_particle_from_group(groupnum[prev_offset], i, partindex[prev_offset], j, g, &group_to_remove,
+            //                                &part_to_remove);
+            //     // num_removed_per_group[group_to_remove]++;
+
+            //     // If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
+            //     if (group_to_remove != i)
+            //     {
+            //         groupnum[offset] = i;
+            //         partindex[offset] = j;
+            //         all_id_offset[id] = offset;
+            //     }
+            //     nremoved++;
+            // }
             offset++;
         }
     }
     finish_myprogressbar(&interrupted);
+    fprintf(stderr, "Storing particle ids in %lld groups...\n", (long long)N);
+
+    fprintf(stderr,"Sorting particle ids for %lld particles ...\n", (long long)totnpart);
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j) {SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, all_ids, i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, groupnum, i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partindex, i, j);}
+    SGLIB_ARRAY_QUICK_SORT(id64, all_ids, totnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
+#undef MULTIPLE_ARRAY_EXCHANGER
+    fprintf(stderr,"Sorting particle ids for %lld particles ...done\n", (long long)totnpart);
+
+
+    fprintf(stderr,"Removing duplicate particles from %lld groups...\n", (long long)N);
+    init_my_progressbar(N, &interrupted);
+    interrupted = 0;
+    for(int64 i=0;i<totnpart-1;i++)
+    {
+        my_progressbar(i, &interrupted);
+        int64 j = i+1;
+        if(all_ids[i] != all_ids[j])
+        {
+            continue;
+        }
+
+        int64 group_to_remove, part_to_remove;
+        remove_particle_from_group(groupnum[i], groupnum[j], partindex[i], partindex[j], g, &group_to_remove, &part_to_remove);
+        nremoved++;
+        /* Iff the j'th particle is actually removed, I need to copy the details for the i'th particle so that
+        the next iteration of the loop can still see the i'th particle (just now in the j, i.e., i+1 location)*/
+        if(group_to_remove == groupnum[j])
+        {
+            groupnum[j] = groupnum[i];
+            partindex[j] = partindex[i];
+            all_ids[j] = all_ids[i]; //this is not necessary since the ids are the same
+        }
+
+    }
+    finish_myprogressbar(&interrupted);
     fprintf(stderr, "Removing duplicate particles from %lld groups... done. Removed %lld particles \n", (long long)N,
             (long long)nremoved);
-    free(all_id_offset);
+    free(all_ids);
     free(groupnum);
     free(partindex);
 
