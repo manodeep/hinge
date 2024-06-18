@@ -35,7 +35,7 @@ April, 2012:  Complete with a parameter file for the upcoming public release.
 #include "utils.h"
 #include "utils_read_params.h"
 
-struct params_data PARAMS; // global variable
+struct params_data PARAMS = {0}; // global variable
 float *REDSHIFT;
 int64 NUMPART; // Can not figure out how NUMPART is/was calculated but it is used in the code. Needs further
                // investigation.

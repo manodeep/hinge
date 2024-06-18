@@ -418,6 +418,11 @@ void loadgroups(const struct params_data *params, const int snapnum, struct grou
         fprintf(stderr, "%s>: params or group is NULL\n", __FUNCTION__);
         exit(EXIT_FAILURE);
     }
+    if(params->flag_load_only_partids == 1 && params->GROUP_FORMAT != hinge_binary)
+    {
+        fprintf(stderr,"Error: flag_load_only_partids is set to 1 but the group format is not hinge_binary\n");
+        exit(EXIT_FAILURE);
+    }
 
     switch (params->GROUP_FORMAT)
     {

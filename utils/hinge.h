@@ -148,6 +148,8 @@ struct params_data
     double LINKLENGTH;
     double PhysicalLinkLength;
     int INDIVIDUAL_MERGERS;
+
+    int flag_load_only_partids;
 };
 
 /* #ifdef SUSSING_TREES */

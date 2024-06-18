@@ -349,6 +349,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             "Ngroups = %" STR_FMT "....\n",
                             snapshot, Ngroups[snapshot]);
                     group0 = allocate_group(Ngroups[snapshot]);
+                    PARAMS.flag_load_only_partids = 1;
                     loadgroups(&PARAMS, snapshot, group0);
                     fprintf(stderr,
                             "\nIn fillprogenitor: Loading groups for snapshot  %4d, "
@@ -388,12 +389,14 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                         DestMinPartId[snapshot] = min_part_id;
                     }
 
+#if 0
                     fprintf(stderr,
                             "\nIn fillprogenitor: Freeing memory for groups for snapshot "
                             " %4d...\n",
                             snapshot);
                     /* 				  /\* free up memory that won't be used. *\/
                      */
+
                     for (int64 i = 0; i < Ngroups[snapshot]; i++)
                     {
                         my_free((void **)&(group0[i].x));
@@ -412,6 +415,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             "\nIn fillprogenitor: Freeing memory for groups for snapshot "
                             " %4d...done\n",
                             snapshot);
+#endif
                     allgroups[snapshot] = group0;
                 }
 

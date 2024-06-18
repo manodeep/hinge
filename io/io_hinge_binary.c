@@ -152,15 +152,29 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     CHECK_NPART_AND_READ_FIELD("partid", totnpart, buf);
     ASSIGN_FIELD_TO_GROUPS("partid", int64_t, nhalos, buf, id);
 
-    //    CHECK_NPART_AND_READ_FIELD(fp, "part_type", totnpart, buf);
-    CHECK_NPART_AND_READ_FIELD("xpos", totnpart, buf);
-    ASSIGN_FIELD_TO_GROUPS("xpos", double, nhalos, buf, x);
 
-    CHECK_NPART_AND_READ_FIELD("ypos", totnpart, buf);
-    ASSIGN_FIELD_TO_GROUPS("ypos", double, nhalos, buf, y);
+    if(params->flag_load_only_partids == 0)
+    {
+        //    CHECK_NPART_AND_READ_FIELD(fp, "part_type", totnpart, buf);
+        CHECK_NPART_AND_READ_FIELD("xpos", totnpart, buf);
+        ASSIGN_FIELD_TO_GROUPS("xpos", double, nhalos, buf, x);
 
-    CHECK_NPART_AND_READ_FIELD("zpos", totnpart, buf);
-    ASSIGN_FIELD_TO_GROUPS("zpos", double, nhalos, buf, z);
+        CHECK_NPART_AND_READ_FIELD("ypos", totnpart, buf);
+        ASSIGN_FIELD_TO_GROUPS("ypos", double, nhalos, buf, y);
+
+        CHECK_NPART_AND_READ_FIELD("zpos", totnpart, buf);
+        ASSIGN_FIELD_TO_GROUPS("zpos", double, nhalos, buf, z);
+    }
+    else
+    {
+        /* Initialise to 1 so that free's still work */
+        for(int64 ihalo = 0; ihalo < nhalos; ihalo++)
+        {
+            group[ihalo].x = NULL;
+            group[ihalo].y = NULL;
+            group[ihalo].z = NULL;
+        }
+    }
 
     int64_t *haloids, *fofids;
     CHECK_NPART_AND_READ_FIELD("haloid", totnpart, haloids);
