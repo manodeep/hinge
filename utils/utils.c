@@ -526,6 +526,12 @@ void remove_particle_from_group(const int64 group1, const int64 group2, const in
         exit(EXIT_FAILURE);
     }
 
+    if(g[group1].x == NULL || g[group1].y == NULL || g[group1].z == NULL || g[group2].x == NULL || g[group2].y == NULL || g[group2].z == NULL)
+    {
+        fprintf(stderr, "ERROR: Particle positions are not allocated for group %lld or %lld\n", (long long)group1, (long long)group2);
+        exit(EXIT_FAILURE);
+    }
+
     const double dx1 = periodic(g[group1].x[part1] - g[group1].xcen);
     const double dy1 = periodic(g[group1].y[part1] - g[group1].ycen);
     const double dz1 = periodic(g[group1].z[part1] - g[group1].zcen);

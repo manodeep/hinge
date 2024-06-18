@@ -359,12 +359,41 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             "Ngroups = %" STR_FMT "....\n",
                             snapshot, Ngroups[snapshot]);
                     group0 = allocate_group(Ngroups[snapshot]);
-                    PARAMS.flag_load_only_partids = 1;
                     loadgroups(&PARAMS, snapshot, group0);
+                    allgroups[snapshot] = group0;
+
                     fprintf(stderr,
                             "\nIn fillprogenitor: Loading groups for snapshot  %4d, "
                             "Ngroups = %" STR_FMT "....done\n",
                             snapshot, Ngroups[snapshot]);
+                    // fprintf(stderr,
+                    //         "\nIn fillprogenitor: Freeing memory for groups for snapshot "
+                    //         " %4d...\n",
+                    //         snapshot);
+                    /* 				  /\* free up memory that won't be used. *\/
+                     */
+
+                    //remove_duplicates needs particle positions - that's why
+                    //we need to load the particle positions in the first place
+                    //Once loadgroups returns, we have no need for particle positions
+                    for (int64 i = 0; i < Ngroups[snapshot]; i++)
+                    {
+                        my_free((void **)&(group0[i].x));
+                        my_free((void **)&(group0[i].y));
+                        my_free((void **)&(group0[i].z));
+                        // my_free((void **) &(group0[i].type));
+
+#ifdef SUSSING_TREES
+                        my_free((void **)&(group0[i].ParticleEnergy));
+                        my_free((void **)&(group0[i].vx));
+                        my_free((void **)&(group0[i].vy));
+                        my_free((void **)&(group0[i].vz));
+#endif
+                    }
+                    // fprintf(stderr,
+                    //         "\nIn fillprogenitor: Freeing memory for groups for snapshot "
+                    //         " %4d...done\n",
+                    //         snapshot);
 
                     // Find the max particle id
                     id64 max_part_id = -1, min_part_id = NUMPART + 1;
@@ -401,34 +430,6 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                         DestMinPartId[snapshot] = min_part_id;
                     }
 
-#if 0
-                    fprintf(stderr,
-                            "\nIn fillprogenitor: Freeing memory for groups for snapshot "
-                            " %4d...\n",
-                            snapshot);
-                    /* 				  /\* free up memory that won't be used. *\/
-                     */
-
-                    for (int64 i = 0; i < Ngroups[snapshot]; i++)
-                    {
-                        my_free((void **)&(group0[i].x));
-                        my_free((void **)&(group0[i].y));
-                        my_free((void **)&(group0[i].z));
-                        // my_free((void **) &(group0[i].type));
-
-#ifdef SUSSING_TREES
-                        my_free((void **)&(group0[i].ParticleEnergy));
-                        my_free((void **)&(group0[i].vx));
-                        my_free((void **)&(group0[i].vy));
-                        my_free((void **)&(group0[i].vz));
-#endif
-                    }
-                    fprintf(stderr,
-                            "\nIn fillprogenitor: Freeing memory for groups for snapshot "
-                            " %4d...done\n",
-                            snapshot);
-#endif
-                    allgroups[snapshot] = group0;
                 }
 
                 // fill in the data for the destination groups
