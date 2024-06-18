@@ -6,6 +6,7 @@
 #include "loadgroups.h" //for loadgroups function definition
 #include "read_param.h"
 #include "utils.h"
+#include "sglib.h"
 
 /* given a group in "source", it matches all the groups
 in dest and returns the best match group number [in terms
@@ -20,9 +21,15 @@ do not have a progenitor and return group numbers for all those
 particles that are found in some previous snapshot.
 */
 
+
+// int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
+//                              const int flag, double *rank, id64 *DestPartIds, int64 *DestGroupIds,
+//                              const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId);
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
-                             const int flag, double *rank, id64 *DestPartIds, int64 *DestGroupIds,
+                             const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart, const int64 *DestGroupIds,
                              const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId);
+
+int compare_id64(const void *a, const void *b);
 
 short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const char *fname, int64 *startgroupnum)
 {
@@ -137,8 +144,13 @@ short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const cha
     return min_snapshot;
 }
 
+int compare_id64(const void *a, const void *b)
+{
+    return (*(const id64 *)a - *(const id64 *)b);
+}
+
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
-                             const int flag, double *rank, id64 *DestPartIds, int64 *DestGroupIds,
+                             const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart, const int64 *DestGroupIds,
                              const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId)
 {
     double *DestRanks = NULL;
@@ -147,51 +159,61 @@ int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct gro
     int64 max_ranknum = 0;
     double max_rank = 0.0;
 
-    DestRanks = my_malloc(sizeof(*DestRanks), destNgroups);
+    XASSERT(destNgroups > 0, "There must be at least one group in the destination = %" STR_FMT "\n", destNgroups);
+
+    DestRanks = my_calloc(sizeof(*DestRanks), destNgroups);
     DestNcommon = my_calloc(sizeof(*DestNcommon), destNgroups);
 
-    for (int64 i = 0; i < destNgroups; i++)
-    {
-        DestNcommon[i] = 0;
-        DestRanks[i] = 0.0;
-    }
+    // for (int64 i = 0; i < destNgroups; i++)
+    // {
+    //     DestNcommon[i] = 0;
+    //     DestRanks[i] = 0.0;
+    // }
+
 
     for (int64 i = 0; i < Nids; i++)
     {
         id64 index = sourceIds[i];
-        if (destNgroups <= 0 || index >= DestMaxPartId || index < 0 || index < DestMinPartId)
+        if (index >= DestMaxPartId || index < 0 || index < DestMinPartId)
             continue;
-        if (DestPartIds[index] != -1)
+// #define compare_id64(a, b) ((a) < (b) ? -1 : (a) > (b))
+        id64 *ptr = (id64 *) bsearch(&index, DestPartIds, DestNumPart, sizeof(*DestPartIds), compare_id64);
+// #undef compare_id64
+        // if (DestPartIds[index] != -1)
+        if(ptr == NULL)
+            continue;
+        // if(ptr != NULL)
+        // {
+        /* DestPartIds is indexed by the particle ID (and hence requires a large amount of RAM )
+            The other arrays are indexed by the *value* in DestPartids - which is really
+            the particle offset where the original particle was found (as in a cumulative count over the
+            number of particles located in all previous halos plus the number of particles within the
+            originating halo - MS 18th June 2024)
+        */
+        XASSERT(*ptr == index, "Error: The particle id = %" STR_ID_FMT " must be equal to the index = %" STR_ID_FMT " in the DestPartIds array\n", index, *ptr);
+        index = ptr - DestPartIds;
+        const int64 grp_index = DestGroupIds[index];
+        DestNcommon[grp_index]++;
+
+        if (flag == 1)
         {
-            /* DestPartIds is indexed by the particle ID (and hence requires a large amount of RAM )
-                The other arrays are indexed by the *value* in DestPartids - which is really
-                the particle offset where the original particle was found (as in a cumulative count over the
-                number of particles located in all previous halos plus the number of particles within the
-                originating halo - MS 18th June 2024)
-            */
-            index = DestPartIds[index];
-            const int64 grp_index = DestGroupIds[index];
-            DestNcommon[grp_index]++;
+            if (PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && i < PARAMS.MAX_RANK_LOC))
+                DestRanks[grp_index] += compute_rank(i); /* matching based on rank */
 
-            if (flag == 1)
-            {
-                if (PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && i < PARAMS.MAX_RANK_LOC))
-                    DestRanks[grp_index] += compute_rank(i); /* matching based on rank */
-
-                if (PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && DestGroupLoc[index] < PARAMS.MAX_RANK_LOC))
-                    DestRanks[grp_index] += compute_rank(DestGroupLoc[index]);
-            }
-            else
-            {
-                DestRanks[grp_index] += 1.0; /* matching based on Ncommon */
-            }
-
-            if (DestRanks[grp_index] > max_rank)
-            {
-                max_rank = DestRanks[grp_index];
-                max_ranknum = grp_index;
-            }
+            if (PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && DestGroupLoc[index] < PARAMS.MAX_RANK_LOC))
+                DestRanks[grp_index] += compute_rank(DestGroupLoc[index]);
         }
+        else
+        {
+            DestRanks[grp_index] += 1.0; /* matching based on Ncommon */
+        }
+
+        if (DestRanks[grp_index] > max_rank)
+        {
+            max_rank = DestRanks[grp_index];
+            max_ranknum = grp_index;
+        }
+        // }
     }
 
     my_free((void **)&DestRanks);
@@ -393,11 +415,13 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                 if (snapshot >= PARAMS.MIN_SNAPSHOT_NUM && DestPartIds[snapshot] == NULL && incr >= 2)
                 {
                     group0 = allgroups[snapshot];
-                    DestPartIds[snapshot] = my_calloc(sizeof(*DestPartIds[snapshot]), DestMaxPartId[snapshot]);
-                    for (int i = 0; i < DestMaxPartId[snapshot]; i++)
-                    {
-                        DestPartIds[snapshot][i] = -1;
-                    }
+                    DestPartIds[snapshot] = my_calloc(sizeof(*DestPartIds[snapshot]), numpart_in_halos[snapshot]);
+                    fprintf(stderr,"Allocating for %" STR_FMT " particles in snapshot %d\n", numpart_in_halos[snapshot], snapshot);
+                    fprintf(stderr,"DestMaxPartId[%d] = %" STR_ID_FMT " DestMinPartId[%d] = %" STR_ID_FMT "\n", snapshot, DestMaxPartId[snapshot], snapshot, DestMinPartId[snapshot]);
+                    // for (int i = 0; i < DestMaxPartId[snapshot]; i++)
+                    // {
+                    //     DestPartIds[snapshot][i] = -1;
+                    // }
                     DestGroupIds[snapshot] = my_malloc(sizeof(*DestGroupIds[snapshot]), numpart_in_halos[snapshot]);
                     DestGroupLoc[snapshot] = my_calloc(sizeof(*DestGroupLoc[snapshot]), numpart_in_halos[snapshot]);
 
@@ -424,13 +448,18 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             // tmp[this_id] = i;
                             // tmp = DestGroupLoc[snapshot];
                             // tmp[this_id] = j;
-                            DestPartIds[snapshot][this_id] = offset;
+                            // DestPartIds[snapshot][this_id] = offset;
+                            DestPartIds[snapshot][offset] = this_id;
                             DestGroupIds[snapshot][offset] = i;
                             DestGroupLoc[snapshot][offset] = j;
                             offset++;
                         }
                     }
                     // }
+#define MULTIPLE_ARRAY_EXCHANGER(type, varname, i, j) {SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, DestPartIds[snapshot], i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, DestGroupIds[snapshot], i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, DestGroupLoc[snapshot], i, j);}
+
+                    SGLIB_ARRAY_QUICK_SORT(id64, DestPartIds[snapshot], numpart_in_halos[snapshot], SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
+#undef  MULTIPLE_ARRAY_EXCHANGER
                 }
             }
 
@@ -480,7 +509,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                         group1 = allgroups[searchsnapshot];
                         searchnodenum = get_best_groupnum_wids(
                             TrackIds, Nids, group1, Ngroups[searchsnapshot], MATCH_WITH_RANK, &rank,
-                            DestPartIds[searchsnapshot], DestGroupIds[searchsnapshot], DestGroupLoc[searchsnapshot],
+                            DestPartIds[searchsnapshot], numpart_in_halos[searchsnapshot],DestGroupIds[searchsnapshot], DestGroupLoc[searchsnapshot],
                             DestMaxPartId[searchsnapshot], DestMinPartId[searchsnapshot]);
 
                         if (searchnodenum != -1)
