@@ -373,9 +373,9 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                     /* 				  /\* free up memory that won't be used. *\/
                      */
 
-                    //remove_duplicates needs particle positions - that's why
-                    //we need to load the particle positions in the first place
-                    //Once loadgroups returns, we have no need for particle positions
+                    // remove_duplicates needs particle positions - that's why
+                    // we need to load the particle positions in the first place
+                    // Once loadgroups returns, we have no need for particle positions
                     for (int64 i = 0; i < Ngroups[snapshot]; i++)
                     {
                         my_free((void **)&(group0[i].x));
@@ -429,7 +429,6 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                                 snapshot, DestMinPartId[snapshot], min_part_id, NUMPART);
                         DestMinPartId[snapshot] = min_part_id;
                     }
-
                 }
 
                 // fill in the data for the destination groups
