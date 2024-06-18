@@ -121,7 +121,7 @@ int main(int argc, char **argv)
     struct node_data *tree[NUM_SNAPSHOTS];                   // there are groups in MAX_SNAPSHOT_NUM
 
     // output the parameter file
-    my_snprintf(outfname, MAXLEN, "%s/orphanfixer.params", PARAMS.OUTPUT_DIR);
+    my_snprintf(outfname, MAXLEN, "%s/orphanfixer_used.params", PARAMS.OUTPUT_DIR);
     fprintf(stderr, "output parameter file to `%s'...", outfname);
     output_params(outfname, &PARAMS);
     fprintf(stderr, "..done\n");
