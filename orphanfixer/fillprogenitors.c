@@ -326,7 +326,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
             allgroups[snapshot] = NULL;
         }
 
-#define MEMORY_FOR_THREE_ARRAYS(snap) ((sizeof(*DestPartIds[snap]) + sizeof(*DestGroupIds[snap]) + sizeof(*DestGroupLoc[snap])) * numpart_in_halos[snap])
+#define MEMORY_FOR_THREE_ARRAYS(snap)                                                                                  \
+    ((sizeof(*DestPartIds[snap]) + sizeof(*DestGroupIds[snap]) + sizeof(*DestGroupLoc[snap])) * numpart_in_halos[snap])
         /* 	  if(snapshot < startsnapshot && DestPartIds[snapshot] != NULL) */
         if (snapshot <= startsnapshot && DestPartIds[snapshot] != NULL)
         {
@@ -370,7 +371,9 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                     for (int64 i = 0; i < Ngroups[snapshot]; i++)
                     {
                         numpart_in_halos[snapshot] += group0[i].N;
-                        XASSERT(group0[i].nodeloc == i, "Error: Expected nodeloc = %"STR_FMT" to be *exactly* equal to i=%"STR_FMT"\n", group0[i].nodeloc, i);
+                        XASSERT(group0[i].nodeloc == i,
+                                "Error: Expected nodeloc = %" STR_FMT " to be *exactly* equal to i=%" STR_FMT "\n",
+                                group0[i].nodeloc, i);
                         for (int64 j = 0; j < group0[i].N; j++)
                         {
                             const id64 this_id = group0[i].id[j];

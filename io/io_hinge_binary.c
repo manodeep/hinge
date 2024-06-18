@@ -152,8 +152,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     CHECK_NPART_AND_READ_FIELD("partid", totnpart, buf);
     ASSIGN_FIELD_TO_GROUPS("partid", int64_t, nhalos, buf, id);
 
-
-    if(params->flag_load_only_partids == 0)
+    if (params->flag_load_only_partids == 0)
     {
         //    CHECK_NPART_AND_READ_FIELD(fp, "part_type", totnpart, buf);
         CHECK_NPART_AND_READ_FIELD("xpos", totnpart, buf);
@@ -168,7 +167,7 @@ void loadgroups_hinge_binary(const int snapnum, const struct params_data *params
     else
     {
         /* Initialise to 1 so that free's still work */
-        for(int64 ihalo = 0; ihalo < nhalos; ihalo++)
+        for (int64 ihalo = 0; ihalo < nhalos; ihalo++)
         {
             group[ihalo].x = NULL;
             group[ihalo].y = NULL;
