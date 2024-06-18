@@ -20,10 +20,9 @@ do not have a progenitor and return group numbers for all those
 particles that are found in some previous snapshot.
 */
 
-int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups, const int flag,
-                             double *rank, id64 *DestPartIds, int64 *DestGroupIds, const int64 *DestGroupLoc,
-                             const id64 DestMaxPartId, const id64 DestMinPartId);
-
+int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
+                             const int flag, double *rank, id64 *DestPartIds, int64 *DestGroupIds,
+                             const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId);
 
 short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const char *fname, int64 *startgroupnum)
 {
@@ -138,10 +137,9 @@ short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const cha
     return min_snapshot;
 }
 
-
-int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups, const int flag,
-                             double *rank, id64 *DestPartIds, int64 *DestGroupIds, const int64 *DestGroupLoc,
-                             const id64 DestMaxPartId, const id64 DestMinPartId)
+int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
+                             const int flag, double *rank, id64 *DestPartIds, int64 *DestGroupIds,
+                             const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId)
 {
     double *DestRanks = NULL;
     int64 *DestNcommon = NULL;
@@ -396,7 +394,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                 {
                     group0 = allgroups[snapshot];
                     DestPartIds[snapshot] = my_calloc(sizeof(*DestPartIds[snapshot]), DestMaxPartId[snapshot]);
-                    for(int i=0;i< DestMaxPartId[snapshot];i++)
+                    for (int i = 0; i < DestMaxPartId[snapshot]; i++)
                     {
                         DestPartIds[snapshot][i] = -1;
                     }
@@ -405,8 +403,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
 
                     // new scope tmp and s will disappear outside the closing braces
                     // {
-                        // int64 *tmp = NULL;
-                        // short *s = NULL;
+                    // int64 *tmp = NULL;
+                    // short *s = NULL;
                     int64 offset = 0;
                     for (int64 i = 0; i < Ngroups[snapshot]; i++)
                     {
@@ -416,9 +414,11 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             const id64 this_id = group0[i].id[j];
                             if (this_id < 0)
                                 continue;
-                            XASSERT(this_id >=0 && this_id < DestMaxPartId[snapshot],
-                                    "Error: Particle id = %"STR_ID_FMT "must be less than max. particle id = %"STR_ID_FMT" - "
-                                    "strange things must have happened", this_id, DestMaxPartId[snapshot]);
+                            XASSERT(this_id >= 0 && this_id < DestMaxPartId[snapshot],
+                                    "Error: Particle id = %" STR_ID_FMT
+                                    "must be less than max. particle id = %" STR_ID_FMT " - "
+                                    "strange things must have happened",
+                                    this_id, DestMaxPartId[snapshot]);
                             // s[this_id] = 1;
                             // tmp = DestGroupIds[snapshot];
                             // tmp[this_id] = i;
@@ -478,10 +478,10 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             continue;
 
                         group1 = allgroups[searchsnapshot];
-                        searchnodenum =
-                            get_best_groupnum_wids(TrackIds, Nids, group1, Ngroups[searchsnapshot], MATCH_WITH_RANK,
-                                                   &rank, DestPartIds[searchsnapshot], DestGroupIds[searchsnapshot],
-                                                   DestGroupLoc[searchsnapshot], DestMaxPartId[searchsnapshot], DestMinPartId[searchsnapshot]);
+                        searchnodenum = get_best_groupnum_wids(
+                            TrackIds, Nids, group1, Ngroups[searchsnapshot], MATCH_WITH_RANK, &rank,
+                            DestPartIds[searchsnapshot], DestGroupIds[searchsnapshot], DestGroupLoc[searchsnapshot],
+                            DestMaxPartId[searchsnapshot], DestMinPartId[searchsnapshot]);
 
                         if (searchnodenum != -1)
                         {
