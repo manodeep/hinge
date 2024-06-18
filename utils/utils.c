@@ -612,37 +612,41 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Storing particle ids in %lld groups...\n", (long long)N);
 
-    fprintf(stderr,"Sorting particle ids for %lld particles ...\n", (long long)totnpart);
-#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j) {SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, all_ids, i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, groupnum, i, j); SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partindex, i, j);}
+    fprintf(stderr, "Sorting particle ids for %lld particles ...\n", (long long)totnpart);
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)                                                                  \
+    {                                                                                                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, all_ids, i, j);                                                           \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, groupnum, i, j);                                                         \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, partindex, i, j);                                                        \
+    }
     SGLIB_ARRAY_QUICK_SORT(id64, all_ids, totnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 #undef MULTIPLE_ARRAY_EXCHANGER
-    fprintf(stderr,"Sorting particle ids for %lld particles ...done\n", (long long)totnpart);
+    fprintf(stderr, "Sorting particle ids for %lld particles ...done\n", (long long)totnpart);
 
-
-    fprintf(stderr,"Removing duplicate particles from %lld groups...\n", (long long)N);
+    fprintf(stderr, "Removing duplicate particles from %lld groups...\n", (long long)N);
     init_my_progressbar(N, &interrupted);
     interrupted = 0;
-    for(int64 i=0;i<totnpart-1;i++)
+    for (int64 i = 0; i < totnpart - 1; i++)
     {
         my_progressbar(i, &interrupted);
-        int64 j = i+1;
-        if(all_ids[i] != all_ids[j])
+        int64 j = i + 1;
+        if (all_ids[i] != all_ids[j])
         {
             continue;
         }
 
         int64 group_to_remove, part_to_remove;
-        remove_particle_from_group(groupnum[i], groupnum[j], partindex[i], partindex[j], g, &group_to_remove, &part_to_remove);
+        remove_particle_from_group(groupnum[i], groupnum[j], partindex[i], partindex[j], g, &group_to_remove,
+                                   &part_to_remove);
         nremoved++;
         /* Iff the j'th particle is actually removed, I need to copy the details for the i'th particle so that
         the next iteration of the loop can still see the i'th particle (just now in the j, i.e., i+1 location)*/
-        if(group_to_remove == groupnum[j])
+        if (group_to_remove == groupnum[j])
         {
             groupnum[j] = groupnum[i];
             partindex[j] = partindex[i];
-            all_ids[j] = all_ids[i]; //this is not necessary since the ids are the same
+            all_ids[j] = all_ids[i]; // this is not necessary since the ids are the same
         }
-
     }
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Removing duplicate particles from %lld groups... done. Removed %lld particles \n", (long long)N,
