@@ -624,7 +624,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     fprintf(stderr, "Sorting particle ids for %lld particles ...done\n", (long long)totnpart);
 
     fprintf(stderr, "Removing duplicate particles from %lld groups...\n", (long long)N);
-    init_my_progressbar(N, &interrupted);
+    init_my_progressbar(totnpart, &interrupted);
     interrupted = 0;
     for (int64 i = 0; i < totnpart - 1; i++)
     {
