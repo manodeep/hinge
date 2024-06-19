@@ -534,21 +534,32 @@ void remove_particle_from_group(const int64 group1, const int64 group2, const in
         exit(EXIT_FAILURE);
     }
 
-    const double dx1 = periodic(g[group1].x[part1] - g[group1].xcen);
-    const double dy1 = periodic(g[group1].y[part1] - g[group1].ycen);
-    const double dz1 = periodic(g[group1].z[part1] - g[group1].zcen);
-    const double dist_from_cen1 = dx1 * dx1 + dy1 * dy1 + dz1 * dz1;
+    if(g[group1].FOFHalo == g[group2].FOFHalo)
+    {
+        //if the particles are located within two subhalos/FOF halo that are contained within the
+        //same FOFhalo, then remove the particle from the halo with the larger number of particles (i.e.,
+        //keep the particle in the halo with smaller N).
+        *group_to_remove = g[group1].N < g[group2].N ? group2 : group1;
+        *part_to_remove = g[group1].N < g[group2].N ? part2 : part1;
+    }
+    else
+    {
+        const double dx1 = periodic(g[group1].x[part1] - g[group1].xcen);
+        const double dy1 = periodic(g[group1].y[part1] - g[group1].ycen);
+        const double dz1 = periodic(g[group1].z[part1] - g[group1].zcen);
+        const double dist_from_cen1 = dx1 * dx1 + dy1 * dy1 + dz1 * dz1;
 
-    const double dx2 = periodic(g[group2].x[part2] - g[group2].xcen);
-    const double dy2 = periodic(g[group2].y[part2] - g[group2].ycen);
-    const double dz2 = periodic(g[group2].z[part2] - g[group2].zcen);
-    const double dist_from_cen2 = dx2 * dx2 + dy2 * dy2 + dz2 * dz2;
+        const double dx2 = periodic(g[group2].x[part2] - g[group2].xcen);
+        const double dy2 = periodic(g[group2].y[part2] - g[group2].ycen);
+        const double dz2 = periodic(g[group2].z[part2] - g[group2].zcen);
+        const double dist_from_cen2 = dx2 * dx2 + dy2 * dy2 + dz2 * dz2;
 
-    // Keep the particle in the halo with the smaller distance from the center
-    *group_to_remove = dist_from_cen1 < dist_from_cen2 ? group2 : group1;
-    *part_to_remove = dist_from_cen1 < dist_from_cen2 ? part2 : part1;
-    const id64 id = g[*group_to_remove].id[*part_to_remove];
-    g[*group_to_remove].id[*part_to_remove] = id < 0 ? id : -id; // Just make the sign negative
+        // Keep the particle in the halo with the smaller distance from the center
+        *group_to_remove = dist_from_cen1 < dist_from_cen2 ? group2 : group1;
+        *part_to_remove = dist_from_cen1 < dist_from_cen2 ? part2 : part1;
+        const id64 id = g[*group_to_remove].id[*part_to_remove];
+        g[*group_to_remove].id[*part_to_remove] = id < 0 ? id : -id; // Just make the sign negative
+    }
     return;
 }
 
