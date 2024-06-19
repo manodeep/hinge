@@ -34,9 +34,9 @@ OPT += -DWMAP5
 ### Set the compiler -- options are icc/gcc/clang.
 CC=gcc
 #### Add any compiler specific flags you want
-CFLAGS=#-fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
+CFLAGS=#-fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
 #### Add any compiler specific link flags you want
-CLINK=#-fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
+CLINK=#-fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
 
 ### You should NOT edit below this line
 DISTNAME=HINGE
