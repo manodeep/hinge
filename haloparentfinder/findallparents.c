@@ -488,7 +488,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         // NextAllCommon[i] = 0;
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
-            offset++;// offset is initialised to -1 so that this ++ gets to 0 at the start of the loop
+            offset++; // offset is initialised to -1 so that this ++ gets to 0 at the start of the loop
             const id64 id = nextgroup[i].id[j];
             if (id < 0)
                 continue;
