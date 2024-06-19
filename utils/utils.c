@@ -534,11 +534,11 @@ void remove_particle_from_group(const int64 group1, const int64 group2, const in
         exit(EXIT_FAILURE);
     }
 
-    if(g[group1].FOFHalo == g[group2].FOFHalo)
+    if (g[group1].FOFHalo == g[group2].FOFHalo)
     {
-        //if the particles are located within two subhalos/FOF halo that are contained within the
-        //same FOFhalo, then remove the particle from the halo with the larger number of particles (i.e.,
-        //keep the particle in the halo with smaller N).
+        // if the particles are located within two subhalos/FOF halo that are contained within the
+        // same FOFhalo, then remove the particle from the halo with the larger number of particles (i.e.,
+        // keep the particle in the halo with smaller N).
         *group_to_remove = g[group1].N < g[group2].N ? group2 : group1;
         *part_to_remove = g[group1].N < g[group2].N ? part2 : part1;
     }
