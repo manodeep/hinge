@@ -333,11 +333,9 @@ void free_group(struct group_data *g, int64 N)
 
     for (int64 i = 0; i < N; i++)
     {
-#ifndef MAKE_LEAN
         my_free((void **)&(g[i].x));
         my_free((void **)&(g[i].y));
         my_free((void **)&(g[i].z));
-#endif
         my_free((void **)&(g[i].id));
         //   my_free((void **) &(g[i].type));
         my_free((void **)&(g[i].parentgroupforparticle));
