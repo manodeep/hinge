@@ -205,10 +205,8 @@ int main(int argc, char **argv)
         print_time(t_sectionstart, t_sectionend, "hierarchy level at current snapshot ");
         /* #endif		 */
 
-#ifdef MAKE_LEAN
         fprintf(stderr, "freeing memory associated with particle positions \n");
         free_group_positions(group0, Ngroups0);
-#endif
 
         /* #if !defined(SUSSING_TREES) && !defined(AHF_INPUT) */
         fprintf(stderr,
@@ -221,10 +219,8 @@ int main(int argc, char **argv)
         print_time(t_sectionstart, t_sectionend, "hierarchy level at next snapshot ");
         /* #endif */
 
-#ifdef MAKE_LEAN
         fprintf(stderr, "freeing memory associated with particle positions \n");
         free_group_positions(group1, Ngroups1);
-#endif
 
         t_sectionstart = time(NULL);
         Nparentsfound = findfofparents(group0, Ngroups0, group1, Ngroups1, PARAMS.OUTPUT_DIR);
@@ -289,10 +285,8 @@ int main(int argc, char **argv)
                 print_time(t_sectionstart, t_sectionend, "hierarchy level at next snapshot ");
                 /* #endif	 */
 
-#ifdef MAKE_LEAN
                 fprintf(stderr, "freeing memory associated with particle positions \n");
                 free_group_positions(group1, Ngroups1);
-#endif
             }
 
             Nparentsfound = findallparents(group0, Ngroups0, group1, Ngroups1, (const int)snapshot_number + incr,
