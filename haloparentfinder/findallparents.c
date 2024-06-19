@@ -119,6 +119,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     int64 nextnpart = 0;
     for (int64 i = 0; i < NextNsub; i++)
     {
+        if(nextgroup[i].haloID < 0) continue;
         nextnpart += nextgroup[i].N;
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
@@ -152,11 +153,12 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     FOF_Parent = 0;
     int64 flag = 0;
     int interrupted = 0;
-    fprintf(stderr, "Finding parents for FOF halos ...\n");
+    fprintf(stderr, "Storing ids and sorting for FOF halos ...\n");
     init_my_progressbar(NextNsub, &interrupted);
     int64 offset = -1;
     for (int64 i = 0; i < NextNsub; i++)
     {
+        if(nextgroup[i].haloID < 0) continue;
         my_progressbar(i, &interrupted);
         // NextAllRanks[i] = 0.0;
         // NextAllCommon[i] = 0;
@@ -194,7 +196,10 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 #endif
         }
     }
+    finish_myprogressbar(&interrupted);
+    fprintf(stderr, "Storing ids and sorting for FOF halos ...done\n");
 
+    fprintf(stderr,"Sorting particle ids ...\n");
 #ifndef INDEX_WITH_PARTID
 #define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)                                                                  \
     {                                                                                                                  \
@@ -208,9 +213,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
 #undef MULTIPLE_ARRAY_EXCHANGER
 #endif
-
-    finish_myprogressbar(&interrupted);
-    fprintf(stderr, "Finding parents for FOF halos ...done\n");
+    fprintf(stderr,"Sorting particle ids ...done\n");
 
     if (flag > 0)
     {
@@ -229,12 +232,13 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         Would be good to first check that both produce identical results. If they do, then
         writing as 'for' loops would be more readable. MS: 13th June, 2024.
     */
-
+    fprintf(stderr,"Finding FOF parents ...\n");
+    init_my_progressbar(PrevNsub, &interrupted);
     FOF_Parent = 0;
-    // i = 0;
-    // while (i < PrevNsub)
     for (int64 i = 0; i < PrevNsub; i += prevgroup[i].Nsub)
     {
+        if(prevgroup[i].haloID < 0) continue;
+        my_progressbar(i, &interrupted);
         // fprintf(stderr, "i = %" STR_FMT " PrevNsub = %" STR_FMT "\n", i, PrevNsub);
         // interrupted = 1;
         XASSERT(prevgroup[i].isFof == 1, "Error: Group is not a FOF group %" STR_FMT " isFof = %d\n", i,
@@ -263,7 +267,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             const int64 j = i + jj;
             // fprintf(stderr, "j=%" STR_FMT " prevgroup[j].N = %" STR_FMT " FOF_Parent = %" STR_FMT "\n", j,
             //         prevgroup[j].N, FOF_Parent);
-            my_progressbar(j, &interrupted);
+            // my_progressbar(j, &interrupted);
             for (int64 k = 0; k < prevgroup[j].N; k++)
             {
                 const id64 tmp_id = prevgroup[j].id[k];
@@ -414,8 +418,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             }
         }
     }
-
     finish_myprogressbar(&interrupted);
+    fprintf(stderr,"Finding FOF parents ...done\n");
 
     free(NextAllPartIds);
     free(NextAllGroupIds);
@@ -455,6 +459,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     int64 nextnpart = 0;
     for (int64 i = 0; i < NextNsub; i++)
     {
+        if(nextgroup[i].haloID < 0) continue;
         nextnpart += nextgroup[i].N;
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
@@ -484,6 +489,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     int64 offset = -1;
     for (int64 i = 0; i < NextNsub; i++)
     {
+        if(nextgroup[i].haloID < 0) continue;
         // NextAllRanks[i] = 0.0;
         // NextAllCommon[i] = 0;
         for (int64 j = 0; j < nextgroup[i].N; j++)
@@ -523,6 +529,8 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     for (int64 i = 0; i < PrevNsub; i++)
     {
         my_progressbar(i, &interrupted);
+        if(prevgroup[i].haloID < 0) continue;
+
         if (prevgroup[i].ParentId >= 0)
         {
             /* some previous iteration  of findallparents actually found a parent */
