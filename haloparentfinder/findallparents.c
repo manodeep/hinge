@@ -165,7 +165,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
-            offset++; //offset is initialised to -1 so that this ++ gets to 0 at the start of the loop
+            offset++; // offset is initialised to -1 so that this ++ gets to 0 at the start of the loop
             const id64 id = nextgroup[i].id[j];
             if (id < 0)
                 continue;
@@ -196,12 +196,13 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     }
 
 #ifndef INDEX_WITH_PARTID
-#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)  {                \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);         \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupIds, i, j);       \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupIds, i, j);   \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupLocs, i, j);  \
-}
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)                                                                  \
+    {                                                                                                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);                                                    \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupIds, i, j);                                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupIds, i, j);                                              \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupLocs, i, j);                                             \
+    }
 
     SGLIB_ARRAY_QUICK_SORT(id64, NextAllPartIds, nextnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 
