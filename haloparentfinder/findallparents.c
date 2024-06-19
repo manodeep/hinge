@@ -154,6 +154,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     int interrupted = 0;
     fprintf(stderr, "Finding parents for FOF halos ...\n");
     init_my_progressbar(NextNsub, &interrupted);
+    int64 offset = -1;
     for (int64 i = 0; i < NextNsub; i++)
     {
         my_progressbar(i, &interrupted);
@@ -164,6 +165,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
+            offset++; //offset is initialised to -1 so that this ++ gets to 0 at the start of the loop
             const id64 id = nextgroup[i].id[j];
             if (id < 0)
                 continue;
@@ -185,31 +187,21 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             NextAllRealGroupIds[id] = i;
             NextAllRealGroupLocs[id] = j;
 #else
-            *NextAllPartIds = id;
-            *NextAllGroupIds = FOF_Parent;
-            *NextAllRealGroupIds = i;
-            *NextAllRealGroupLocs = j;
-            NextAllPartIds++;
-            NextAllGroupIds++;
-            NextAllRealGroupIds++;
-            NextAllRealGroupLocs++;
+            NextAllPartIds[offset] = id;
+            NextAllGroupIds[offset] = FOF_Parent;
+            NextAllRealGroupIds[offset] = i;
+            NextAllRealGroupLocs[offset] = j;
 #endif
         }
     }
 
 #ifndef INDEX_WITH_PARTID
-    NextAllPartIds -= nextnpart;
-    NextAllGroupIds -= nextnpart;
-    NextAllRealGroupIds -= nextnpart;
-    NextAllRealGroupLocs -= nextnpart;
-
-#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)                                                                  \
-    {                                                                                                                  \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);                                                    \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupIds, i, j);                                                  \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupIds, i, j);                                              \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupLocs, i, j);                                             \
-    }
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)  {                \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);         \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupIds, i, j);       \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupIds, i, j);   \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupLocs, i, j);  \
+}
 
     SGLIB_ARRAY_QUICK_SORT(id64, NextAllPartIds, nextnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 
