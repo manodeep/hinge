@@ -2,8 +2,8 @@
 #include "macros.h"
 #include "progressbar.h"
 #include "read_param.h"
-#include "utils.h"
 #include "sglib.h"
+#include "utils.h"
 
 // private functions
 void print_fofassign(int64 thisnum, struct group_data *prevgroup, struct group_data *nextgroup, int64 NextNsub,
@@ -131,7 +131,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         }
     }
     NextMaxPartId++; /* should be able to index with NextMaxPartId -> n+1 elements */
-    fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT " nextnpart = %"STR_FMT"\n", __FUNCTION__, NextMaxPartId, nextnpart);
+    fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT " nextnpart = %" STR_FMT "\n", __FUNCTION__, NextMaxPartId,
+            nextnpart);
 
 #ifdef INDEX_WITH_PARTID
     int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);
@@ -167,7 +168,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             if (id < 0)
                 continue;
 
-            /*Check if particle ids are repeated !*/
+                /*Check if particle ids are repeated !*/
 #ifdef INDEX_WITH_PARTID
             if (NextAllPartIds[id] == 1)
             {
@@ -202,12 +203,13 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     NextAllRealGroupIds -= nextnpart;
     NextAllRealGroupLocs -= nextnpart;
 
-#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)  {                \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);         \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupIds, i, j);       \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupIds, i, j);   \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupLocs, i, j);  \
-}
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)                                                                  \
+    {                                                                                                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);                                                    \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupIds, i, j);                                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupIds, i, j);                                              \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupLocs, i, j);                                             \
+    }
 
     SGLIB_ARRAY_QUICK_SORT(id64, NextAllPartIds, nextnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 
@@ -288,14 +290,16 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 #else
 
                 int found = 0;
-                SGLIB_ARRAY_BINARY_SEARCH(id64, NextAllPartIds, 0, nextnpart, tmp_id, SGLIB_NUMERIC_COMPARATOR, found, found_index);
-                if(found == 0)
+                SGLIB_ARRAY_BINARY_SEARCH(id64, NextAllPartIds, 0, nextnpart, tmp_id, SGLIB_NUMERIC_COMPARATOR, found,
+                                          found_index);
+                if (found == 0)
                 {
                     continue;
                 }
 #endif
 
-                // fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " found_index = %"STR_FMT"..actually working\n", k, tmp_id, found_index);
+                // fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " found_index = %"STR_FMT"..actually working\n",
+                // k, tmp_id, found_index);
                 int64 tmp_grpid = NextAllGroupIds[found_index];
                 XASSERT(tmp_grpid >= 0 && tmp_grpid < NextNsub,
                         "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grpid, NextNsub);
@@ -470,7 +474,8 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         }
     }
     NextMaxPartId++;
-    fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT " nextnpart = %"STR_FMT"\n", __FUNCTION__, NextMaxPartId, nextnpart);
+    fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT " nextnpart = %" STR_FMT "\n", __FUNCTION__, NextMaxPartId,
+            nextnpart);
 #ifdef INDEX_WITH_PARTID
     int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
@@ -512,16 +517,16 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     NextAllGroupIds -= nextnpart;
     NextAllGroupLocs -= nextnpart;
 
-#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)  {                \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);         \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupIds, i, j);       \
-    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupLocs, i, j);      \
-}
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)                                                                  \
+    {                                                                                                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);                                                    \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupIds, i, j);                                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupLocs, i, j);                                                 \
+    }
 
     SGLIB_ARRAY_QUICK_SORT(id64, NextAllPartIds, nextnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 #undef MULTIPLE_ARRAY_EXCHANGER
 #endif
-
 
     Nhalofound = 0;
 
@@ -554,8 +559,9 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             found_index = tmp_id;
 #else
             int found;
-            SGLIB_ARRAY_BINARY_SEARCH(id64, NextAllPartIds, 0, nextnpart, tmp_id, SGLIB_NUMERIC_COMPARATOR, found, found_index);
-            if(found == 0)
+            SGLIB_ARRAY_BINARY_SEARCH(id64, NextAllPartIds, 0, nextnpart, tmp_id, SGLIB_NUMERIC_COMPARATOR, found,
+                                      found_index);
+            if (found == 0)
             {
                 continue;
             }
