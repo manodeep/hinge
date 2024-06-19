@@ -152,11 +152,8 @@ struct params_data
     int flag_load_only_partids;
 };
 
-/* #ifdef SUSSING_TREES */
 extern float *REDSHIFT;
 extern struct params_data PARAMS;
 extern int64 NUMPART;
 extern double ActualMassUnits;
 extern int Nbins;
-
-/* #endif */

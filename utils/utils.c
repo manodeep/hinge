@@ -361,6 +361,12 @@ void free_group_positions(struct group_data *g, int64 N)
         my_free((void **)&(g[i].x));
         my_free((void **)&(g[i].y));
         my_free((void **)&(g[i].z));
+#ifdef SUSSING_TREES
+        my_free((void **)&(group0[i].ParticleEnergy));
+        my_free((void **)&(group0[i].vx));
+        my_free((void **)&(group0[i].vy));
+        my_free((void **)&(group0[i].vz));
+#endif
     }
 }
 
