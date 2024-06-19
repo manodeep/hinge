@@ -58,7 +58,7 @@ int64 returnNhalo_hinge_ascii(const struct params_data *params, const int snapnu
     }
 }
 
-void loadgroups_hinge_ascii(const int snapnum, const struct params_data *params, struct group_data *group)
+void loadgroups_hinge_ascii(const struct params_data *params, const int snapnum, struct group_data *group)
 {
     char catalogue_fname[MAXLEN];
     char particles_fname[MAXLEN];

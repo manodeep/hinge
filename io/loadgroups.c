@@ -427,14 +427,14 @@ void loadgroups(const struct params_data *params, const int snapnum, struct grou
     switch (params->GROUP_FORMAT)
     {
     case subfind_binary:
-        loadgroups_subfind_binary(snapnum, params, group);
+        loadgroups_subfind_binary(params, snapnum, group);
         break;
     case hinge_ascii:
-        loadgroups_hinge_ascii(snapnum, params, group);
+        loadgroups_hinge_ascii(params, snapnum, group);
         break;
 
     case hinge_binary:
-        loadgroups_hinge_binary(snapnum, params, group);
+        loadgroups_hinge_binary(params, snapnum, group);
         break;
 
     default:

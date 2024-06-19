@@ -20,17 +20,17 @@ int64 returnNhalo_subfind_binary(const struct params_data *params, const int sna
     return Ngroups;
 }
 
-void loadgroups_subfind_binary(int num, const struct params_data *params, struct group_data *group)
+void loadgroups_subfind_binary(const struct params_data *params, int snapnum, struct group_data *group)
 {
     char catalogue_fname[MAXLEN];
     char particles_fname[MAXLEN];
     // char parttypes_fname[MAXLEN];
     char partids_fname[MAXLEN];
-    my_snprintf(particles_fname, MAXLEN, "%s/%s_%03d.pos", params->GROUP_DIR, params->GROUP_BASE, num);
+    my_snprintf(particles_fname, MAXLEN, "%s/%s_%03d.pos", params->GROUP_DIR, params->GROUP_BASE, snapnum);
     // my_snprintf(parttypes_fname, MAXLEN, "%s/%s_%03d.types", params->GROUP_DIR,
-    // params->GROUP_BASE, num);
-    my_snprintf(partids_fname, MAXLEN, "%s/%s_%03d.ids", params->GROUP_DIR, params->GROUP_BASE, num);
-    my_snprintf(catalogue_fname, MAXLEN, "%s/%s_%03d.fofcat", params->GROUP_DIR, params->GROUP_BASE, num);
+    // params->GROUP_BASE, snapnum);
+    my_snprintf(partids_fname, MAXLEN, "%s/%s_%03d.ids", params->GROUP_DIR, params->GROUP_BASE, snapnum);
+    my_snprintf(catalogue_fname, MAXLEN, "%s/%s_%03d.fofcat", params->GROUP_DIR, params->GROUP_BASE, snapnum);
 
     FILE *fcat = my_fopen(catalogue_fname, "r");
 
@@ -98,8 +98,8 @@ void loadgroups_subfind_binary(int num, const struct params_data *params, struct
     char subhalos_fname[MAXLEN];
     char subprop_fname[MAXLEN];
 
-    my_snprintf(subhalos_fname, MAXLEN, "%s/%s_%03d.subcat", params->GROUP_DIR, params->GROUP_BASE, num);
-    my_snprintf(subprop_fname, MAXLEN, "%s/%s_%03d.subprop", params->GROUP_DIR, params->GROUP_BASE, num);
+    my_snprintf(subhalos_fname, MAXLEN, "%s/%s_%03d.subcat", params->GROUP_DIR, params->GROUP_BASE, snapnum);
+    my_snprintf(subprop_fname, MAXLEN, "%s/%s_%03d.subprop", params->GROUP_DIR, params->GROUP_BASE, snapnum);
 
     FILE *fsubcat = my_fopen(subhalos_fname, "r");
     FILE *fsubprop = my_fopen(subprop_fname, "r");
@@ -163,7 +163,7 @@ void loadgroups_subfind_binary(int num, const struct params_data *params, struct
     float *GroupMgas = my_malloc(sizeof(*GroupMgas), Ngroups);
 
     char fofprop_fname[MAXLEN];
-    my_snprintf(fofprop_fname, MAXLEN, "%s/%s_%03d.fofprop", params->GROUP_DIR, params->GROUP_BASE, num);
+    my_snprintf(fofprop_fname, MAXLEN, "%s/%s_%03d.fofprop", params->GROUP_DIR, params->GROUP_BASE, snapnum);
     /* Read in from fof_prop file*/
     FILE *fprop = my_fopen(fofprop_fname, "r");
     int64 yy = 0;
@@ -259,8 +259,8 @@ void loadgroups_subfind_binary(int num, const struct params_data *params, struct
 
         group[i].N = SubLen[i];
         group[i].nodeloc = i;
-        group[i].snapshot = num;
-        group[i].redshift = REDSHIFT[num];
+        group[i].snapshot = snapnum;
+        group[i].redshift = REDSHIFT[snapnum];
 
         group[i].Mtot = SubMtot[i];
         // group[i].Mgas = SubMgas[i];
@@ -283,7 +283,7 @@ void loadgroups_subfind_binary(int num, const struct params_data *params, struct
         group[i].Ncommon = 0;
         group[i].Rank = 0.0;
         group[i].NpartinParent = 0;
-        group[i].snapshot = (short)num;
+        group[i].snapshot = (short)snapnum;
         group[i].FOFHalo = FOF_Parent;
         group[i].ContainerIndex = FOF_Parent;
 
@@ -329,8 +329,8 @@ void loadgroups_subfind_binary(int num, const struct params_data *params, struct
         group[i].N = GroupLen[i];
         group[i].NpartinParent = 0;
         group[i].nodeloc = i;
-        group[i].snapshot = num;
-        group[i].redshift = REDSHIFT[num];
+        group[i].snapshot = snapnum;
+        group[i].redshift = REDSHIFT[snapnum];
 
         group[i].x = my_malloc(sizeof(*group[i].x), GroupLen[i]);
         group[i].y = my_malloc(sizeof(*group[i].y), GroupLen[i]);
@@ -357,7 +357,7 @@ void loadgroups_subfind_binary(int num, const struct params_data *params, struct
         group[i].ParentSnapshot = -1;
         group[i].Ncommon = 0;
         group[i].Rank = 0.0;
-        group[i].snapshot = (short)num;
+        group[i].snapshot = (short)snapnum;
 
         /*WARNING: Place-holder for future computation of actual cm in FOF_ONLY
          * case*/

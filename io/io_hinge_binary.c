@@ -17,7 +17,7 @@ int64 returnNhalo_hinge_binary(const struct params_data *params, const int snapn
     return returnNhalo_hinge_ascii(params, snapnum, fof_only);
 }
 
-void loadgroups_hinge_binary(const int snapnum, const struct params_data *params, struct group_data *group)
+void loadgroups_hinge_binary(const struct params_data *params, const int snapnum, struct group_data *group)
 {
     XASSERT(group != NULL, "group is NULL\n");
 
