@@ -3,6 +3,7 @@
 #include "progressbar.h"
 #include "read_param.h"
 #include "utils.h"
+#include "sglib.h"
 
 // private functions
 void print_fofassign(int64 thisnum, struct group_data *prevgroup, struct group_data *nextgroup, int64 NextNsub,
@@ -115,8 +116,10 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     my_snprintf(buf, MAXLEN, "rm -f %s/fofassigned_%03d.txt", outpath, prevgroup->snapshot);
     system(buf);
 
+    int64 nextnpart = 0;
     for (int64 i = 0; i < NextNsub; i++)
     {
+        nextnpart += nextgroup[i].N;
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
@@ -128,12 +131,20 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         }
     }
     NextMaxPartId++; /* should be able to index with NextMaxPartId -> n+1 elements */
-    fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT "\n", __FUNCTION__, NextMaxPartId);
+    fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT " nextnpart = %"STR_FMT"\n", __FUNCTION__, NextMaxPartId, nextnpart);
 
+#ifdef INDEX_WITH_PARTID
     int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     int64 *NextAllRealGroupIds = my_malloc(sizeof(*NextAllRealGroupIds), NextMaxPartId);
     int64 *NextAllRealGroupLocs = my_malloc(sizeof(*NextAllRealGroupLocs), NextMaxPartId);
+#else
+    id64 *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), nextnpart);
+    int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), nextnpart);
+    int64 *NextAllRealGroupIds = my_malloc(sizeof(*NextAllRealGroupIds), nextnpart);
+    int64 *NextAllRealGroupLocs = my_malloc(sizeof(*NextAllRealGroupLocs), nextnpart);
+#endif
+
     double *NextAllRanks = my_calloc(sizeof(*NextAllRanks), NextNsub);
     int64 *NextAllCommon = my_calloc(sizeof(*NextAllCommon), NextNsub);
 
@@ -157,6 +168,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 continue;
 
             /*Check if particle ids are repeated !*/
+#ifdef INDEX_WITH_PARTID
             if (NextAllPartIds[id] == 1)
             {
                 // fprintf(stderr,"There are duplicate particle ids - this code will not work \n");
@@ -171,8 +183,37 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                                                                  located in the FOF container*/
             NextAllRealGroupIds[id] = i;
             NextAllRealGroupLocs[id] = j;
+#else
+            *NextAllPartIds = id;
+            *NextAllGroupIds = FOF_Parent;
+            *NextAllRealGroupIds = i;
+            *NextAllRealGroupLocs = j;
+            NextAllPartIds++;
+            NextAllGroupIds++;
+            NextAllRealGroupIds++;
+            NextAllRealGroupLocs++;
+#endif
         }
     }
+
+#ifndef INDEX_WITH_PARTID
+    NextAllPartIds -= nextnpart;
+    NextAllGroupIds -= nextnpart;
+    NextAllRealGroupIds -= nextnpart;
+    NextAllRealGroupLocs -= nextnpart;
+
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)  {                \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);         \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupIds, i, j);       \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupIds, i, j);   \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllRealGroupLocs, i, j);  \
+}
+
+    SGLIB_ARRAY_QUICK_SORT(id64, NextAllPartIds, nextnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
+
+#undef MULTIPLE_ARRAY_EXCHANGER
+#endif
+
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Finding parents for FOF halos ...done\n");
 
@@ -237,13 +278,25 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 {
                     continue;
                 }
+                int64 found_index;
+#ifdef INDEX_WITH_PARTID
                 if (NextAllPartIds[tmp_id] != 1)
                 {
                     continue;
                 }
+                found_index = tmp_id;
+#else
 
-                // fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " ..actually working\n", k, tmp_id);
-                int64 tmp_grpid = NextAllGroupIds[tmp_id];
+                int found = 0;
+                SGLIB_ARRAY_BINARY_SEARCH(id64, NextAllPartIds, 0, nextnpart, tmp_id, SGLIB_NUMERIC_COMPARATOR, found, found_index);
+                if(found == 0)
+                {
+                    continue;
+                }
+#endif
+
+                // fprintf(stderr, "k=%" STR_FMT " tmp_id = %" STR_FMT " found_index = %"STR_FMT"..actually working\n", k, tmp_id, found_index);
+                int64 tmp_grpid = NextAllGroupIds[found_index];
                 XASSERT(tmp_grpid >= 0 && tmp_grpid < NextNsub,
                         "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grpid, NextNsub);
                 if (nextgroup[tmp_grpid].isFof != 1)
@@ -260,10 +313,10 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
                 /* stores the real halo number and not the Fof halo number.
                 Group matching is still donebased on the Fof halo number. */
-                const int64 real_grpnum = NextAllRealGroupIds[tmp_id];
+                const int64 real_grpnum = NextAllRealGroupIds[found_index];
                 XASSERT(real_grpnum >= 0 && real_grpnum < NextNsub,
                         "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", real_grpnum, NextNsub);
-                const int64 real_grploc = NextAllRealGroupLocs[tmp_id];
+                const int64 real_grploc = NextAllRealGroupLocs[found_index];
                 XASSERT(real_grploc >= 0 && real_grploc < nextgroup[real_grpnum].N,
                         "Error: Group loc is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", real_grploc,
                         nextgroup[real_grpnum].N);
@@ -401,9 +454,11 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     double tmp_max_rank;
     int64 tmp_max_rankid;
 
-    int64 NextMaxPartId = -1;
+    id64 NextMaxPartId = -1;
+    int64 nextnpart = 0;
     for (int64 i = 0; i < NextNsub; i++)
     {
+        nextnpart += nextgroup[i].N;
         for (int64 j = 0; j < nextgroup[i].N; j++)
         {
             const id64 id = nextgroup[i].id[j];
@@ -415,10 +470,16 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         }
     }
     NextMaxPartId++;
-    fprintf(stderr, "In %s> NextMaxPartId = %" STR_FMT "\n", __FUNCTION__, NextMaxPartId);
+    fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT " nextnpart = %"STR_FMT"\n", __FUNCTION__, NextMaxPartId, nextnpart);
+#ifdef INDEX_WITH_PARTID
     int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     int64 *NextAllGroupLocs = my_malloc(sizeof(*NextAllGroupLocs), NextMaxPartId);
+#else
+    id64 *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), nextnpart);
+    int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), nextnpart);
+    int64 *NextAllGroupLocs = my_malloc(sizeof(*NextAllGroupLocs), nextnpart);
+#endif
     double *NextAllRanks = my_calloc(sizeof(*NextAllRanks), NextNsub);
     int64 *NextAllCommon = my_calloc(sizeof(*NextAllCommon), NextNsub);
 
@@ -432,22 +493,40 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             if (id < 0)
                 continue;
 
+#ifdef INDEX_WITH_PARTID
             NextAllPartIds[id] = 1;
             NextAllGroupIds[id] = i;
             NextAllGroupLocs[id] = j;
+#else
+            *NextAllPartIds = id;
+            *NextAllGroupIds = i;
+            *NextAllGroupLocs = j;
+            NextAllPartIds++;
+            NextAllGroupIds++;
+            NextAllGroupLocs++;
+#endif
         }
     }
+#ifndef INDEX_WITH_PARTID
+    NextAllPartIds -= nextnpart;
+    NextAllGroupIds -= nextnpart;
+    NextAllGroupLocs -= nextnpart;
+
+#define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)  {                \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);         \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupIds, i, j);       \
+    SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, NextAllGroupLocs, i, j);      \
+}
+
+    SGLIB_ARRAY_QUICK_SORT(id64, NextAllPartIds, nextnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
+#undef MULTIPLE_ARRAY_EXCHANGER
+#endif
+
 
     Nhalofound = 0;
 
-    /* if(PrevNsub > 100) { */
-    /*   PRINTSTEP = (int)floor(0.1*PrevNsub); */
-    /*   SMALLPRINTSTEP = ceil(0.01*PrevNsub) > 1 ? ceil(0.01*PrevNsub):1; */
-    /*   fprintf(stderr,"\n\n"); */
-    /* } */
     int interrupted = 0;
     init_my_progressbar(PrevNsub, &interrupted);
-
     for (int64 i = 0; i < PrevNsub; i++)
     {
         my_progressbar(i, &interrupted);
@@ -465,12 +544,27 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             const id64 tmp_id = prevgroup[i].id[j];
             if (tmp_id < 0 || tmp_id >= NextMaxPartId)
                 continue;
+
+            int64 found_index;
+#ifdef INDEX_WITH_PARTID
             if (NextAllPartIds[tmp_id] != 1)
                 continue;
-
             XASSERT(tmp_id >= 0 && tmp_id < NextMaxPartId,
                     "Error: Particle id is out of bounds %" STR_ID_FMT " [0, %" PRId64 ")\n", tmp_id, NextMaxPartId);
-            const int64 tmp_grpid = NextAllGroupIds[tmp_id];
+            found_index = tmp_id;
+#else
+            int found;
+            SGLIB_ARRAY_BINARY_SEARCH(id64, NextAllPartIds, 0, nextnpart, tmp_id, SGLIB_NUMERIC_COMPARATOR, found, found_index);
+            if(found == 0)
+            {
+                continue;
+            }
+
+            XASSERT(found_index >= 0 && found_index < nextnpart,
+                    "Error: Particle id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", found_index, nextnpart);
+#endif
+
+            const int64 tmp_grpid = NextAllGroupIds[found_index];
             XASSERT(tmp_grpid >= 0 && tmp_grpid < NextNsub,
                     "Error: Group id is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grpid, NextNsub);
             NextAllCommon[tmp_grpid]++;
@@ -483,7 +577,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 NextAllRanks[tmp_grpid] += compute_rank(j);
             }
 
-            const int64 tmp_grploc = NextAllGroupLocs[tmp_id];
+            const int64 tmp_grploc = NextAllGroupLocs[found_index];
             XASSERT(tmp_grploc >= 0 && tmp_grploc < nextgroup[tmp_grpid].N,
                     "Error: Group loc is out of bounds %" STR_FMT " [0, %" PRId64 ")\n", tmp_grploc,
                     nextgroup[tmp_grpid].N);
