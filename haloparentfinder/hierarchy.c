@@ -329,22 +329,24 @@ void read_hierarchy_level(struct group_data *group, const int64 Ngroups, const c
 
         int64 dummy;
         /* 					  sscanf(str_line,"%*"STR_FMT" %"STR_FMT" %hd
-            * %"STR_FMT"  %"STR_FMT"     %hd",  */
-        int nread = sscanf(str_line, "%*d   %" STR_FMT " %hd   %" STR_FMT "  %" STR_FMT "     %hd",
-                            &dummy, &group[i].ParentLevel, &group[i].ContainerIndex, &group[i].Nsub,
-                            &group[i].N_per_wedge); /*discarding the first field, Fofid */
-        XASSERT(nread == 5,  "ERROR: Could not read in the 5 values expected from subhalo hierarchy file. nread = %d instead\n", nread);
+         * %"STR_FMT"  %"STR_FMT"     %hd",  */
+        int nread = sscanf(str_line, "%*d   %" STR_FMT " %hd   %" STR_FMT "  %" STR_FMT "     %hd", &dummy,
+                           &group[i].ParentLevel, &group[i].ContainerIndex, &group[i].Nsub,
+                           &group[i].N_per_wedge); /*discarding the first field, Fofid */
+        XASSERT(nread == 5,
+                "ERROR: Could not read in the 5 values expected from subhalo hierarchy file. nread = %d instead\n",
+                nread);
         if (dummy != i)
         {
             fprintf(stderr, "Error: While reading in file `%s' for parentlevel \n ", fname);
-            fprintf(stderr, "expected igroup = %" STR_FMT " instead got %" STR_FMT " ..exiting \n\n", i,
-                    dummy);
+            fprintf(stderr, "expected igroup = %" STR_FMT " instead got %" STR_FMT " ..exiting \n\n", i, dummy);
             exit(EXIT_FAILURE);
         }
         i++;
     }
     fclose(fp);
-    XASSERT(i == Ngroups, "Error: Expected to read in %" STR_FMT " groups but read in only %" STR_FMT " groups\n", Ngroups, i);
+    XASSERT(i == Ngroups, "Error: Expected to read in %" STR_FMT " groups but read in only %" STR_FMT " groups\n",
+            Ngroups, i);
     fprintf(stderr, " ..done\n");
 }
 
@@ -368,19 +370,23 @@ void find_hierarchy_level(struct group_data *group, const int64 Ngroups, const c
 
     fp = my_fopen(fname, "w");
     print_subhalolevel_header(fp);
-    for(int64 fofnum=0;fofnum<Ngroups;fofnum+=group[fofnum].Nsub)
+    for (int64 fofnum = 0; fofnum < Ngroups; fofnum += group[fofnum].Nsub)
     {
         /*if the Fof has exactly one Nsub, i.e., the Fof halo itself, then
                 we know the ParentLevel and the ContainerIndex (set in
             loadgroups.c) */
-        XASSERT(group[fofnum].Nsub >= 1, "FOF halos must have Nsub >=1 (since they contain themselves). Found Nsub = %"STR_FMT"\n", group[fofnum].Nsub);
+        XASSERT(group[fofnum].Nsub >= 1,
+                "FOF halos must have Nsub >=1 (since they contain themselves). Found Nsub = %" STR_FMT "\n",
+                group[fofnum].Nsub);
         XASSERT(group[fofnum].isFof == 1, "This should be a FOF halo but it is not\n");
         if (group[fofnum].Nsub > 1)
         {
             if (group[fofnum].Nsub == 2)
             {
-                XASSERT((fofnum+1) < Ngroups, "Error: Fofnum = %" STR_FMT " and Ngroups = %" STR_FMT ". "\
-                                              "Accessing subhalo with fofnum+1 will result in memory access error\n", fofnum, Ngroups);
+                XASSERT((fofnum + 1) < Ngroups,
+                        "Error: Fofnum = %" STR_FMT " and Ngroups = %" STR_FMT ". "
+                        "Accessing subhalo with fofnum+1 will result in memory access error\n",
+                        fofnum, Ngroups);
                 group[fofnum + 1].ParentLevel = 2; /* legitimate subhalo */
                 group[fofnum + 1].ContainerIndex = fofnum;
             }
@@ -392,9 +398,8 @@ void find_hierarchy_level(struct group_data *group, const int64 Ngroups, const c
         }
         for (int64 i = fofnum; i < (fofnum + group[fofnum].Nsub); i++)
         {
-            fprintf(fp, "%10" STR_FMT "     %10" STR_FMT "   %6hd    %10" STR_FMT "    %10" STR_FMT "   %5d \n",
-                    fofnum, i, group[i].ParentLevel, group[i].ContainerIndex, group[i].Nsub,
-                    group[i].N_per_wedge);
+            fprintf(fp, "%10" STR_FMT "     %10" STR_FMT "   %6hd    %10" STR_FMT "    %10" STR_FMT "   %5d \n", fofnum,
+                    i, group[i].ParentLevel, group[i].ContainerIndex, group[i].Nsub, group[i].N_per_wedge);
         }
     }
 
