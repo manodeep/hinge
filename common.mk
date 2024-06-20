@@ -11,6 +11,7 @@ OPT   += -DGET_GROUPVEL   # group file contains group velocities
 ## Default halo options for Subfind halos
 OPT   += -DSUBFIND
 
+OPT += -DINDEX_WITH_PARTID
 ##### AHF halos using in SUSSING mergertree comparison. NOT
 ## fully implemented yet -- needs two more steps of removing
 ## the particles in subhalos from the host halo. And the re-ordering
@@ -34,9 +35,9 @@ OPT += -DWMAP5
 ### Set the compiler -- options are icc/gcc/clang.
 CC=gcc
 #### Add any compiler specific flags you want
-CFLAGS=-fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
+CFLAGS=#-fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
 #### Add any compiler specific link flags you want
-CLINK=-fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
+CLINK=#-fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=address -fsanitize-undefined-trap-on-error -fstack-protector-all
 
 ### You should NOT edit below this line
 DISTNAME=HINGE

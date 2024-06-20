@@ -5,6 +5,14 @@
 #include "sglib.h"
 #include "utils.h"
 
+
+#ifdef INDEX_WITH_PARTID
+#warning "Indexing directly with particle id to match particles"
+#else
+#warning "Keeping a sorted array of particle ids and binary searching to match particles"
+#endif
+
+
 // private functions
 void print_fofassign(int64 thisnum, struct group_data *prevgroup, struct group_data *nextgroup, int64 NextNsub,
                      double *NextAllRanks, int64 *NextAllCommon, const char *outpath);
