@@ -11,6 +11,7 @@ container halos.
 static inline int find_octant(float *pos, float *origin);
 void print_subhalolevel_header(FILE *fp);
 void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId);
+void read_hierarchy_level(struct group_data *group, const int64 Ngroups, const char *fname);
 
 static inline void rotate_prbar(int PLEN)
 {
@@ -314,102 +315,89 @@ void print_subhalolevel_header(FILE *fp)
                 "##############\n");
 }
 
-void find_hierarchy_level(struct group_data *group, const int64 Ngroups, const char *outpath)
+void read_hierarchy_level(struct group_data *group, const int64 Ngroups, const char *fname)
 {
-    int64 FofId = 0;
-    FILE *fp = NULL;
-    char fname[MAXLEN];
-    int64 i;
     char str_line[MAXLINESIZE];
     char comment = '#';
-
-    if (Ngroups > 0)
+    FILE *fp = my_fopen(fname, "rt");
+    fprintf(stderr, "Reading in the hierarchy levels from file `%s' ", fname);
+    int64 i = 0;
+    while (fgets(str_line, MAXLINESIZE, fp) != NULL)
     {
-        my_snprintf(fname, MAXLEN, "%s/subhalolevel_%03d.txt", outpath, group->snapshot);
-        fp = fopen(fname, "rt");
-        if (fp == NULL)
+        if (str_line[0] == comment)
+            continue;
+
+        int64 dummy;
+        /* 					  sscanf(str_line,"%*"STR_FMT" %"STR_FMT" %hd
+            * %"STR_FMT"  %"STR_FMT"     %hd",  */
+        int nread = sscanf(str_line, "%*d   %" STR_FMT " %hd   %" STR_FMT "  %" STR_FMT "     %hd",
+                            &dummy, &group[i].ParentLevel, &group[i].ContainerIndex, &group[i].Nsub,
+                            &group[i].N_per_wedge); /*discarding the first field, Fofid */
+        XASSERT(nread == 5,  "ERROR: Could not read in the 5 values expected from subhalo hierarchy file. nread = %d instead\n", nread);
+        if (dummy != i)
         {
-            fp = my_fopen(fname, "w");
-            print_subhalolevel_header(fp);
-            while (FofId < Ngroups)
-            {
-                /*if the Fof has exactly one Nsub, i.e., the Fof halo itself, then
-                        we know the ParentLevel and the ContainerIndex (set in
-                   loadgroups.c) */
-                assert(group[FofId].Nsub >= 1 && "FOF halos must have Nsub >=1 (since they contain themselves)");
-                if (group[FofId].Nsub > 1)
-                {
-                    if (group[FofId].Nsub == 2)
-                    {
-                        group[FofId + 1].ParentLevel = 2; /* legitimate subhalo */
-                        group[FofId + 1].ContainerIndex = FofId;
-                    }
-                    else
-                    {
-                        /* Make wedges: but let's start out with octants to begin with*/
-                        find_hierarchy_in_fof(group, FofId);
-                    }
-                } /* else { */
-                /* 	//Nsub == 1 */
-                /* 	fprintf(stderr,"FofId = %"STR_FMT" Nsub = %"STR_FMT" Parentlevel
-                 * = %hd \n",FofId,group[FofId].Nsub,group[FofId].ParentLevel); */
-                /* 	fprintf(stderr,"WARNING: Hardwiring values - this should not
-                 * happen - check the data load\n"); */
-                /* 	group[FofId].ParentLevel = 1; */
-                /* 	//Hack -> setting Nsub to 1.  */
-                /* 	group[FofId].Nsub = 1; */
-                /* 	group[FofId].ContainerIndex = FofId; */
-                /* } */
-
-                for (i = FofId; i < (FofId + group[FofId].Nsub); i++)
-                    fprintf(fp, "%10" STR_FMT "     %10" STR_FMT "   %6hd    %10" STR_FMT "    %10" STR_FMT "   %5d \n",
-                            FofId, i, group[i].ParentLevel, group[i].ContainerIndex, group[i].Nsub,
-                            group[i].N_per_wedge);
-
-                FofId += group[FofId].Nsub;
-            }
-
-            fclose(fp);
+            fprintf(stderr, "Error: While reading in file `%s' for parentlevel \n ", fname);
+            fprintf(stderr, "expected igroup = %" STR_FMT " instead got %" STR_FMT " ..exiting \n\n", i,
+                    dummy);
+            exit(EXIT_FAILURE);
         }
-        else
+        i++;
+    }
+    fclose(fp);
+    XASSERT(i == Ngroups, "Error: Expected to read in %" STR_FMT " groups but read in only %" STR_FMT " groups\n", Ngroups, i);
+    fprintf(stderr, " ..done\n");
+}
+
+void find_hierarchy_level(struct group_data *group, const int64 Ngroups, const char *outpath)
+{
+    char fname[MAXLEN];
+    if (Ngroups == 0)
+    {
+        return;
+    }
+    my_snprintf(fname, MAXLEN, "%s/subhalolevel_%03d.txt", outpath, group->snapshot);
+    FILE *fp = fopen(fname, "rt");
+    if (fp != NULL)
+    {
+        fclose(fp);
+        /* So, the subhalolevel file exists for this snapshots. Let's just
+                    read it in.
+        */
+        return read_hierarchy_level(group, Ngroups, fname);
+    }
+
+    fp = my_fopen(fname, "w");
+    print_subhalolevel_header(fp);
+    for(int64 fofnum=0;fofnum<Ngroups;fofnum+=group[fofnum].Nsub)
+    {
+        /*if the Fof has exactly one Nsub, i.e., the Fof halo itself, then
+                we know the ParentLevel and the ContainerIndex (set in
+            loadgroups.c) */
+        XASSERT(group[fofnum].Nsub >= 1, "FOF halos must have Nsub >=1 (since they contain themselves). Found Nsub = %"STR_FMT"\n", group[fofnum].Nsub);
+        XASSERT(group[fofnum].isFof == 1, "This should be a FOF halo but it is not\n");
+        if (group[fofnum].Nsub > 1)
         {
-            /* So, the subhalolevel file exists for this snapshots. Let's just
-                     read it in.
-            */
-
-            fprintf(stderr, "Reading in the parent levels from file `%s' ", fname);
-            i = 0;
-            while (1)
+            if (group[fofnum].Nsub == 2)
             {
-                if (fgets(str_line, MAXLINESIZE, fp) != NULL)
-                {
-                    if (str_line[0] != comment)
-                    {
-                        int64 dummy;
-                        /* 					  sscanf(str_line,"%*"STR_FMT" %"STR_FMT" %hd
-                         * %"STR_FMT"  %"STR_FMT"     %hd",  */
-                        int nread = sscanf(str_line, "%*d   %" STR_FMT " %hd   %" STR_FMT "  %" STR_FMT "     %hd",
-                                           &dummy, &group[i].ParentLevel, &group[i].ContainerIndex, &group[i].Nsub,
-                                           &group[i].N_per_wedge); /*discarding the first field, Fofid */
-                        assert(nread == 5 && "ERROR: Could not read in the 5 values "
-                                             "expected from subhalo hierarchy file");
-                        if (dummy != i)
-                        {
-                            fprintf(stderr, "Error: While reading in file `%s' for parentlevel \n ", fname);
-                            fprintf(stderr, "expected igroup = %" STR_FMT " instead got %" STR_FMT " ..exiting \n\n", i,
-                                    dummy);
-                            exit(EXIT_FAILURE);
-                        }
-                        i++;
-                    }
-                }
-                else
-                {
-                    break;
-                }
+                XASSERT((fofnum+1) < Ngroups, "Error: Fofnum = %" STR_FMT " and Ngroups = %" STR_FMT ". "\
+                                              "Accessing subhalo with fofnum+1 will result in memory access error\n", fofnum, Ngroups);
+                group[fofnum + 1].ParentLevel = 2; /* legitimate subhalo */
+                group[fofnum + 1].ContainerIndex = fofnum;
             }
-            fclose(fp);
-            fprintf(stderr, " ..done\n");
+            else
+            {
+                /* Make wedges: but let's start out with octants to begin with*/
+                find_hierarchy_in_fof(group, fofnum);
+            }
         }
-    } // Ngroups > 0
+        for (int64 i = fofnum; i < (fofnum + group[fofnum].Nsub); i++)
+        {
+            fprintf(fp, "%10" STR_FMT "     %10" STR_FMT "   %6hd    %10" STR_FMT "    %10" STR_FMT "   %5d \n",
+                    fofnum, i, group[i].ParentLevel, group[i].ContainerIndex, group[i].Nsub,
+                    group[i].N_per_wedge);
+        }
+    }
+
+    fclose(fp);
+    return;
 }
