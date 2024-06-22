@@ -373,14 +373,16 @@ void free_group_positions(struct group_data *g, int64 N)
 struct group_data *allocate_group(int64 N)
 {
     struct group_data *g = NULL;
-    g = (struct group_data *)malloc(N * sizeof(struct group_data));
+    const size_t nbytes = N * sizeof(struct group_data);
+    g = (struct group_data *)malloc(nbytes);
+
     if (g == NULL)
     {
         fprintf(stderr, "Error: Could not allocate memory for %" STR_FMT " elements for current snapshot \n", N);
         exit(EXIT_FAILURE);
     }
     else
-        fprintf(stderr, "\n Allocated %" STR_FMT " elements for group struct\n", N);
+        fprintf(stderr, "\n Allocated %"STR_FMT" elements for group struct (%zu bytes, %zu megabytes)\n", N, nbytes, nbytes/(1024*1024);
 
     // initialize the group
     group_init(g, N);
@@ -586,14 +588,30 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     // {
     //     all_id_offset[i] = -1;
     // }
+
+#ifdef INDEX_WITH_PARTID
+    int64 *all_ids = my_malloc(sizeof(*all_ids), max_id);
+    int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
+    int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
+    for(int64 i = 0; i < max_id; i++)
+    {
+        all_ids[i] = -1;
+    }
+#else
     id64 *all_ids = my_malloc(sizeof(*all_ids), totnpart);
     int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
     int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
+#endif
     // int64_t *num_removed_per_group = my_calloc(sizeof(*num_removed_per_group), N);
     int64 nremoved = 0;
     int64_t offset = 0;
     int interrupted = 0;
+#ifdef INDEX_WITH_PARTID
+    fprintf(stderr, "Removing duplicate particles from %lld groups...\n", (long long)N);
+#else
     fprintf(stderr, "Storing particle ids in %lld groups...\n", (long long)N);
+#endif
+
     init_my_progressbar(N, &interrupted);
     for (int64 i = 0; i < N; i++)
     {
@@ -602,40 +620,48 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         {
             id64 id = g[i].id[j];
             XASSERT(id >= 0 && id < max_id, "Error: Particle ID %lld is out of bounds\n", (long long)id);
+#ifndef INDEX_WITH_PARTID
             all_ids[offset] = id;
             groupnum[offset] = i;
             partindex[offset] = j;
+#else
+            if (all_id_offset[id] == -1)
+            {
+                groupnum[offset] = i;
+                partindex[offset] = j;
+                all_id_offset[id] = offset;
+            }
+            else
+            {
+                // fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
+                int64 group_to_remove, part_to_remove;
+                int64_t prev_offset = all_id_offset[id];
+                remove_particle_from_group(groupnum[prev_offset], i, partindex[prev_offset], j, g, &group_to_remove,
+                                           &part_to_remove);
+                // num_removed_per_group[group_to_remove]++;
 
-            // if (all_id_offset[id] == -1)
-            // {
-            //     groupnum[offset] = i;
-            //     partindex[offset] = j;
-            //     all_id_offset[id] = offset;
-            // }
-            // else
-            // {
-            //     // fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
-            //     int64 group_to_remove, part_to_remove;
-            //     int64_t prev_offset = all_id_offset[id];
-            //     remove_particle_from_group(groupnum[prev_offset], i, partindex[prev_offset], j, g, &group_to_remove,
-            //                                &part_to_remove);
-            //     // num_removed_per_group[group_to_remove]++;
-
-            //     // If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
-            //     if (group_to_remove != i)
-            //     {
-            //         groupnum[offset] = i;
-            //         partindex[offset] = j;
-            //         all_id_offset[id] = offset;
-            //     }
-            //     nremoved++;
-            // }
+                // If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
+                if (group_to_remove != i)
+                {
+                    groupnum[offset] = i;
+                    partindex[offset] = j;
+                    all_id_offset[id] = offset;
+                }
+                nremoved++;
+            }
+#endif
             offset++;
         }
     }
     finish_myprogressbar(&interrupted);
-    fprintf(stderr, "Storing particle ids in %lld groups...done\n", (long long)N);
 
+#ifdef INDEX_WITH_PARTID
+    fprintf(stderr, "Removing duplicate particles from %lld groups...done. Removed %lld particles \n", (long long)N,
+            (long long)nremoved);
+#else
+    //When keeping just the array of particle ids, we have only stored the ids so far. Now we sort them and remove duplicates
+
+    fprintf(stderr, "Storing particle ids in %lld groups...done\n", (long long)N);
     time_t t0 = time(NULL);
     fprintf(stderr, "Sorting particle ids for %lld particles ...\n", (long long)totnpart);
 #define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)                                                                  \
@@ -678,6 +704,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Removing duplicate particles from %lld groups... done. Removed %lld particles \n", (long long)N,
             (long long)nremoved);
+#endif
+
     free(all_ids);
     free(groupnum);
     free(partindex);
