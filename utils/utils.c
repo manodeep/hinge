@@ -593,7 +593,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     int64 *all_ids = my_malloc(sizeof(*all_ids), max_id);
     int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
     int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
-    for(int64 i = 0; i < max_id; i++)
+    for (int64 i = 0; i < max_id; i++)
     {
         all_ids[i] = -1;
     }
@@ -659,7 +659,8 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     fprintf(stderr, "Removing duplicate particles from %lld groups...done. Removed %lld particles \n", (long long)N,
             (long long)nremoved);
 #else
-    //When keeping just the array of particle ids, we have only stored the ids so far. Now we sort them and remove duplicates
+    // When keeping just the array of particle ids, we have only stored the ids so far. Now we sort them and remove
+    // duplicates
 
     fprintf(stderr, "Storing particle ids in %lld groups...done\n", (long long)N);
     time_t t0 = time(NULL);
