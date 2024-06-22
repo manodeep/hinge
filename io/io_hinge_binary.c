@@ -140,19 +140,11 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
         {                                                                                                              \
             const int64_t npart_field = group[i].N;                                                                    \
             group[i].dst_field = my_malloc(sizeof(field_type), npart_field);                                           \
-            fprintf(stderr,                                                                                            \
-                    "Assigning " field_name " to group %" PRId64 " with %" PRId64 " particles (offset = %" PRId64      \
-                    ") ...\n",                                                                                         \
-                    i, npart_field, offset);                                                                           \
             for (int64_t j = 0; j < npart_field; j++)                                                                  \
             {                                                                                                          \
                 group[i].dst_field[j] = ((field_type *)buf)[offset + j];                                               \
             }                                                                                                          \
             offset += npart_field;                                                                                     \
-            fprintf(stderr,                                                                                            \
-                    "Assigning " field_name " to group %" PRId64 " with %" PRId64 " particles (offset = %" PRId64      \
-                    ")...\n",                                                                                          \
-                    i, npart_field, offset);                                                                           \
         }                                                                                                              \
         free(buf);                                                                                                     \
     }
