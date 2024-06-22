@@ -382,7 +382,7 @@ struct group_data *allocate_group(int64 N)
         exit(EXIT_FAILURE);
     }
     else
-        fprintf(stderr, "\n Allocated %"STR_FMT" elements for group struct (%zu bytes, %zu megabytes)\n", N, nbytes, nbytes/(1024*1024);
+        fprintf(stderr, "\n Allocated %"STR_FMT" elements for group struct (%zu bytes, %zu megabytes)\n", N, nbytes, nbytes/(1024*1024));
 
     // initialize the group
     group_init(g, N);
