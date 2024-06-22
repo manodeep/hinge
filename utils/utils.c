@@ -584,20 +584,14 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     }
     max_id++;
 
-    // int64_t *all_id_offset = my_calloc(sizeof(*all_id_offset), totnpart);
-    // for (int64 i = 0; i < max_id; i++)
-    // {
-    //     all_id_offset[i] = -1;
-    // }
-
 #ifdef INDEX_WITH_PARTID
-    int64 *all_ids = my_malloc(sizeof(*all_ids), max_id);
-    int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
-    int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
+    int64_t *all_id_offset = my_calloc(sizeof(*all_id_offset), max_id);
     for (int64 i = 0; i < max_id; i++)
     {
-        all_ids[i] = -1;
+        all_id_offset[i] = -1;
     }
+    int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
+    int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
 #else
     id64 *all_ids = my_malloc(sizeof(*all_ids), totnpart);
     int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
@@ -659,7 +653,12 @@ int64 remove_duplicates(struct group_data *g, int64 N)
 #ifdef INDEX_WITH_PARTID
     fprintf(stderr, "Removing duplicate particles from %lld groups...done. Removed %lld particles \n", (long long)N,
             (long long)nremoved);
+    free(all_id_offset);
+    free(groupnum);
+    free(partindex);
+    return nremoved;
 #else
+
     // When keeping just the array of particle ids, we have only stored the ids so far. Now we sort them and remove
     // duplicates
 
@@ -706,11 +705,11 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Removing duplicate particles from %lld groups... done. Removed %lld particles \n", (long long)N,
             (long long)nremoved);
-#endif
 
     free(all_ids);
     free(groupnum);
     free(partindex);
+#endif
 
     // free(num_removed_per_group);
     return nremoved;
