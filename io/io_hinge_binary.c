@@ -125,12 +125,12 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
             exit(EXIT_FAILURE);                                                                                        \
         }                                                                                                              \
         const size_t sizeof_every_field = 8;                                                                           \
-        fprintf(stderr,"Reading " field_name "...\n");                             \
+        fprintf(stderr, "Reading " field_name "...\n");                                                                \
         buf = my_malloc(sizeof_every_field, totnpart);                                                                 \
         my_fread(buf, sizeof_every_field, totnpart,                                                                    \
                  fp); /* all the fields are of type int64_t or double (i.e., 8 bytes) */                               \
         fclose(fp);                                                                                                    \
-        fprintf(stderr,"Reading " field_name "...done\n");                             \
+        fprintf(stderr, "Reading " field_name "...done\n");                                                            \
     }
 
 #define ASSIGN_FIELD_TO_GROUPS(field_name, field_type, nhalos, buf, dst_field)                                         \
@@ -140,13 +140,19 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
         {                                                                                                              \
             const int64_t npart_field = group[i].N;                                                                    \
             group[i].dst_field = my_malloc(sizeof(field_type), npart_field);                                           \
-            fprintf(stderr,"Assigning " field_name " to group %" PRId64 " with %"PRId64" particles (offset = %"PRId64") ...\n", i, npart_field, offset);         \
+            fprintf(stderr,                                                                                            \
+                    "Assigning " field_name " to group %" PRId64 " with %" PRId64 " particles (offset = %" PRId64      \
+                    ") ...\n",                                                                                         \
+                    i, npart_field, offset);                                                                           \
             for (int64_t j = 0; j < npart_field; j++)                                                                  \
             {                                                                                                          \
                 group[i].dst_field[j] = ((field_type *)buf)[offset + j];                                               \
             }                                                                                                          \
             offset += npart_field;                                                                                     \
-            fprintf(stderr,"Assigning " field_name " to group %" PRId64 " with %"PRId64" particles (offset = %"PRId64")...\n", i, npart_field, offset);         \
+            fprintf(stderr,                                                                                            \
+                    "Assigning " field_name " to group %" PRId64 " with %" PRId64 " particles (offset = %" PRId64      \
+                    ")...\n",                                                                                          \
+                    i, npart_field, offset);                                                                           \
         }                                                                                                              \
         free(buf);                                                                                                     \
     }
