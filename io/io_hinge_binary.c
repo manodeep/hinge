@@ -125,12 +125,14 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
             exit(EXIT_FAILURE);                                                                                        \
         }                                                                                                              \
         const size_t sizeof_every_field = 8;                                                                           \
+        time_t _t0 = time(NULL);                                                                                       \
         fprintf(stderr, "Reading " field_name "...\n");                                                                \
         buf = my_malloc(sizeof_every_field, totnpart);                                                                 \
         my_fread(buf, sizeof_every_field, totnpart,                                                                    \
                  fp); /* all the fields are of type int64_t or double (i.e., 8 bytes) */                               \
         fclose(fp);                                                                                                    \
-        fprintf(stderr, "Reading " field_name "...done\n");                                                            \
+        time_t _t1 = time(NULL);                                                                                       \
+        fprintf(stderr, "Reading " field_name "...done. Time taken = %0.3f s\n", difftime(_t1, _t0));                  \
     }
 
 #define ASSIGN_FIELD_TO_GROUPS(field_name, field_type, nhalos, buf, dst_field)                                         \
