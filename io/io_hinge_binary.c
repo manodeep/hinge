@@ -94,14 +94,6 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Assigning group-level properties ...done\n");
 
-    // fprintf(stderr, "Checking FOFHalo consistency ...\n");
-    // for (int64 i = 0; i < nhalos; i++)
-    // {
-    //     const int64 fofnum = group[i].FOFHalo;
-    //     XASSERT(fofnum >= 0 && fofnum < nhalos, "Invalid fofnum = %" PRId64 " for halo = %" PRId64 " hosthalo =
-    //     %"STR_FMT"\n", fofnum, i, );
-    // }
-    // fprintf(stderr, "Checking FOFHalo consistency ...done\n");
 
     /* read individual files for each column */
     /* Can't really automate the process - so need to read in individually and assign */
@@ -150,6 +142,7 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
         }                                                                                                              \
         free(buf);                                                                                                     \
     }
+#if 0
     void *buf;
     time_t t0 = time(NULL);
     fprintf(stderr, "Reading and assigning field: ");
@@ -165,13 +158,77 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
 
     CHECK_NPART_AND_READ_FIELD("zpos", totnpart, buf);
     ASSIGN_FIELD_TO_GROUPS("zpos", double, nhalos, buf, z);
+#else
+#define OPEN_FILE_AND_CHECK_NPART(field_name, totnpart, fp_out)                                                        \
+    {                                                                                                                  \
+        fprintf(stderr, " '%s', ", field_name);                                                                        \
+        int64_t npart_field;                                                                                           \
+        char field_fname[MAXLEN];                                                                                      \
+        my_snprintf(field_fname, MAXLEN, "%s/%s_particles_z%0.3f_%s.bin", params->GROUP_DIR, params->GROUP_BASE,       \
+                    REDSHIFT[snapnum], field_name);                                                                    \
+        fp_out = my_fopen(field_fname, "r");                                                                           \
+        my_fread(&npart_field, sizeof(npart_field), 1, fp_out);                                                        \
+        if (npart_field != totnpart)                                                                                   \
+        {                                                                                                              \
+            fprintf(stderr,                                                                                            \
+                    "Number of particles in file %s = %" PRId64 " does not match total number of particles = %" PRId64 \
+                    "\n",                                                                                              \
+                    field_fname, npart_field, totnpart);                                                               \
+            fclose(fp_out);                                                                                            \
+            exit(EXIT_FAILURE);                                                                                        \
+        }                                                                                                              \
+    }
+#define READ_INTO_BUF_OR_GROUP(thisgroup, dst_field, npart_field, fp_in, buf, buf_type)         \
+    {                                                                                           \
+        const size_t sizeof_every_field = 8;                                                    \
+        if(sizeof(*thisgroup->dst_field) == sizeof_every_field )                                 \
+        {                                                                                       \
+            my_fread(thisgroup->dst_field, sizeof_every_field, npart_field, fp_in);             \
+        }                                                                                       \
+        else                                                                                    \
+        {                                                                                       \
+            my_fread(buf, sizeof_every_field, npart_field, fp_in);                              \
+            for(int64_t j=0;j<npart_field;j++)                                                  \
+            {                                                                                   \
+                thisgroup->dst_field[j] = ((buf_type *)buf)[j];                                 \
+            }                                                                                   \
+        }                                                                                       \
+    }
+    time_t t0 = time(NULL);
+    void *buf = my_malloc(sizeof(double), totnpart);
+    FILE *fp_xpos, *fp_ypos, *fp_zpos, *fp_partid;
+    OPEN_FILE_AND_CHECK_NPART("xpos", totnpart, fp_xpos);
+    OPEN_FILE_AND_CHECK_NPART("ypos", totnpart, fp_ypos);
+    OPEN_FILE_AND_CHECK_NPART("zpos", totnpart, fp_zpos);
+    OPEN_FILE_AND_CHECK_NPART("partid", totnpart, fp_partid);
+    for(int64_t i=0;i<nhalos;i++)
+    {
+        const int64_t npart_field = group[i].N;
+        struct group_data *thisgroup = &group[i];
+        thisgroup->id = my_malloc(sizeof(thisgroup->id), npart_field);
+        thisgroup->x = my_malloc(sizeof(thisgroup->x), npart_field);
+        thisgroup->y = my_malloc(sizeof(thisgroup->y), npart_field);
+        thisgroup->z = my_malloc(sizeof(thisgroup->z), npart_field);
+        READ_INTO_BUF_OR_GROUP(thisgroup, x, npart_field, fp_xpos, buf, double);
+        READ_INTO_BUF_OR_GROUP(thisgroup, y, npart_field, fp_ypos, buf, double);
+        READ_INTO_BUF_OR_GROUP(thisgroup, z, npart_field, fp_zpos, buf, double);
+        READ_INTO_BUF_OR_GROUP(thisgroup, id, npart_field, fp_partid, buf, int64_t);
+    }
+    free(buf);
+    fclose(fp_xpos);
+    fclose(fp_ypos);
+    fclose(fp_zpos);
+    fclose(fp_partid);
+#endif
 
-    int64_t *haloids, *fofids;
-    CHECK_NPART_AND_READ_FIELD("haloid", totnpart, haloids);
-    CHECK_NPART_AND_READ_FIELD("fofid", totnpart, fofids);
     time_t t1 = time(NULL);
     fprintf(stderr, "\rReading and assigning field: 'partid', 'xpos', 'ypos', 'zpos', 'haloid', 'fofid' ... done.\n");
     print_time(t0, t1, "Reading and assigning fields");
+
+#ifdef CHECK_HALO_FOF_IDS
+    int64_t *haloids, *fofids;
+    CHECK_NPART_AND_READ_FIELD("haloid", totnpart, haloids);
+    CHECK_NPART_AND_READ_FIELD("fofid", totnpart, fofids);
 
     int64_t offset = 0;
     fprintf(stderr, "Checking the consistency of the halo and fof ids ...\n");
@@ -190,6 +247,9 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
         offset += group[ihalo].N;
     }
     fprintf(stderr, "Checking the consistency of the halo and fof ids ...done\n");
+    free(haloids);
+    free(fofids);
+#endif
 
     // fprintf(stderr, "Removing duplicates ...\n");
     t0 = time(NULL);
@@ -200,7 +260,5 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
     //         num_removed, halocat->totnpart);
     print_time(t0, t1, "Removing duplicates");
 
-    free(haloids);
-    free(fofids);
     free_hinge_halocat(halocat);
 }
