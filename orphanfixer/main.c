@@ -161,15 +161,15 @@ int main(int argc, char **argv)
         }
         getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
         fprintf(stderr,
-                "(Before allocate_group): Memory used: Real = %" PRId64 " (peak = %"PRId64") bytes, Virtual = %" PRId64
-                " (peak = %" PRId64 ") bytes\n",
+                "(Before allocate_group): Memory used: Real = %" PRId64 " (peak = %" PRId64
+                ") bytes, Virtual = %" PRId64 " (peak = %" PRId64 ") bytes\n",
                 currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
         group0 = allocate_group(Ngroups0); // allocate and initialize
         getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
         fprintf(stderr,
-                "(After allocate_group, before loadgroups:) Memory used: Real = %" PRId64
-                " (peak = %" PRId64 ") bytes, Virtual = %" PRId64 " (peak = %" PRId64 ") bytes\n",
+                "(After allocate_group, before loadgroups:) Memory used: Real = %" PRId64 " (peak = %" PRId64
+                ") bytes, Virtual = %" PRId64 " (peak = %" PRId64 ") bytes\n",
                 currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
         fprintf(stderr, "loading group for snapshot # %d with %" STR_FMT " halos ", isnapshot, Ngroups0);
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
         Ngroups[isnapshot] = Ngroups0;
         getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
         fprintf(stderr,
-                "(After loadgroups:) Memory used: Real = %" PRId64 " (peak = %"PRId64") bytes, Virtual = %" PRId64
+                "(After loadgroups:) Memory used: Real = %" PRId64 " (peak = %" PRId64 ") bytes, Virtual = %" PRId64
                 " (peak = %" PRId64 ") bytes\n",
                 currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
