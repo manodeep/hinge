@@ -160,7 +160,6 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
 #else
 #define OPEN_FILE_AND_CHECK_NPART(field_name, totnpart, fp_out)                                                        \
     {                                                                                                                  \
-        fprintf(stderr, " '%s', ", field_name);                                                                        \
         int64_t npart_field;                                                                                           \
         char field_fname[MAXLEN];                                                                                      \
         my_snprintf(field_fname, MAXLEN, "%s/%s_particles_z%0.3f_%s.bin", params->GROUP_DIR, params->GROUP_BASE,       \
@@ -200,8 +199,10 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
     OPEN_FILE_AND_CHECK_NPART("ypos", totnpart, fp_ypos);
     OPEN_FILE_AND_CHECK_NPART("zpos", totnpart, fp_zpos);
     OPEN_FILE_AND_CHECK_NPART("partid", totnpart, fp_partid);
+    init_my_progressbar(nhalos, &interrupted);
     for (int64_t i = 0; i < nhalos; i++)
     {
+        my_progressbar(i, &interrupted);
         const int64_t npart_field = group[i].N;
         struct group_data *thisgroup = &group[i];
         thisgroup->id = my_malloc(sizeof(thisgroup->id), npart_field);
@@ -213,6 +214,7 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
         READ_INTO_BUF_OR_GROUP(thisgroup, z, npart_field, fp_zpos, buf, double);
         READ_INTO_BUF_OR_GROUP(thisgroup, id, npart_field, fp_partid, buf, int64_t);
     }
+    finish_myprogressbar(&interrupted);
     free(buf);
     fclose(fp_xpos);
     fclose(fp_ypos);
