@@ -94,6 +94,9 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Assigning group-level properties ...done\n");
 
+    fprintf(stderr, "Reading and assigning field: 'partid', 'xpos', 'ypos', 'zpos' ...\n");
+
+#if 0
     /* read individual files for each column */
     /* Can't really automate the process - so need to read in individually and assign */
     // const char field_names[][MAXLEN] = {"partid", "xpos", "ypos", "zpos", "haloid", "fofid"};
@@ -141,7 +144,7 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
         }                                                                                                              \
         free(buf);                                                                                                     \
     }
-#if 0
+
     void *buf;
     time_t t0 = time(NULL);
     fprintf(stderr, "Reading and assigning field: ");
