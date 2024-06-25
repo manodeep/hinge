@@ -205,10 +205,10 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
         my_progressbar(i, &interrupted);
         const int64_t npart_field = group[i].N;
         struct group_data *thisgroup = &group[i];
-        thisgroup->id = my_malloc(sizeof(thisgroup->id), npart_field);
-        thisgroup->x = my_malloc(sizeof(thisgroup->x), npart_field);
-        thisgroup->y = my_malloc(sizeof(thisgroup->y), npart_field);
-        thisgroup->z = my_malloc(sizeof(thisgroup->z), npart_field);
+        thisgroup->id = my_malloc(sizeof(*thisgroup->id), npart_field);
+        thisgroup->x = my_malloc(sizeof(*thisgroup->x), npart_field);
+        thisgroup->y = my_malloc(sizeof(*thisgroup->y), npart_field);
+        thisgroup->z = my_malloc(sizeof(*thisgroup->z), npart_field);
         READ_INTO_BUF_OR_GROUP(thisgroup, x, npart_field, fp_xpos, buf, double);
         READ_INTO_BUF_OR_GROUP(thisgroup, y, npart_field, fp_ypos, buf, double);
         READ_INTO_BUF_OR_GROUP(thisgroup, z, npart_field, fp_zpos, buf, double);
