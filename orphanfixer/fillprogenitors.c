@@ -318,7 +318,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
         int64_t currRealMem = 0, peakRealMem = 0, currVirtMem = 0, peakVirtMem = 0;
         getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
         fprintf(stderr,
-                "Memory used: Real = %" PRId64 " (peak = %PRId64) bytes, Virtual = %" PRId64 " (peak = %" PRId64
+                "Memory used: Real = %" PRId64 " (peak = %"PRId64") bytes, Virtual = %" PRId64 " (peak = %" PRId64
                 ") bytes\n",
                 currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
