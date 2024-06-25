@@ -522,7 +522,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             continue;
 
                         group1 = allgroups[searchsnapshot];
-                        double rank=0.0;
+                        double rank = 0.0;
                         searchnodenum = get_best_groupnum_wids(
                             TrackIds, Nids, group1, Ngroups[searchsnapshot], MATCH_WITH_RANK, &rank,
                             DestPartIds[searchsnapshot], numpart_in_halos[searchsnapshot], DestGroupIds[searchsnapshot],
