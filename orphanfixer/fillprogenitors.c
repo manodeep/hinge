@@ -47,8 +47,8 @@ short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const cha
         if (str_line[0] == comment)
             continue;
 
-        sscanf(str_line, "%hd  %" STR_FMT "  %" STR_FMT "  %" STR_FMT "  %hd  %" STR_FMT "  \n", &snapshot,
-                &groupnum, &groupid, &groupN, &prevsnap, &prevnum);
+        sscanf(str_line, "%hd  %" STR_FMT "  %" STR_FMT "  %" STR_FMT "  %hd  %" STR_FMT "  \n", &snapshot, &groupnum,
+               &groupid, &groupN, &prevsnap, &prevnum);
 
         if (snapshot < PARAMS.MIN_SNAPSHOT_NUM || snapshot > PARAMS.MAX_SNAPSHOT_NUM)
         {
@@ -76,8 +76,8 @@ short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const cha
                             "happened\n ");
             fprintf(stderr, "snapshot = %hd   groupnum = %" STR_FMT " prevsnap = %hd prevnum = %" STR_FMT " \n",
                     snapshot, groupnum, prevsnap, prevnum);
-            fprintf(stderr, "Ngroups[%hd] = %" STR_FMT " Ngroups[%hd] = %" STR_FMT " \n", snapshot,
-                    Ngroups[snapshot], prevsnap, Ngroups[prevsnap]);
+            fprintf(stderr, "Ngroups[%hd] = %" STR_FMT " Ngroups[%hd] = %" STR_FMT " \n", snapshot, Ngroups[snapshot],
+                    prevsnap, Ngroups[prevsnap]);
             fprintf(stderr, "exiting \n\n");
             exit(EXIT_FAILURE);
         }
@@ -114,7 +114,7 @@ short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const cha
         thisnode->BigChild = prevnode;
         thisnode->Nchild = 1;
         /* 			  thisnode->FormationRedshift =
-            * prevnode->FormationRedshift; */
+         * prevnode->FormationRedshift; */
         /* Need to fix the haloids -- since it could be a partial
             found_progenitors.txt so the behaviour of a complete fillprogenitor
             run is mimicked.
@@ -129,9 +129,8 @@ short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const cha
         nlines++;
     }
 
-
     fclose(fp);
-    if(nlines > 0)
+    if (nlines > 0)
     {
         *startgroupnum = groupnum + 1;
         fprintf(stderr, "In load_found_progenitors:  Read in %" STR_FMT " lines\n", nlines);
@@ -140,7 +139,10 @@ short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const cha
     {
         min_snapshot = PARAMS.MIN_SNAPSHOT_NUM;
         *startgroupnum = 0;
-        fprintf(stderr, "In load_found_progenitors:  Incomplete `%s` found - read in %" STR_FMT " lines. Recalculating the orphans ...\n", fname, nlines);
+        fprintf(stderr,
+                "In load_found_progenitors:  Incomplete `%s` found - read in %" STR_FMT
+                " lines. Recalculating the orphans ...\n",
+                fname, nlines);
     }
 
     return min_snapshot;
