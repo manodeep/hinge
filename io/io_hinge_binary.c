@@ -94,7 +94,6 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Assigning group-level properties ...done\n");
 
-
     /* read individual files for each column */
     /* Can't really automate the process - so need to read in individually and assign */
     // const char field_names[][MAXLEN] = {"partid", "xpos", "ypos", "zpos", "haloid", "fofid"};
@@ -178,21 +177,21 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
             exit(EXIT_FAILURE);                                                                                        \
         }                                                                                                              \
     }
-#define READ_INTO_BUF_OR_GROUP(thisgroup, dst_field, npart_field, fp_in, buf, buf_type)         \
-    {                                                                                           \
-        const size_t sizeof_every_field = 8;                                                    \
-        if(sizeof(*thisgroup->dst_field) == sizeof_every_field )                                 \
-        {                                                                                       \
-            my_fread(thisgroup->dst_field, sizeof_every_field, npart_field, fp_in);             \
-        }                                                                                       \
-        else                                                                                    \
-        {                                                                                       \
-            my_fread(buf, sizeof_every_field, npart_field, fp_in);                              \
-            for(int64_t j=0;j<npart_field;j++)                                                  \
-            {                                                                                   \
-                thisgroup->dst_field[j] = ((buf_type *)buf)[j];                                 \
-            }                                                                                   \
-        }                                                                                       \
+#define READ_INTO_BUF_OR_GROUP(thisgroup, dst_field, npart_field, fp_in, buf, buf_type)                                \
+    {                                                                                                                  \
+        const size_t sizeof_every_field = 8;                                                                           \
+        if (sizeof(*thisgroup->dst_field) == sizeof_every_field)                                                       \
+        {                                                                                                              \
+            my_fread(thisgroup->dst_field, sizeof_every_field, npart_field, fp_in);                                    \
+        }                                                                                                              \
+        else                                                                                                           \
+        {                                                                                                              \
+            my_fread(buf, sizeof_every_field, npart_field, fp_in);                                                     \
+            for (int64_t j = 0; j < npart_field; j++)                                                                  \
+            {                                                                                                          \
+                thisgroup->dst_field[j] = ((buf_type *)buf)[j];                                                        \
+            }                                                                                                          \
+        }                                                                                                              \
     }
     time_t t0 = time(NULL);
     void *buf = my_malloc(sizeof(double), totnpart);
@@ -201,7 +200,7 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
     OPEN_FILE_AND_CHECK_NPART("ypos", totnpart, fp_ypos);
     OPEN_FILE_AND_CHECK_NPART("zpos", totnpart, fp_zpos);
     OPEN_FILE_AND_CHECK_NPART("partid", totnpart, fp_partid);
-    for(int64_t i=0;i<nhalos;i++)
+    for (int64_t i = 0; i < nhalos; i++)
     {
         const int64_t npart_field = group[i].N;
         struct group_data *thisgroup = &group[i];
