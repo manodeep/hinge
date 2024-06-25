@@ -203,10 +203,11 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
     OPEN_FILE_AND_CHECK_NPART("ypos", totnpart, fp_ypos);
     OPEN_FILE_AND_CHECK_NPART("zpos", totnpart, fp_zpos);
     OPEN_FILE_AND_CHECK_NPART("partid", totnpart, fp_partid);
-    init_my_progressbar(nhalos, &interrupted);
+    init_my_progressbar(totnpart, &interrupted);
+    int64_t npart_read = 0;
     for (int64_t i = 0; i < nhalos; i++)
     {
-        my_progressbar(i, &interrupted);
+        my_progressbar(npart_read, &interrupted);
         const int64_t npart_field = group[i].N;
         struct group_data *thisgroup = &group[i];
         thisgroup->id = my_malloc(sizeof(*thisgroup->id), npart_field);
@@ -217,6 +218,7 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
         READ_INTO_BUF_OR_GROUP(thisgroup, y, npart_field, fp_ypos, buf, double);
         READ_INTO_BUF_OR_GROUP(thisgroup, z, npart_field, fp_zpos, buf, double);
         READ_INTO_BUF_OR_GROUP(thisgroup, id, npart_field, fp_partid, buf, int64_t);
+        npart_read += npart_field;
     }
     finish_myprogressbar(&interrupted);
     free(buf);
