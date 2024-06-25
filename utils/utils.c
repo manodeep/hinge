@@ -204,6 +204,46 @@ void my_free(void **x)
     *x = NULL;
 }
 
+
+//Taken from https://stackoverflow.com/a/47531152 : MS, 25th June, 2024
+/*
+ * Measures the current (and peak) resident and virtual memories
+ * usage of your linux C process, in kB
+ */
+void getMemory(int* currRealMem, int* peakRealMem, int* currVirtMem, int* peakVirtMem)
+{
+
+    // stores each word in status file
+    char buffer[1024] = "";
+
+    // linux file contains this-process info
+    const char *status_fname = "/proc/self/status";
+    FILE* file = fopen(status_fname, "r");
+    if(file == NULL) {
+        fprintf(stderr, "Error: Could not open '%s'\n", status_fname);
+        return;
+    }
+
+    // read the entire file
+    while (fscanf(file, " %1023s", buffer) == 1) {
+
+        if (strcmp(buffer, "VmRSS:") == 0) {
+            fscanf(file, " %d", currRealMem);
+        }
+        if (strcmp(buffer, "VmHWM:") == 0) {
+            fscanf(file, " %d", peakRealMem);
+        }
+        if (strcmp(buffer, "VmSize:") == 0) {
+            fscanf(file, " %d", currVirtMem);
+        }
+        if (strcmp(buffer, "VmPeak:") == 0) {
+            fscanf(file, " %d", peakVirtMem);
+        }
+    }
+    fclose(file);
+    return;
+}
+
 int read_redshifts(const char *outfname, float *redshift, const int num_snapshots)
 {
     fprintf(stderr, "Reading redshifts from file `%s'\n", outfname);
