@@ -367,8 +367,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             snapshot, Ngroups[snapshot]);
                     getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
                     fprintf(stderr,
-                            "Memory used (before allocate_group): Real = %" PRId64 " (peak = %" PRId64 ") bytes, Virtual = %" PRId64 " (peak = %" PRId64
-                            ") bytes\n",
+                            "Memory used (before allocate_group): Real = %" PRId64 " (peak = %" PRId64
+                            ") bytes, Virtual = %" PRId64 " (peak = %" PRId64 ") bytes\n",
                             currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
                     group0 = allocate_group(Ngroups[snapshot]);
@@ -381,8 +381,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             snapshot, Ngroups[snapshot]);
                     getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
                     fprintf(stderr,
-                            "Memory used (after loadgroups): Real = %" PRId64 " (peak = %" PRId64 ") bytes, Virtual = %" PRId64 " (peak = %" PRId64
-                            ") bytes\n",
+                            "Memory used (after loadgroups): Real = %" PRId64 " (peak = %" PRId64
+                            ") bytes, Virtual = %" PRId64 " (peak = %" PRId64 ") bytes\n",
                             currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
                     // remove_duplicates needs particle positions - that's why
