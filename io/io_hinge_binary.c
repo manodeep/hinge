@@ -189,7 +189,7 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
         else                                                                                                           \
         {                                                                                                              \
             my_fread(buf, sizeof_every_field, npart_field, fp_in);                                                     \
-            buf_type * _tmp_buf = (buf_type *)buf;                                                                     \
+            buf_type *_tmp_buf = (buf_type *)buf;                                                                      \
             for (int64_t j = 0; j < npart_field; j++)                                                                  \
             {                                                                                                          \
                 thisgroup->dst_field[j] = *_tmp_buf++;                                                                 \
