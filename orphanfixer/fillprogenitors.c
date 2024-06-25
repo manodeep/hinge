@@ -315,10 +315,9 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
         fprintf(stderr, "\n\nfillprogenitor: Now working on snapshot # %4d Ngroups = %" STR_FMT "\n\n", isnapshot,
                 Ngroups[isnapshot]);
         snapshot = isnapshot + 1;
-        int currRealMem = 0, peakRealMem = 0, currVirtMem = 0, peakVirtMem = 0;
+        int64_t currRealMem=0, peakRealMem=0, currVirtMem=0, peakVirtMem=0;
         getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
-        fprintf(stderr, "Memory used: Real = %d (peak = %d) MB, Virtual = %d MB(peak = %d) MB\n", currRealMem,
-                peakRealMem, currVirtMem, peakVirtMem);
+        fprintf(stderr,"Memory used: Real = %"PRId64" (peak = %PRId64) bytes, Virtual = %"PRId64" (peak = %"PRId64") bytes\n", currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
         /* 	  if(snapshot < startsnapshot && allgroups[snapshot] !=NULL &&
          * Ngroups[snapshot] > 0) */

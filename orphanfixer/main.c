@@ -141,7 +141,7 @@ int main(int argc, char **argv)
     {
         t_bigsectionstart = time(NULL);
         fprintf(stderr, "\n\n Now working on snapshot# %4d \n", isnapshot);
-        int currRealMem = 0, peakRealMem = 0, currVirtMem = 0, peakVirtMem = 0;
+        int64_t currRealMem=0, peakRealMem=0, currVirtMem=0, peakVirtMem=0;
         Ngroups0 = returnNhalo(&PARAMS, isnapshot, fof_only);
         if (Ngroups0 == 0)
             continue;
@@ -159,18 +159,22 @@ int main(int argc, char **argv)
             print_time(t_sectionstart, t_sectionend, "loadparents");
             allparents[isnapshot] = parent;
         }
+        getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
+        fprintf(stderr,"(Before allocate_group): Memory used: Real = %"PRId64" (peak = %PRId64) bytes, Virtual = %"PRId64" (peak = %"PRId64") bytes\n", currRealMem, peakRealMem, currVirtMem, peakVirtMem);
+
         group0 = allocate_group(Ngroups0); // allocate and initialize
         getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
-        fprintf(stderr, "loading group for snapshot # %d with %" STR_FMT " halos ", isnapshot, Ngroups0);
-        fprintf(stderr, "Memory used: Real = %d (peak = %d) MB, Virtual = %d MB(peak = %d) MB\n", currRealMem,
-                peakRealMem, currVirtMem, peakVirtMem);
+        fprintf(stderr,"(After allocate_group, before loadgroups:) Memory used: Real = %"PRId64" (peak = %PRId64) bytes, Virtual = %"PRId64" (peak = %"PRId64") bytes\n", currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
+        fprintf(stderr, "loading group for snapshot # %d with %" STR_FMT " halos ", isnapshot, Ngroups0);
         t_sectionstart = time(NULL);
         loadgroups(&PARAMS, isnapshot, group0);
         fprintf(stderr, " done ...\n\n");
         t_sectionend = time(NULL);
         print_time(t_sectionstart, t_sectionend, "loadgroups");
         Ngroups[isnapshot] = Ngroups0;
+        getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
+        fprintf(stderr,"(After loadgroups:) Memory used: Real = %"PRId64" (peak = %PRId64) bytes, Virtual = %"PRId64" (peak = %"PRId64") bytes\n", currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
         t_sectionstart = time(NULL);
         my_snprintf(outfname, MAXLEN, "%s/subhalolevel_%03d.txt", PARAMS.OUTPUT_DIR, isnapshot);
