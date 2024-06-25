@@ -32,8 +32,7 @@ void *my_realloc(void *x, size_t size, int64_t N, const char *varname);
 
 void *my_calloc(size_t size, int64 N);
 void my_free(void **x);
-void getMemory(int* currRealMem, int* peakRealMem, int* currVirtMem, int* peakVirtMem);
-
+void getMemory(int *currRealMem, int *peakRealMem, int *currVirtMem, int *peakVirtMem);
 
 int read_redshifts(const char *outfname, float *redshift, const int num_snapshots);
 
