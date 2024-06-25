@@ -246,11 +246,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
     struct node_data *tmp_node = NULL;
     struct group_data *group0 = NULL, *group1 = NULL;
     struct group_data *allgroups[NUM_SNAPSHOTS];
-    double rank = 0.0, max_rank = 0.0; /*,best_rank=0.0,remaining_best_rank=0.0;*/
-    int64 ncommon = 0;
-    id64 *TrackIds = NULL;
     int64 startgroup = 0;
-    int64 Nids = 0;
     time_t t_sectionstart, t_sectionend;
     int64 *DestPartIds[NUM_SNAPSHOTS];
     int64 *DestGroupIds[NUM_SNAPSHOTS];
@@ -258,12 +254,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
     id64 DestMaxPartId[NUM_SNAPSHOTS];
     id64 DestMinPartId[NUM_SNAPSHOTS];
     int64 numpart_in_halos[NUM_SNAPSHOTS];
-    size_t memory_requested[NUM_SNAPSHOTS];
-    size_t group_memory[NUM_SNAPSHOTS];
-    size_t total_memory_requested = 0;
 
-    memset(memory_requested, 0, sizeof(memory_requested));
-    memset(group_memory, 0, sizeof(group_memory));
     /* This can potentially be optimised. In case
            of massive memory requirements, reduce the following to unsigned ints
 
@@ -329,12 +320,9 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
         {
             fprintf(stderr, "freed group (inside original for loop) # %d\n", snapshot);
             free_group(allgroups[snapshot], Ngroups[snapshot]);
-            total_memory_requested -= group_memory[snapshot];
             allgroups[snapshot] = NULL;
         }
 
-#define MEMORY_FOR_THREE_ARRAYS(snap)                                                                                  \
-    ((sizeof(*DestPartIds[snap]) + sizeof(*DestGroupIds[snap]) + sizeof(*DestGroupLoc[snap])) * numpart_in_halos[snap])
         /* 	  if(snapshot < startsnapshot && DestPartIds[snapshot] != NULL) */
         if (snapshot <= startsnapshot && DestPartIds[snapshot] != NULL)
         {
@@ -342,7 +330,6 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
             my_free((void **)&(DestPartIds[snapshot]));
             my_free((void **)&(DestGroupIds[snapshot]));
             my_free((void **)&(DestGroupLoc[snapshot]));
-            total_memory_requested -= MEMORY_FOR_THREE_ARRAYS(snapshot);
         }
 
         if (DestPartIds[isnapshot] != NULL)
@@ -351,7 +338,6 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
             my_free((void **)&(DestPartIds[isnapshot]));
             my_free((void **)&(DestGroupIds[isnapshot]));
             my_free((void **)&(DestGroupLoc[isnapshot]));
-            total_memory_requested -= MEMORY_FOR_THREE_ARRAYS(isnapshot);
         }
 
         if (Ngroups[isnapshot] > 0)
@@ -389,6 +375,12 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                     // we need to load the particle positions in the first place
                     // Once loadgroups returns, we have no need for particle positions
                     free_group_positions(group0, Ngroups[snapshot]);
+
+                    getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
+                    fprintf(stderr,
+                            "Memory used (after loadgroups + free_group_pos): Real = %" PRId64 " (peak = %" PRId64
+                            ") bytes, Virtual = %" PRId64 " (peak = %" PRId64 ") bytes\n",
+                            currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
                     // Find the max particle id
                     id64 max_part_id = -1, min_part_id = NUMPART + 1;
@@ -500,14 +492,14 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                 /* Does the halo not have a progenitor (while it's Fof has one) */
                 if (thisnode->BigChild == NULL && thisnode->isFof == 0 && thisnode->FofHalo->BigChild != NULL)
                 {
-                    Nids = group0[thisnode->nodeloc].N;
-                    TrackIds = my_malloc(sizeof(*TrackIds), Nids);
+                    int64 Nids = group0[thisnode->nodeloc].N;
+                    id64 *TrackIds = my_malloc(sizeof(*TrackIds), Nids);
                     for (int64 j = 0; j < Nids; j++)
                     {
                         TrackIds[j] = group0[thisnode->nodeloc].id[j];
                     }
 
-                    max_rank = 0.0;
+                    double max_rank = 0.0;
                     for (int64 i = 0; i < group0[thisnode->nodeloc].N; i++)
                         max_rank += compute_rank(i);
 
@@ -530,6 +522,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             continue;
 
                         group1 = allgroups[searchsnapshot];
+                        double rank=0.0;
                         searchnodenum = get_best_groupnum_wids(
                             TrackIds, Nids, group1, Ngroups[searchsnapshot], MATCH_WITH_RANK, &rank,
                             DestPartIds[searchsnapshot], numpart_in_halos[searchsnapshot], DestGroupIds[searchsnapshot],
@@ -542,7 +535,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             assert(searchnodenum < Ngroups[searchsnapshot] && "Possible match must be valid");
                             assert(thisnode->nodeloc < Ngroups[thisnode->snapshot] &&
                                    "Candidate node number must be valid");
-                            ncommon = get_ncommon(&group0[thisnode->nodeloc], &group1[searchnodenum]);
+                            int64 ncommon = get_ncommon(&group0[thisnode->nodeloc], &group1[searchnodenum]);
                             fprintf(stderr,
                                     "found a possible match:  nodenum = %" STR_FMT
                                     " at snapshot = %d. haloid = %" STR_FMT " with ncommon = %" STR_FMT
@@ -600,7 +593,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             }
                         }
                     }
-                    my_free((void **)&TrackIds);
+                    free(TrackIds);
                 }
             }
         }
