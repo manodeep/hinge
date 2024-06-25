@@ -209,7 +209,7 @@ void my_free(void **x)
  * Measures the current (and peak) resident and virtual memories
  * usage of your linux C process, in kB
  */
-void getMemory(int64_t * currRealMem, int64_t * peakRealMem, int64_t * currVirtMem, int64_t * peakVirtMem)
+void getMemory(int64_t *currRealMem, int64_t *peakRealMem, int64_t *currVirtMem, int64_t *peakVirtMem)
 {
 
     // stores each word in status file
@@ -217,10 +217,11 @@ void getMemory(int64_t * currRealMem, int64_t * peakRealMem, int64_t * currVirtM
 
     // linux file contains this-process info
     const char *status_fname = "/proc/self/status";
-    FILE* file = fopen(status_fname, "r");
+    FILE *file = fopen(status_fname, "r");
     char memunits[3];
     memunits[2] = '\0';
-    if(file == NULL) {
+    if (file == NULL)
+    {
         fprintf(stderr, "Error: Could not open '%s'\n", status_fname);
         return;
     }
@@ -228,26 +229,39 @@ void getMemory(int64_t * currRealMem, int64_t * peakRealMem, int64_t * currVirtM
     // read the entire file
     const int numfields_needed = 4;
     int numfields_read = 0;
-#define CONVERT_TO_BYTES(ptr, units) {if (strcmp(units, "kB") == 0) *ptr *= 1024; else if (strcmp(units, "mB") == 0) *ptr *= 1024 * 1024; else if (strcmp(units, "gB") == 0) *ptr *= 1024 * 1024 * 1024;}
-    while (fscanf(file, " %1023s", buffer) == 1) {
+#define CONVERT_TO_BYTES(ptr, units)                                                                                   \
+    {                                                                                                                  \
+        if (strcmp(units, "kB") == 0)                                                                                  \
+            *ptr *= 1024;                                                                                              \
+        else if (strcmp(units, "mB") == 0)                                                                             \
+            *ptr *= 1024 * 1024;                                                                                       \
+        else if (strcmp(units, "gB") == 0)                                                                             \
+            *ptr *= 1024 * 1024 * 1024;                                                                                \
+    }
+    while (fscanf(file, " %1023s", buffer) == 1)
+    {
 
-        if (strcmp(buffer, "VmRSS:") == 0) {
-            fscanf(file, " %"SCNd64" %2s", currRealMem, memunits);
+        if (strcmp(buffer, "VmRSS:") == 0)
+        {
+            fscanf(file, " %" SCNd64 " %2s", currRealMem, memunits);
             CONVERT_TO_BYTES(currRealMem, memunits);
             numfields_read++;
         }
-        if (strcmp(buffer, "VmHWM:") == 0) {
-            fscanf(file, " %"SCNd64" %2s", peakRealMem, memunits);
+        if (strcmp(buffer, "VmHWM:") == 0)
+        {
+            fscanf(file, " %" SCNd64 " %2s", peakRealMem, memunits);
             CONVERT_TO_BYTES(peakRealMem, memunits);
             numfields_read++;
         }
-        if (strcmp(buffer, "VmSize:") == 0) {
-            fscanf(file, " %"SCNd64" %2s", currVirtMem, memunits);
+        if (strcmp(buffer, "VmSize:") == 0)
+        {
+            fscanf(file, " %" SCNd64 " %2s", currVirtMem, memunits);
             CONVERT_TO_BYTES(currVirtMem, memunits);
             numfields_read++;
         }
-        if (strcmp(buffer, "VmPeak:") == 0) {
-            fscanf(file, " %"SCNd64" %2s", peakVirtMem, memunits);
+        if (strcmp(buffer, "VmPeak:") == 0)
+        {
+            fscanf(file, " %" SCNd64 " %2s", peakVirtMem, memunits);
             CONVERT_TO_BYTES(peakVirtMem, memunits);
             numfields_read++;
         }
