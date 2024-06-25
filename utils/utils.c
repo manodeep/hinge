@@ -149,6 +149,7 @@ void *my_malloc(size_t size, int64 N)
     if (x == NULL)
     {
         fprintf(stderr, "malloc for %" STR_FMT "  elements with %zu size failed..aborting\n", N, size);
+        perror("malloc");
         exit(EXIT_FAILURE);
     }
     /* else if (megabytes > 100) */
