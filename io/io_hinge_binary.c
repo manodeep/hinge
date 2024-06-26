@@ -458,7 +458,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
 
     /* Now delete the individual files */
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_partids_z%0.3f.bin", params->OUTPUT_DIR,
-            params->GROUP_BASE, REDSHIFT[snapnum]);
+                params->GROUP_BASE, REDSHIFT[snapnum]);
     unlink(unique_fname);
 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_xpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
