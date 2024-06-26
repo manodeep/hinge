@@ -437,7 +437,8 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     size_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
     fseek(fp_ids, start_offset, SEEK_SET);
     size_t len = totnpart * sizeof(group->id[0]);
-    fprintf(stderr,"Requesting macro to write %zu bytes (%"PRId64" particle ids. each of size %zu)\n", len, totnpart, sizeof(group->id[0]));
+    fprintf(stderr, "Requesting macro to write %zu bytes (%" PRId64 " particle ids. each of size %zu)\n", len, totnpart,
+            sizeof(group->id[0]));
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), len);
     XASSERT(feof(fp_ids), "Error: fp_ids not at EOF\n");
 
