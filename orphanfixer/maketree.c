@@ -73,7 +73,6 @@ void maketree(struct parent_data *allparents[], int64 *Ngroups, struct node_data
     int64 parentid;
     fprintf(stderr, "\n\nAssigning parents...\n");
 
-
     int interrupted = 0;
     init_my_progressbar(PARAMS.MAX_SNAPSHOT_NUM, &interrupted);
     for (int isnapshot = PARAMS.MIN_SNAPSHOT_NUM; isnapshot < PARAMS.MAX_SNAPSHOT_NUM; isnapshot++)
