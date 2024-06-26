@@ -303,12 +303,12 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
         numpart_in_halos[isnapshot] = 0;
     }
 
-    short snapshot = 0;
+    // short snapshot = 0;
     for (short isnapshot = startsnapshot; isnapshot >= PARAMS.MIN_SNAPSHOT_NUM; isnapshot--)
     {
         fprintf(stderr, "\n\nfillprogenitor: Now working on snapshot # %4d Ngroups = %" STR_FMT "\n\n", isnapshot,
                 Ngroups[isnapshot]);
-        snapshot = isnapshot + 1;
+        short snapshot = isnapshot + 1;
         int64_t currRealMem = 0, peakRealMem = 0, currVirtMem = 0, peakVirtMem = 0;
         getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
         fprintf(stderr,
@@ -425,28 +425,19 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                 if (snapshot >= PARAMS.MIN_SNAPSHOT_NUM && DestPartIds[snapshot] == NULL && incr >= 2)
                 {
                     group0 = allgroups[snapshot];
-                    DestPartIds[snapshot] = my_calloc(sizeof(*DestPartIds[snapshot]), numpart_in_halos[snapshot]);
+                    DestPartIds[snapshot] = my_malloc(sizeof(*DestPartIds[snapshot]), numpart_in_halos[snapshot]);
                     fprintf(stderr, "Allocating for %" STR_FMT " particles in snapshot %d\n",
                             numpart_in_halos[snapshot], snapshot);
                     fprintf(stderr, "DestMaxPartId[%d] = %" STR_ID_FMT " DestMinPartId[%d] = %" STR_ID_FMT "\n",
                             snapshot, DestMaxPartId[snapshot], snapshot, DestMinPartId[snapshot]);
-                    // for (int i = 0; i < DestMaxPartId[snapshot]; i++)
-                    // {
-                    //     DestPartIds[snapshot][i] = -1;
-                    // }
                     DestGroupIds[snapshot] = my_malloc(sizeof(*DestGroupIds[snapshot]), numpart_in_halos[snapshot]);
-                    DestGroupLoc[snapshot] = my_calloc(sizeof(*DestGroupLoc[snapshot]), numpart_in_halos[snapshot]);
+                    DestGroupLoc[snapshot] = my_malloc(sizeof(*DestGroupLoc[snapshot]), numpart_in_halos[snapshot]);
 
-                    // new scope tmp and s will disappear outside the closing braces
-                    // {
-                    // int64 *tmp = NULL;
-                    // short *s = NULL;
                     int64 offset = 0;
                     for (int64 i = 0; i < Ngroups[snapshot]; i++)
                     {
                         for (int64 j = 0; j < group0[i].N; j++)
                         {
-                            // s = DestPartIds[snapshot];
                             const id64 this_id = group0[i].id[j];
                             if (this_id < 0)
                                 continue;
@@ -455,19 +446,15 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                                     "must be less than max. particle id = %" STR_ID_FMT " - "
                                     "strange things must have happened",
                                     this_id, DestMaxPartId[snapshot]);
-                            // s[this_id] = 1;
-                            // tmp = DestGroupIds[snapshot];
-                            // tmp[this_id] = i;
-                            // tmp = DestGroupLoc[snapshot];
-                            // tmp[this_id] = j;
-                            // DestPartIds[snapshot][this_id] = offset;
                             DestPartIds[snapshot][offset] = this_id;
                             DestGroupIds[snapshot][offset] = i;
                             DestGroupLoc[snapshot][offset] = j;
                             offset++;
                         }
                     }
-                    // }
+                    XASSERT(offset == numpart_in_halos[snapshot],
+                            "Error: Expected offset = %" STR_FMT " to be equal to numpart_in_halos[%d] = %" STR_FMT "\n",
+                            offset, snapshot, numpart_in_halos[snapshot]);
 #define MULTIPLE_ARRAY_EXCHANGER(type, varname, i, j)                                                                  \
     {                                                                                                                  \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, DestPartIds[snapshot], i, j);                                             \
@@ -475,9 +462,12 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, DestGroupLoc[snapshot], i, j);                                           \
     }
 
+                    time_t t0 = time(NULL);
                     SGLIB_ARRAY_QUICK_SORT(id64, DestPartIds[snapshot], numpart_in_halos[snapshot],
                                            SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 #undef MULTIPLE_ARRAY_EXCHANGER
+                    time_t t1 = time(NULL);
+                    print_time(t0, t1, "Quick sort in fillprogenitors");
                 }
             }
 

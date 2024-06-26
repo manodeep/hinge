@@ -167,6 +167,14 @@ void read_params(const char *fname, struct params_data *params,
     addr[nt] = &(params->BOXSIZE);
     id[nt++] = DOUBLE;
 
+    my_snprintf(tag[nt], MAXLEN, "SAVE_UNIQUE_PARTICLES");
+    addr[nt] = &(params->SAVE_UNIQUE_PARTICLES);
+    id[nt++] = INT;
+
+    my_snprintf(tag[nt], MAXLEN, "LOAD_UNIQUE_PARTICLES");
+    addr[nt] = &(params->LOAD_UNIQUE_PARTICLES);
+    id[nt++] = INT;
+
     special_params(params, MAXTAGS, addr, id, tag, &nt);
 
     FILE *fd = my_fopen(fname, "r");

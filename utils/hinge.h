@@ -134,6 +134,8 @@ struct params_data
     int MAX_DECR_GROUPS;
     int LOAD_FOUND_PROGENITORS;
     int LOAD_PARTIAL_FOUND_PROGENITORS;
+    int SAVE_UNIQUE_PARTICLES;
+    int LOAD_UNIQUE_PARTICLES;
     double MIN_FCOMMON_THRESH;
 
     // Makefile options
