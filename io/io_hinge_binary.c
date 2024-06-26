@@ -421,15 +421,17 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
 
 #define USE_SENDFILE_TO_WRITE_PROPS(fd_out, fd_in, len)                                                                \
     {                                                                                                                  \
+        ssize_t tot_nbytes_written = 0;                                                                                \
         while (len > 0)                                                                                                \
         {                                                                                                              \
             ssize_t nbytes_written = sendfile(fd_out, fd_in, NULL, len);                                               \
             XASSERT(nbytes_written >= 0, "Error writing to file %s. nbytes_written = %zd\n", unique_fname,             \
                     nbytes_written);                                                                                   \
             len -= nbytes_written;                                                                                     \
+            tot_nbytes_written += nbytes_written;                                                                      \
         }                                                                                                              \
-        XASSERT(len == 0, "Error: len = %" PRId64 "\n", len);                                                          \
-        fprintf(stderr,"In macro: Wrote %zu bytes\n", len);                                                            \
+        XASSERT(len == 0, "Error: len = %zu\n", len);                                                                  \
+        fprintf(stderr,"In macro: Wrote %zu bytes\n", tot_nbytes_written);                                             \
     }
 
     size_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
