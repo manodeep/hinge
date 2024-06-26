@@ -385,7 +385,9 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
                 num_written++;
             }
             thisgroup->N -= num_dups;
-            XASSERT(num_written == thisgroup->N, "Error: For halo number %"PRId64" number of particles written = %" PRId64 " != %" PRId64 ". Number of duplicates = %"PRId64"\n",
+            XASSERT(num_written == thisgroup->N,
+                    "Error: For halo number %" PRId64 " number of particles written = %" PRId64 " != %" PRId64
+                    ". Number of duplicates = %" PRId64 "\n",
                     i, num_written, thisgroup->N, num_dups);
             XASSERT(num_dups_remaining == 0, "Number of duplicates left = %" PRId64 "\n", num_dups_remaining);
             totnpart += num_written;
