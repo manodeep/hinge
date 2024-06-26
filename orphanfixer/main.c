@@ -20,6 +20,7 @@ April, 2012:  Complete with a parameter file for the upcoming public release.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/resource.h> //for <get/set>rlimit class of functions
 
 #include "fillprogenitors.h"
 #include "hinge.h"
@@ -61,6 +62,15 @@ int main(int argc, char **argv)
     time_t t_codestart, t_codeend, t_sectionstart, t_sectionend, t_bigsectionstart;
 
     t_codestart = time(NULL);
+
+    struct rlimit rlim;
+    getrlimit(RLIMIT_AS, &rlim);
+    fprintf(stderr, "RLIMIT_AS: soft = %ld, hard = %ld\n", rlim.rlim_cur, rlim.rlim_max);
+    rlim.rlim_cur = rlim.rlim_max;
+    setrlimit(RLIMIT_AS, &rlim);
+
+    getrlimit(RLIMIT_AS, &rlim);
+    fprintf(stderr, "RLIMIT_AS [after setting to max.]: soft = %ld, hard = %ld\n", rlim.rlim_cur, rlim.rlim_max);
 
     /* Check compilation options */
 #if ((defined(WMAP1) + defined(WMAP3) + defined(WMAP5)) > 1)
