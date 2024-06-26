@@ -14,6 +14,7 @@
             fprintf(stderr, "Error in file: %s\tfunc: %s\tline: %d with expression `" #EXP "'\n", __FILE__,            \
                     __FUNCTION__, __LINE__);                                                                           \
             fprintf(stderr, __VA_ARGS__);                                                                              \
+            perror("System error-msg");                                                                                \
             exit(EXIT_FAILURE);                                                                                        \
         }                                                                                                              \
     } while (0)
