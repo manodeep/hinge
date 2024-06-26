@@ -429,7 +429,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
             len -= nbytes_written;                                                                                     \
         }                                                                                                              \
         XASSERT(len == 0, "Error: len = %" PRId64 "\n", len);                                                          \
-        fprintf(stderr,"In macro: Wrote %zu bytes\n", len);                                                            \
+        fprintf(stderr, "In macro: Wrote %zu bytes\n", len);                                                           \
     }
 
     size_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
