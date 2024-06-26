@@ -37,7 +37,12 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
 
     if (params->LOAD_UNIQUE_PARTICLES)
     {
+        fprintf(stderr,"Calling load_unique_particles\n");
         return load_unique_particles(params, snapnum, group);
+    }
+    else
+    {
+        fprintf(stderr,"Not calling load_unique_particles. params->load_unique_particles = %d\n", params->LOAD_UNIQUE_PARTICLES);
     }
 
     char catalogue_fname[MAXLEN];
@@ -461,6 +466,7 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
                 params->GROUP_BASE, REDSHIFT[snapnum]);
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_allprops_z%0.3f.bin", params->OUTPUT_DIR,
                 params->GROUP_BASE, REDSHIFT[snapnum]);
+    fprintf(stderr, "Loading unique particles (catalog = '%s', particles = '%s')...\n", catalog_fname, unique_fname);
 
     time_t t0 = time(NULL);
     FILE *fp = NULL;
@@ -546,6 +552,7 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     print_time(t0, t1, "Reading and assigning fields (from unique particle files)");
     fclose(fp_cat);
     fclose(fp);
+    fprintf(stderr, "Loading unique particles (catalog = '%s', particles = '%s')...done\n", catalog_fname, unique_fname);
 
     return;
 
