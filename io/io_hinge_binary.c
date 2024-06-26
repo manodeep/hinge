@@ -396,9 +396,9 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
                     ". Number of duplicates = %" PRId64 "\n",
                     i, num_written, thisgroup->N, num_dups);
             XASSERT(num_dups_remaining == 0, "Number of duplicates left = %" PRId64 "\n", num_dups_remaining);
-            totnpart += num_written;
         }
         fwrite(thisgroup, sizeof_group_data, 1, fp_cat);
+        totnpart += thisgroup->N;
     }
     fclose(fp_cat);
 
