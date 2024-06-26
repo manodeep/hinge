@@ -411,17 +411,17 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     write(fout, &nhalos, sizeof(nhalos));
     write(fout, &totnpart, sizeof(totnpart));
 
-#define USE_SENDFILE_TO_WRITE_PROPS(fd_out, fd_in, ptr_start_offset, len)               \
-    {                                                                                   \
-        while(len > 0)                                                                  \
-        {                                                                               \
-            ssize_t nbytes_written = sendfile(fd_out, fd_in, ptr_start_offset, len);    \
-            XASSERT(nbytes_written >= 0, "Error writing to file %s\n", unique_fname);   \
-            len -= nbytes_written;                                                      \
-        }                                                                               \
+#define USE_SENDFILE_TO_WRITE_PROPS(fd_out, fd_in, ptr_start_offset, len)                                              \
+    {                                                                                                                  \
+        while (len > 0)                                                                                                \
+        {                                                                                                              \
+            ssize_t nbytes_written = sendfile(fd_out, fd_in, ptr_start_offset, len);                                   \
+            XASSERT(nbytes_written >= 0, "Error writing to file %s\n", unique_fname);                                  \
+            len -= nbytes_written;                                                                                     \
+        }                                                                                                              \
     }
 
-    off_t start_offset = sizeof(int64);//to skip over numpart (of type int64) at the start of each file
+    off_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
     fseek(fp_ids, start_offset, SEEK_SET);
     off_t len = totnpart * sizeof(group->id[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), &start_offset, len);
