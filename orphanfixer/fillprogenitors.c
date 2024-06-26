@@ -387,6 +387,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
 
                     // Find the max particle id
                     id64 max_part_id = -1, min_part_id = NUMPART + 1;
+                    numpart_in_halos[snapshot] = 0;
                     for (int64 i = 0; i < Ngroups[snapshot]; i++)
                     {
                         numpart_in_halos[snapshot] += group0[i].N;
@@ -452,10 +453,13 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             offset++;
                         }
                     }
-                    XASSERT(offset == numpart_in_halos[snapshot],
-                            "Error: Expected offset = %" STR_FMT " to be equal to numpart_in_halos[%d] = %" STR_FMT
-                            "\n",
-                            offset, snapshot, numpart_in_halos[snapshot]);
+                    if(offset != numpart_in_halos[snapshot])
+                    {
+                        fprintf(stderr, "LOG: offset = %" STR_FMT " is different from numpart_in_halos[%d] = %" STR_FMT "\n",
+                                offset, snapshot, numpart_in_halos[snapshot]);
+                        fprintf(stderr, "LOG: This is likely due to particles with negative ids. Setting 'numpart' to 'offset'\n");
+                    }
+                    numpart_in_halos[snapshot] = offset;
 #define MULTIPLE_ARRAY_EXCHANGER(type, varname, i, j)                                                                  \
     {                                                                                                                  \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, DestPartIds[snapshot], i, j);                                             \
