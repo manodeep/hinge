@@ -65,12 +65,12 @@ int main(int argc, char **argv)
 
     struct rlimit rlim;
     getrlimit(RLIMIT_AS, &rlim);
-    fprintf(stderr, "RLIMIT_AS: soft = %ld, hard = %ld\n", rlim.rlim_cur, rlim.rlim_max);
+    fprintf(stderr, "RLIMIT_AS: soft = %llu, hard = %llu\n", (unsigned long long) rlim.rlim_cur, (unsigned long long) rlim.rlim_max);
     rlim.rlim_cur = rlim.rlim_max = RLIM_INFINITY;
     setrlimit(RLIMIT_AS, &rlim);
 
     getrlimit(RLIMIT_AS, &rlim);
-    fprintf(stderr, "RLIMIT_AS [after setting to infinity]: soft = %ld, hard = %ld\n", rlim.rlim_cur, rlim.rlim_max);
+    fprintf(stderr, "RLIMIT_AS [after setting to infinity]: soft = %llu, hard = %llu\n", (unsigned long long) rlim.rlim_cur, (unsigned long long) rlim.rlim_max);
 
     /* Check compilation options */
 #if ((defined(WMAP1) + defined(WMAP3) + defined(WMAP5)) > 1)
