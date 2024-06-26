@@ -305,28 +305,28 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     char unique_fname[MAXLEN];
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_partids_z%0.3f.bin", params->OUTPUT_DIR,
                 params->GROUP_BASE, REDSHIFT[snapnum]);
-    FILE *fp_ids = my_fopen(unique_fname, "w");
+    FILE *fp_ids = my_fopen(unique_fname, "rw");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_ids);
 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_xpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
                 REDSHIFT[snapnum]);
-    FILE *fp_xpos = my_fopen(unique_fname, "w");
+    FILE *fp_xpos = my_fopen(unique_fname, "w+");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_xpos);
 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_ypos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
                 REDSHIFT[snapnum]);
-    FILE *fp_ypos = my_fopen(unique_fname, "w");
+    FILE *fp_ypos = my_fopen(unique_fname, "w+");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_ypos);
 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_zpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
                 REDSHIFT[snapnum]);
-    FILE *fp_zpos = my_fopen(unique_fname, "w");
+    FILE *fp_zpos = my_fopen(unique_fname, "w+");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_zpos);
 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_halocat_z%0.3f.bin", params->OUTPUT_DIR,
                 params->GROUP_BASE, REDSHIFT[snapnum]);
     const size_t sizeof_group_data = sizeof(struct group_data);
-    FILE *fp_cat = my_fopen(unique_fname, "w");
+    FILE *fp_cat = my_fopen(unique_fname, "w+");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_cat);
     fwrite(&sizeof_group_data, sizeof(sizeof_group_data), 1, fp_cat);
     int64 totnpart = 0;
