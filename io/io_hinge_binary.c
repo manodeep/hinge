@@ -305,7 +305,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     char unique_fname[MAXLEN];
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_partids_z%0.3f.bin", params->OUTPUT_DIR,
                 params->GROUP_BASE, REDSHIFT[snapnum]);
-    FILE *fp_ids = my_fopen(unique_fname, "rw");
+    FILE *fp_ids = my_fopen(unique_fname, "w+");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_ids);
 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_xpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
