@@ -550,7 +550,8 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     return;
 
 error:
-    fprintf(stderr,"In %s> Encountered some error while reading `%s' or `%s'. Calling `loadgroups' again\n", __FUNCTION__, catalog_fname, unique_fname);
+    fprintf(stderr, "In %s> Encountered some error while reading `%s' or `%s'. Calling `loadgroups' again\n",
+            __FUNCTION__, catalog_fname, unique_fname);
     if (fp_cat != NULL)
         fclose(fp_cat);
     if (fp != NULL)
