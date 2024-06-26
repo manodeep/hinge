@@ -309,7 +309,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
                            const int64 nhalos)
 {
     char unique_fname[MAXLEN];
-    fprintf(stderr, "Saving unique particles ... nhalos = %"PRId64"\n", nhalos);
+    fprintf(stderr, "Saving unique particles ... nhalos = %" PRId64 "\n", nhalos);
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_partids_z%0.3f.bin", params->OUTPUT_DIR,
                 params->GROUP_BASE, REDSHIFT[snapnum]);
     FILE *fp_ids = my_fopen(unique_fname, "w+");
@@ -402,7 +402,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
         fwrite(thisgroup, sizeof_group_data, 1, fp_cat);
         totnpart += thisgroup->N;
     }
-    fprintf(stderr,"In %s> totnpart = %"PRId64" totnpart_all = %"PRId64"\n", __FUNCTION__, totnpart, totnpart_all);
+    fprintf(stderr, "In %s> totnpart = %" PRId64 " totnpart_all = %" PRId64 "\n", __FUNCTION__, totnpart, totnpart_all);
     fclose(fp_cat);
 
     fflush(fp_ids);
