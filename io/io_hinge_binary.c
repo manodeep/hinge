@@ -443,25 +443,21 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     fprintf(stderr, "Requesting macro to write %zu bytes (%" PRId64 " particle ids. each of size %zu)\n", len, totnpart,
             sizeof(group->id[0]));
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), len);
-    XASSERT(feof(fp_ids), "Error: fp_ids not at EOF\n");
 
     len = totnpart * sizeof(group->x[0]);
     start_offset = sizeof(int64);
     fseek(fp_xpos, start_offset, SEEK_SET);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_xpos), len);
-    XASSERT(feof(fp_xpos), "Error: fp_xpos not at EOF\n");
 
     len = totnpart * sizeof(group->y[0]);
     start_offset = sizeof(int64);
     fseek(fp_ypos, start_offset, SEEK_SET);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ypos), len);
-    XASSERT(feof(fp_ypos), "Error: fp_ypos not at EOF\n");
 
     start_offset = sizeof(int64);
     fseek(fp_zpos, start_offset, SEEK_SET);
     len = totnpart * sizeof(group->z[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), len);
-    XASSERT(feof(fp_zpos), "Error: fp_zpos not at EOF\n");
 
     close(fout);
     fclose(fp_ids);
