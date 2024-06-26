@@ -10,8 +10,8 @@
 #ifdef __linux__
 #include <sys/sendfile.h> //for sendfile
 #else
-#include <sys/types.h> //for sendfile on OSX
 #include <sys/socket.h>
+#include <sys/types.h> //for sendfile on OSX
 #include <sys/uio.h>
 #endif
 
@@ -22,9 +22,9 @@
 #include "progressbar.h"
 #include "utils.h"
 
-void save_unique_particles(const struct params_data *params, const int snapnum, const struct group_data *group, const int64 nhalos);
+void save_unique_particles(const struct params_data *params, const int snapnum, const struct group_data *group,
+                           const int64 nhalos);
 void load_unique_particles(struct params_data *params, const int snapnum, struct group_data *group);
-
 
 int64 returnNhalo_hinge_binary(const struct params_data *params, const int snapnum, const int fof_only)
 {
@@ -35,7 +35,7 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
 {
     XASSERT(group != NULL, "group is NULL\n");
 
-    if(params->LOAD_UNIQUE_PARTICLES)
+    if (params->LOAD_UNIQUE_PARTICLES)
     {
         return load_unique_particles(params, snapnum, group);
     }
@@ -288,48 +288,52 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
 
     free_hinge_halocat(halocat);
 
-    if(params->SAVE_UNIQUE_PARTICLES)
+    if (params->SAVE_UNIQUE_PARTICLES)
     {
         fprintf(stderr, "Saving unique particles ...\n");
         t0 = time(NULL);
         save_unique_particles(params, snapnum, group, nhalos);
         t1 = time(NULL);
-        fprintf(stderr, "Saving unique particles ...done. Saved %"STR_FMT" halos\n", nhalos);
+        fprintf(stderr, "Saving unique particles ...done. Saved %" STR_FMT " halos\n", nhalos);
         print_time(t0, t1, "Saving unique particles");
     }
-
 }
 
-void save_unique_particles(const struct params_data *params, const int snapnum, const struct group_data *group, const int64 nhalos)
+void save_unique_particles(const struct params_data *params, const int snapnum, const struct group_data *group,
+                           const int64 nhalos)
 {
     char unique_fname[MAXLEN];
-    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_partids_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
+    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_partids_z%0.3f.bin", params->OUTPUT_DIR,
+                params->GROUP_BASE, REDSHIFT[snapnum]);
     FILE *fp_ids = my_fopen(unique_fname, "w");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_ids);
 
-    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_xpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
+    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_xpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
+                REDSHIFT[snapnum]);
     FILE *fp_xpos = my_fopen(unique_fname, "w");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_xpos);
 
-    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_ypos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
+    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_ypos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
+                REDSHIFT[snapnum]);
     FILE *fp_ypos = my_fopen(unique_fname, "w");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_ypos);
 
-    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_zpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
+    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_zpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
+                REDSHIFT[snapnum]);
     FILE *fp_zpos = my_fopen(unique_fname, "w");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_zpos);
 
-
-    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_halocat_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
+    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_halocat_z%0.3f.bin", params->OUTPUT_DIR,
+                params->GROUP_BASE, REDSHIFT[snapnum]);
     const size_t sizeof_group_data = sizeof(struct group_data);
     FILE *fp_cat = my_fopen(unique_fname, "w");
     fwrite(&nhalos, sizeof(nhalos), 1, fp_cat);
     fwrite(&sizeof_group_data, sizeof(sizeof_group_data), 1, fp_cat);
     int64 totnpart = 0;
-    for(int64 i=0;i<nhalos;i++)
+    for (int64 i = 0; i < nhalos; i++)
     {
         struct group_data *thisgroup = &group[i];
-        if(thisgroup->haloID < 0)
+        if (thisgroup->haloID < 0)
         {
             /* While it may be tempting to do 'nhalos--' here, doing so
             would mean that we would to refix *all* the fofnum/hostnum etc, i.e., anything
@@ -339,11 +343,11 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
             continue;
         }
         int64 num_dups = 0;
-        for(int64 j=0;j<thisgroup->N;j++)
+        for (int64 j = 0; j < thisgroup->N; j++)
         {
             num_dups += thisgroup->id[j] < 0 ? 1 : 0;
         }
-        if(num_dups == 0 )
+        if (num_dups == 0)
         {
             fwrite(thisgroup->id, sizeof(*thisgroup->id), thisgroup->N, fp_ids);
             fwrite(thisgroup->x, sizeof(*thisgroup->x), thisgroup->N, fp_xpos);
@@ -354,20 +358,20 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
         {
             thisgroup->N -= num_dups;
             int64 num_written = 0;
-            for(int64 j=0;j<thisgroup->N;j++)
+            for (int64 j = 0; j < thisgroup->N; j++)
             {
-                if(thisgroup->id[j] < 0)
+                if (thisgroup->id[j] < 0)
                 {
                     num_dups--;
-                    if(num_dups == 0 && j < (thisgroup->N-1))
+                    if (num_dups == 0 && j < (thisgroup->N - 1))
                     {
                         const int64 num_left = thisgroup->N - 1 - j;
-                        if(num_left > 0)
+                        if (num_left > 0)
                         {
-                            fwrite(&thisgroup->id[j+1], sizeof(*thisgroup->id), num_left, fp_ids);
-                            fwrite(&thisgroup->x[j+1], sizeof(*thisgroup->x), num_left, fp_xpos);
-                            fwrite(&thisgroup->y[j+1], sizeof(*thisgroup->y), num_left, fp_ypos);
-                            fwrite(&thisgroup->z[j+1], sizeof(*thisgroup->z), num_left, fp_zpos);
+                            fwrite(&thisgroup->id[j + 1], sizeof(*thisgroup->id), num_left, fp_ids);
+                            fwrite(&thisgroup->x[j + 1], sizeof(*thisgroup->x), num_left, fp_xpos);
+                            fwrite(&thisgroup->y[j + 1], sizeof(*thisgroup->y), num_left, fp_ypos);
+                            fwrite(&thisgroup->z[j + 1], sizeof(*thisgroup->z), num_left, fp_zpos);
                             num_written += num_left;
                         }
                         break;
@@ -381,7 +385,8 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
                 fwrite(&thisgroup->z[j], sizeof(thisgroup->z[j]), 1, fp_zpos);
                 num_written++;
             }
-            XASSERT(num_written == thisgroup->N, "Number of particles written = %" PRId64 " != %" PRId64 "\n", num_written, thisgroup->N);
+            XASSERT(num_written == thisgroup->N, "Number of particles written = %" PRId64 " != %" PRId64 "\n",
+                    num_written, thisgroup->N);
             XASSERT(num_dups == 0, "Number of duplicates left = %" PRId64 "\n", num_dups);
             totnpart += num_written;
         }
@@ -395,9 +400,10 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     fflush(fp_zpos);
 
     /* concat all the files together */
-    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_allprops_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
+    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_allprops_z%0.3f.bin", params->OUTPUT_DIR,
+                params->GROUP_BASE, REDSHIFT[snapnum]);
     int fout = open(unique_fname, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    if(fout < 0)
+    if (fout < 0)
     {
         fprintf(stderr, "Could not open file %s for writing\n", unique_fname);
         exit(EXIT_FAILURE);
@@ -405,18 +411,18 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     write(fout, &nhalos, sizeof(nhalos));
     write(fout, &totnpart, sizeof(totnpart));
 
-#define USE_SENDFILE_TO_WRITE_PROPS(fd_out, fd_in, fd_start_offset, len)    \
-    {                                                                       \
-        while(len > 0)                                                      \
-        {                                                                   \
-            ssize_t nbytes_written = sendfile(fd_out, fd_in, fd_start_offset, len);        \
-            XASSERT(nbytes_written >= 0, "Error writing to file %s\n", unique_fname);   \
-            len -= nbytes_written;                                          \
-            start_offset += nbytes_written;                                 \
-        }                                                                   \
+#define USE_SENDFILE_TO_WRITE_PROPS(fd_out, fd_in, fd_start_offset, len)                                               \
+    {                                                                                                                  \
+        while (len > 0)                                                                                                \
+        {                                                                                                              \
+            ssize_t nbytes_written = sendfile(fd_out, fd_in, fd_start_offset, len);                                    \
+            XASSERT(nbytes_written >= 0, "Error writing to file %s\n", unique_fname);                                  \
+            len -= nbytes_written;                                                                                     \
+            start_offset += nbytes_written;                                                                            \
+        }                                                                                                              \
     }
 
-    off_t start_offset = sizeof(int64);//to skip over numpart (of type int64) at the start of each file
+    off_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
 
     off_t len = totnpart * sizeof(group->id[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), start_offset, len);
@@ -439,57 +445,67 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     return;
 }
 
-
 void load_unique_particles(struct params_data *params, const int snapnum, struct group_data *group)
 {
     char catalog_fname[MAXLEN];
     char unique_fname[MAXLEN];
-    my_snprintf(catalog_fname, MAXLEN, "%s/%s_unique_particles_halocat_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
-    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_allprops_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE, REDSHIFT[snapnum]);
+    my_snprintf(catalog_fname, MAXLEN, "%s/%s_unique_particles_halocat_z%0.3f.bin", params->OUTPUT_DIR,
+                params->GROUP_BASE, REDSHIFT[snapnum]);
+    my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_allprops_z%0.3f.bin", params->OUTPUT_DIR,
+                params->GROUP_BASE, REDSHIFT[snapnum]);
 
     time_t t0 = time(NULL);
     FILE *fp = NULL;
     FILE *fp_cat = fopen(catalog_fname, "rb");
-    if(fp_cat == NULL) goto error;
+    if (fp_cat == NULL)
+        goto error;
 
     fp = fopen(unique_fname, "rb");
-    if(fp == NULL) goto error;
+    if (fp == NULL)
+        goto error;
 
     int64 nhalos;
     size_t status = fread(&nhalos, sizeof(nhalos), 1, fp_cat);
-    if(status != 1) goto error;
+    if (status != 1)
+        goto error;
 
     size_t sizeof_group_data;
     status = fread(&sizeof_group_data, sizeof(sizeof_group_data), 1, fp_cat);
-    if(status != 1) goto error;
+    if (status != 1)
+        goto error;
 
-    if(sizeof_group_data != sizeof(struct group_data))
+    if (sizeof_group_data != sizeof(struct group_data))
     {
-        fprintf(stderr,"Warning: sizeof_group_data = %zu != %zu\n", sizeof_group_data, sizeof(struct group_data));
+        fprintf(stderr, "Warning: sizeof_group_data = %zu != %zu\n", sizeof_group_data, sizeof(struct group_data));
         fprintf(stderr, "Calling loadgroups again with `save_unique_particles`\n");
         params->SAVE_UNIQUE_PARTICLES = 1;
         goto error;
     }
 
-    //read the group catalog
+    // read the group catalog
     status = fread(group, sizeof_group_data, nhalos, fp_cat);
-    if(status != nhalos) goto error;
+    if (status != nhalos)
+        goto error;
 
-    //check nhalos from the unique particles properties file
+    // check nhalos from the unique particles properties file
     int64 nhalos_check;
     status = fread(&nhalos_check, sizeof(nhalos_check), 1, fp);
-    if(status != 1) goto error;
-    XASSERT(nhalos == nhalos_check, "nhalos (from file '%s')= %" PRId64 " should be equal to nhalos %" PRId64 " (from file '%s')\n", catalog_fname, nhalos, nhalos_check, unique_fname);
+    if (status != 1)
+        goto error;
+    XASSERT(nhalos == nhalos_check,
+            "nhalos (from file '%s')= %" PRId64 " should be equal to nhalos %" PRId64 " (from file '%s')\n",
+            catalog_fname, nhalos, nhalos_check, unique_fname);
 
     int64 totnpart;
     status = fread(&totnpart, sizeof(totnpart), 1, fp);
-    if(status != 1) goto error;
+    if (status != 1)
+        goto error;
 
     int interrupted = 0;
     fprintf(stderr, "Reading and assigning field (from unique particles file): 'partid', 'xpos', 'ypos', 'zpos' ...\n");
     init_my_progressbar(totnpart, &interrupted);
     int64 numpart_read = 0;
-    for(int64 i=0;i<nhalos;i++)
+    for (int64 i = 0; i < nhalos; i++)
     {
         my_progressbar(numpart_read, &interrupted);
         struct group_data *thisgroup = &group[i];
@@ -498,21 +514,26 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
         thisgroup->y = my_malloc(sizeof(*thisgroup->y), thisgroup->N);
         thisgroup->z = my_malloc(sizeof(*thisgroup->z), thisgroup->N);
         status = fread(thisgroup->id, sizeof(*thisgroup->id), thisgroup->N, fp);
-        if(status != thisgroup->N) goto error;
+        if (status != thisgroup->N)
+            goto error;
 
         status = fread(thisgroup->x, sizeof(*thisgroup->x), thisgroup->N, fp);
-        if(status != thisgroup->N) goto error;
+        if (status != thisgroup->N)
+            goto error;
 
         status = fread(thisgroup->y, sizeof(*thisgroup->y), thisgroup->N, fp);
-        if(status != thisgroup->N) goto error;
+        if (status != thisgroup->N)
+            goto error;
 
         status = fread(thisgroup->z, sizeof(*thisgroup->z), thisgroup->N, fp);
-        if(status != thisgroup->N) goto error;
+        if (status != thisgroup->N)
+            goto error;
 
         numpart_read += thisgroup->N;
     }
     finish_myprogressbar(&interrupted);
-    fprintf(stderr, "Reading and assigning field (from unique particles file): 'partid', 'xpos', 'ypos', 'zpos' ...done\n");
+    fprintf(stderr,
+            "Reading and assigning field (from unique particles file): 'partid', 'xpos', 'ypos', 'zpos' ...done\n");
     time_t t1 = time(NULL);
     print_time(t0, t1, "Reading and assigning fields (from unique particle files)");
     fclose(fp_cat);
@@ -521,8 +542,11 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     return;
 
 error:
-    if(fp_cat != NULL) fclose(fp_cat);
-    if(fp != NULL) fclose(fp);
-    params->LOAD_UNIQUE_PARTICLES = 0;/* This is critical to "unset". Otherwise, infinite loop will occur loadgroups<->load_unique */
+    if (fp_cat != NULL)
+        fclose(fp_cat);
+    if (fp != NULL)
+        fclose(fp);
+    params->LOAD_UNIQUE_PARTICLES =
+        0; /* This is critical to "unset". Otherwise, infinite loop will occur loadgroups<->load_unique */
     return loadgroups_hinge_binary(params, snapnum, group);
 }

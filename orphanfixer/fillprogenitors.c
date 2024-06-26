@@ -453,7 +453,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                         }
                     }
                     XASSERT(offset == numpart_in_halos[snapshot],
-                            "Error: Expected offset = %" STR_FMT " to be equal to numpart_in_halos[%d] = %" STR_FMT "\n",
+                            "Error: Expected offset = %" STR_FMT " to be equal to numpart_in_halos[%d] = %" STR_FMT
+                            "\n",
                             offset, snapshot, numpart_in_halos[snapshot]);
 #define MULTIPLE_ARRAY_EXCHANGER(type, varname, i, j)                                                                  \
     {                                                                                                                  \
