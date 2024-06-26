@@ -453,11 +453,14 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             offset++;
                         }
                     }
-                    if(offset != numpart_in_halos[snapshot])
+                    if (offset != numpart_in_halos[snapshot])
                     {
-                        fprintf(stderr, "LOG: offset = %" STR_FMT " is different from numpart_in_halos[%d] = %" STR_FMT "\n",
+                        fprintf(stderr,
+                                "LOG: offset = %" STR_FMT " is different from numpart_in_halos[%d] = %" STR_FMT "\n",
                                 offset, snapshot, numpart_in_halos[snapshot]);
-                        fprintf(stderr, "LOG: This is likely due to particles with negative ids. Setting 'numpart' to 'offset'\n");
+                        fprintf(
+                            stderr,
+                            "LOG: This is likely due to particles with negative ids. Setting 'numpart' to 'offset'\n");
                     }
                     numpart_in_halos[snapshot] = offset;
 #define MULTIPLE_ARRAY_EXCHANGER(type, varname, i, j)                                                                  \
