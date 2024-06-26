@@ -267,6 +267,14 @@ int main(int argc, char **argv)
         else
         {
             fclose(fp);
+            int nlines = getnumlines(outfname, '#');
+            if(nlines == 0)
+            {
+                fprintf(stderr,
+                        "Error: File `%s' is empty. Resetting the parameter 'LOAD_FOUND_PROGENITORS'\n",
+                        outfname);
+                PARAMS.LOAD_FOUND_PROGENITORS = 0;
+            }
         }
     }
 
