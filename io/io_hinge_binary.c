@@ -413,14 +413,15 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     write(fout, &nhalos, sizeof(nhalos));
     write(fout, &totnpart, sizeof(totnpart));
 
-#define USE_SENDFILE_TO_WRITE_PROPS(fd_out, fd_in, len)                                             \
-    {                                                                                               \
-        while (len > 0)                                                                             \
-        {                                                                                           \
-            ssize_t nbytes_written = sendfile(fd_out, fd_in, NULL, len);                            \
-            XASSERT(nbytes_written >= 0, "Error writing to file %s. nbytes_written = %zd\n", unique_fname, nbytes_written);                \
-            len -= nbytes_written;                                                                  \
-        }                                                                                           \
+#define USE_SENDFILE_TO_WRITE_PROPS(fd_out, fd_in, len)                                                                \
+    {                                                                                                                  \
+        while (len > 0)                                                                                                \
+        {                                                                                                              \
+            ssize_t nbytes_written = sendfile(fd_out, fd_in, NULL, len);                                               \
+            XASSERT(nbytes_written >= 0, "Error writing to file %s. nbytes_written = %zd\n", unique_fname,             \
+                    nbytes_written);                                                                                   \
+            len -= nbytes_written;                                                                                     \
+        }                                                                                                              \
     }
 
     off_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
