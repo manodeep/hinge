@@ -1,7 +1,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-// #define __USE_LARGEFILE64
+#define _FILE_OFFSET_BITS 64
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -444,29 +444,29 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     fprintf(stderr, "Requesting macro to write %zu bytes (%" PRId64 " particle ids. each of size %zu)\n", len, totnpart,
             sizeof(group->id[0]));
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), len);
-    XASSERT(ftello(fp_ids) == final_bytes_offset, "Error: ftello(fp_ids) = %lld != %lld\n", ftello(fp_ids),
-            final_bytes_offset);
+    XASSERT(ftello(fp_ids) == final_bytes_offset, "Error: ftello(fp_ids) = %lld != %lld\n",(long long) ftello(fp_ids),
+            (long long) final_bytes_offset);
 
     len = totnpart * sizeof(group->x[0]);
     start_offset = sizeof(int64);
     fseek(fp_xpos, start_offset, SEEK_SET);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_xpos), len);
-    XASSERT(ftello(fp_xpos) == final_bytes_offset, "Error: ftello(fp_xpos) = %lld != %lld\n", ftello(fp_xpos),
-            final_bytes_offset);
+    XASSERT(ftello(fp_xpos) == final_bytes_offset, "Error: ftello(fp_xpos) = %lld != %lld\n", (long long) ftello(fp_xpos),
+            (long long) final_bytes_offset);
 
     len = totnpart * sizeof(group->y[0]);
     start_offset = sizeof(int64);
     fseek(fp_ypos, start_offset, SEEK_SET);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ypos), len);
-    XASSERT(ftello(fp_ypos) == final_bytes_offset, "Error: ftello(fp_ypos) = %lld != %lld\n", ftello(fp_ypos),
-            final_bytes_offset);
+    XASSERT(ftello(fp_ypos) == final_bytes_offset, "Error: ftello(fp_ypos) = %lld != %lld\n", (long long) ftello(fp_ypos),
+            (long long) final_bytes_offset);
 
     start_offset = sizeof(int64);
     fseek(fp_zpos, start_offset, SEEK_SET);
     len = totnpart * sizeof(group->z[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), len);
-    XASSERT(ftello(fp_zpos) == final_bytes_offset, "Error: ftello(fp_zpos) = %lld != %lld\n", ftello(fp_zpos),
-            final_bytes_offset);
+    XASSERT(ftello(fp_zpos) == final_bytes_offset, "Error: ftello(fp_zpos) = %lld != %lld\n", (long long) ftello(fp_zpos),
+            (long long) final_bytes_offset);
 
     close(fout);
     fclose(fp_ids);
