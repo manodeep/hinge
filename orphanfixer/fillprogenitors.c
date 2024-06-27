@@ -22,7 +22,6 @@ of Ncommon/rank [depending on match_flag]. ]
 #define DESTGROUP_TYPE uint32_t
 #endif
 
-
 /* This is to match the ids of all particles in halos that
 do not have a progenitor and return group numbers for all those
 particles that are found in some previous snapshot.
@@ -34,8 +33,8 @@ particles that are found in some previous snapshot.
 //                              const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId);
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
                              const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart,
-                             const DESTGROUP_TYPE *DestGroupIds, const DESTGROUP_TYPE *DestGroupLoc, const id64 DestMaxPartId,
-                             const id64 DestMinPartId);
+                             const DESTGROUP_TYPE *DestGroupIds, const DESTGROUP_TYPE *DestGroupLoc,
+                             const id64 DestMaxPartId, const id64 DestMinPartId);
 
 int compare_id64(const void *a, const void *b);
 
@@ -163,8 +162,8 @@ int compare_id64(const void *a, const void *b)
 
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
                              const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart,
-                             const DESTGROUP_TYPE *DestGroupIds, const DESTGROUP_TYPE *DestGroupLoc, const id64 DestMaxPartId,
-                             const id64 DestMinPartId)
+                             const DESTGROUP_TYPE *DestGroupIds, const DESTGROUP_TYPE *DestGroupLoc,
+                             const id64 DestMaxPartId, const id64 DestMinPartId)
 {
     double *DestRanks = NULL;
     int64 *DestNcommon = NULL;
@@ -459,8 +458,12 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                                     this_id, DestMaxPartId[snapshot]);
                             DestPartIds[snapshot][offset] = this_id;
 #ifndef USE_INT64_FOR_DEST_ARRAYS
-                            XASSERT(i < UINT32_MAX, "Error: Group number = %" STR_FMT " must be less than UINT32_MAX\n", i);
-                            XASSERT(j < UINT32_MAX, "Error: Particle index = %" STR_FMT " (within group = %"STR_FMT") must be less than UINT32_MAX\n", j, i);
+                            XASSERT(i < UINT32_MAX, "Error: Group number = %" STR_FMT " must be less than UINT32_MAX\n",
+                                    i);
+                            XASSERT(j < UINT32_MAX,
+                                    "Error: Particle index = %" STR_FMT " (within group = %" STR_FMT
+                                    ") must be less than UINT32_MAX\n",
+                                    j, i);
 #endif
                             DestGroupIds[snapshot][offset] = i;
                             DestGroupLoc[snapshot][offset] = j;
