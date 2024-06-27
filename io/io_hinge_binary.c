@@ -380,7 +380,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
 
         if (num_dups == 0)
         {
-            WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups, thisgroup, 0, thisgroup.N, thisgroup.N);
+            WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups, thisgroup, 0LL, thisgroup.N, thisgroup.N);
         }
         else
         {
