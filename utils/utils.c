@@ -569,7 +569,8 @@ int64 get_ncommon(struct group_data *prev, struct group_data *next)
 
     PrevMaxPartId++;
     fprintf(stderr, "Max particle ID in previous group = %lld\n", (long long)PrevMaxPartId);
-    int8_t *PrevAllPartIds = my_calloc(sizeof(*PrevAllPartIds), PrevMaxPartId); /* Note use of calloc instead of malloc */
+    int8_t *PrevAllPartIds =
+        my_calloc(sizeof(*PrevAllPartIds), PrevMaxPartId); /* Note use of calloc instead of malloc */
     for (int64 i = 0; i < prev->N; i++)
     {
         const id64 this_id = prev->id[i];
