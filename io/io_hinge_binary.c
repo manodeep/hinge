@@ -7,12 +7,12 @@
 
 #include <fcntl.h> //for open and close
 
-#ifdef __linux__
-#include <sys/sendfile.h> //for sendfile
-#else
-#include <sys/socket.h>
-#include <sys/types.h> //for sendfile on OSX
-#include <sys/uio.h>
+#if __APPLE__
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <sys/uio.h>
+#elif
+    #include <sys/sendfile.h>
 #endif
 
 #include "io_hinge_ascii.h"
@@ -440,32 +440,33 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     size_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
     fseek(fp_ids, start_offset, SEEK_SET);
     size_t len = totnpart * sizeof(group->id[0]);
+    off_t final_bytes_offset = start_offset + len;
     fprintf(stderr, "Requesting macro to write %zu bytes (%" PRId64 " particle ids. each of size %zu)\n", len, totnpart,
             sizeof(group->id[0]));
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), len);
-    XASSERT(ftell(fp_ids) == len + start_offset, "Error: ftell(fp_ids) = %ld != %zu\n", ftell(fp_ids),
-            len + start_offset);
+    XASSERT(ftello(fp_ids) == final_bytes_offset, "Error: ftello(fp_ids) = %lld != %lld\n", ftello(fp_ids),
+            final_bytes_offset);
 
     len = totnpart * sizeof(group->x[0]);
     start_offset = sizeof(int64);
     fseek(fp_xpos, start_offset, SEEK_SET);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_xpos), len);
-    XASSERT(ftell(fp_xpos) == len + start_offset, "Error: ftell(fp_xpos) = %ld != %zu\n", ftell(fp_xpos),
-            len + start_offset);
+    XASSERT(ftello(fp_xpos) == final_bytes_offset, "Error: ftello(fp_xpos) = %lld != %lld\n", ftello(fp_xpos),
+            final_bytes_offset);
 
     len = totnpart * sizeof(group->y[0]);
     start_offset = sizeof(int64);
     fseek(fp_ypos, start_offset, SEEK_SET);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ypos), len);
-    XASSERT(ftell(fp_ypos) == len + start_offset, "Error: ftell(fp_ypos) = %ld != %zu\n", ftell(fp_ypos),
-            len + start_offset);
+    XASSERT(ftello(fp_ypos) == final_bytes_offset, "Error: ftello(fp_ypos) = %lld != %lld\n", ftello(fp_ypos),
+            final_bytes_offset);
 
     start_offset = sizeof(int64);
     fseek(fp_zpos, start_offset, SEEK_SET);
     len = totnpart * sizeof(group->z[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), len);
-    XASSERT(ftell(fp_zpos) == len + start_offset, "Error: ftell(fp_zpos) = %ld != %zu\n", ftell(fp_zpos),
-            len + start_offset);
+    XASSERT(ftello(fp_zpos) == final_bytes_offset, "Error: ftello(fp_zpos) = %lld != %lld\n", ftello(fp_zpos),
+            final_bytes_offset);
 
     close(fout);
     fclose(fp_ids);
@@ -514,7 +515,7 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
         goto error;
 
     int64 nhalos;
-    size_t status = fread(&nhalos, sizeof(nhalos), 1, fp_cat);
+    int64 status = fread(&nhalos, sizeof(nhalos), 1, fp_cat);
     if (status != 1)
         goto error;
 
