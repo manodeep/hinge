@@ -221,28 +221,28 @@ int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct gro
             number of particles located in all previous halos plus the number of particles within the
             originating halo - MS 18th June 2024)
         */
-        const int64 grp_index = DestGroupIds[index];
-        XASSERT(grp_index >= 0 && grp_index < destNgroups,
-                "Error: grp_index = %" STR_FMT " must be within the range [0, %" STR_FMT ")\n", grp_index, destNgroups);
-        DestNcommon[grp_index]++;
+        const int64 grp_num = DestGroupIds[index];
+        XASSERT(grp_num >= 0 && grp_num < destNgroups,
+                "Error: grp_num = %" STR_FMT " must be within the range [0, %" STR_FMT ")\n", grp_num, destNgroups);
+        DestNcommon[grp_num]++;
 
         if (flag == 1)
         {
             if (PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && i < PARAMS.MAX_RANK_LOC))
-                DestRanks[grp_index] += compute_rank(i); /* matching based on rank */
+                DestRanks[grp_num] += compute_rank(i); /* matching based on rank */
 
             if (PARAMS.MAX_RANK_LOC <= 0 || (PARAMS.MAX_RANK_LOC > 0 && DestGroupLoc[index] < PARAMS.MAX_RANK_LOC))
-                DestRanks[grp_index] += compute_rank(DestGroupLoc[index]);
+                DestRanks[grp_num] += compute_rank(DestGroupLoc[index]);
         }
         else
         {
-            DestRanks[grp_index] += 1.0; /* matching based on Ncommon */
+            DestRanks[grp_num] += 1.0; /* matching based on Ncommon */
         }
 
-        if (DestRanks[grp_index] > max_rank)
+        if (DestRanks[grp_num] > max_rank)
         {
-            max_rank = DestRanks[grp_index];
-            max_ranknum = grp_index;
+            max_rank = DestRanks[grp_num];
+            max_ranknum = grp_num;
         }
         // }
     }
