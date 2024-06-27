@@ -177,7 +177,7 @@ int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct gro
     double max_rank = 0.0;
 
 #ifdef INDEX_WITH_PARTID
-    (void) DestNumPart;
+    (void)DestNumPart;
 #endif
 
     XASSERT(destNgroups > 0, "There must be at least one group in the destination = %" STR_FMT "\n", destNgroups);

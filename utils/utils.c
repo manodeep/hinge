@@ -5,8 +5,9 @@
 #include "read_param.h"
 #include "sglib.h"
 
-static void remove_particle_from_group(const int64 groupnum1, const int64 groupnum2, const int64 part1, const int64 part2,
-                                       struct group_data *g, int64 *group_to_remove, int64 *part_to_remove);
+static void remove_particle_from_group(const int64 groupnum1, const int64 groupnum2, const int64 part1,
+                                       const int64 part2, struct group_data *g, int64 *group_to_remove,
+                                       int64 *part_to_remove);
 
 // A real wrapper to snprintf that will exit() if the allocated buffer length
 // was not sufficient. Usage is the same as snprintf
@@ -599,7 +600,8 @@ void remove_particle_from_group(const int64 groupnum1, const int64 groupnum2, co
     {
         fprintf(stderr, "ERROR: Found a duplicate particle in two halos that have the same fofID\n");
         fprintf(stderr, "fofid: %lld, groupnum1: %lld, groupnum2: %lld, Part1: %lld, Part2: %lld\n",
-                (long long)g[groupnum1].fofID, (long long)groupnum1, (long long)groupnum2, (long long)part1, (long long)part2);
+                (long long)g[groupnum1].fofID, (long long)groupnum1, (long long)groupnum2, (long long)part1,
+                (long long)part2);
         exit(EXIT_FAILURE);
     }
 
@@ -655,7 +657,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     max_id++;
 
 #ifdef INDEX_WITH_PARTID
-    int8_t *all_ids = my_calloc(sizeof(*all_ids), max_id);//must be a calloc
+    int8_t *all_ids = my_calloc(sizeof(*all_ids), max_id); // must be a calloc
     uint32_t *groupnum = my_malloc(sizeof(*groupnum), max_id);
     uint32_t *partindex = my_malloc(sizeof(*partindex), max_id);
 #else
@@ -698,8 +700,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             {
                 // fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
                 int64 group_to_remove, part_to_remove;
-                remove_particle_from_group(groupnum[id], i, partindex[id], j, g, &group_to_remove,
-                                           &part_to_remove);
+                remove_particle_from_group(groupnum[id], i, partindex[id], j, g, &group_to_remove, &part_to_remove);
                 // num_removed_per_group[group_to_remove]++;
 
                 // If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
