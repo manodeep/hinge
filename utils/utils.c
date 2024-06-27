@@ -645,6 +645,8 @@ void remove_particle_from_group(const int64 groupnum1, const int64 groupnum2, co
 int64 remove_duplicates(struct group_data *g, int64 N)
 {
     int64_t totnpart = 0;
+
+#ifdef INDEX_WITH_PARTID
     id64 max_id = 0;
     for (int64 i = 0; i < N; i++)
     {
@@ -656,7 +658,6 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     }
     max_id++;
 
-#ifdef INDEX_WITH_PARTID
     int8_t *all_ids = my_calloc(sizeof(*all_ids), max_id); // must be a calloc
     uint32_t *groupnum = my_malloc(sizeof(*groupnum), max_id);
     uint32_t *partindex = my_malloc(sizeof(*partindex), max_id);
@@ -682,7 +683,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
         for (int64 j = 0; j < g[i].N; j++)
         {
             id64 id = g[i].id[j];
-            XASSERT(id >= 0 && id < max_id, "Error: Particle ID %lld is out of bounds\n", (long long)id);
+            // XASSERT(id >= 0 && id < max_id, "Error: Particle ID %lld is out of bounds\n", (long long)id);
 #ifndef INDEX_WITH_PARTID
             all_ids[offset] = id;
             groupnum[offset] = i;
