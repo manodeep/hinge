@@ -438,7 +438,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
         fprintf(stderr, "In macro: Wrote %zu bytes\n", tot_nbytes_written);                                            \
     }
 
-    size_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
+    off_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
     size_t len = totnpart * sizeof(group->id[0]);
     fprintf(stderr, "Requesting macro to write %zu bytes (%" PRId64 " particle ids. each of size %zu)\n", len, totnpart,
             sizeof(group->id[0]));
