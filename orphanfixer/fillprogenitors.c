@@ -22,7 +22,6 @@ of Ncommon/rank [depending on match_flag]. ]
 #define DEST_PARTID_TYPE int64_t
 #endif
 
-
 #ifdef USE_INT64_FOR_DEST_ARRAYS
 #define DESTGROUP_TYPE int64
 #else
@@ -196,11 +195,11 @@ int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct gro
         DEST_PARTID_TYPE index = sourceIds[i];
         if (index >= DestMaxPartId || index < 0 || index < DestMinPartId)
             continue;
-        // #define compare_id64(a, b) ((a) < (b) ? -1 : (a) > (b))
+            // #define compare_id64(a, b) ((a) < (b) ? -1 : (a) > (b))
 
 #ifdef INDEX_WITH_PARTID
         DEST_PARTID_TYPE tmp_offset = DestPartIds[index];
-        if(tmp_offset < 0)
+        if (tmp_offset < 0)
             continue;
         XASSERT(tmp_offset >= 0 && tmp_offset < DestNumPart,
                 "Error: The particle offset = %" STR_ID_FMT " must be within the range [0, %" STR_ID_FMT ")\n",
@@ -457,7 +456,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                     group0 = allgroups[snapshot];
 #ifdef INDEX_WITH_PARTID
                     DestPartIds[snapshot] = my_malloc(sizeof(*DestPartIds[snapshot]), DestMaxPartId[snapshot]);
-                    for(int64 k=0; k < DestMaxPartId[snapshot]; k++)
+                    for (int64 k = 0; k < DestMaxPartId[snapshot]; k++)
                     {
                         DestPartIds[snapshot][k] = -1;
                     }
@@ -489,7 +488,6 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
 #else
                             DestPartIds[snapshot][offset] = this_id;
 #endif
-
 
 #ifndef USE_INT64_FOR_DEST_ARRAYS
                             XASSERT(i < UINT32_MAX, "Error: Group number = %" STR_FMT " must be less than UINT32_MAX\n",
@@ -531,7 +529,6 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                     time_t t1 = time(NULL);
                     print_time(t0, t1, "Quick sort in fillprogenitors");
 #endif
-
                 }
             }
 

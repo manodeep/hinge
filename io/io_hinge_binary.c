@@ -8,11 +8,11 @@
 #include <fcntl.h> //for open and close
 
 #if __APPLE__
-    #include <sys/types.h>
-    #include <sys/socket.h>
-    #include <sys/uio.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/uio.h>
 #elif
-    #include <sys/sendfile.h>
+#include <sys/sendfile.h>
 #endif
 
 #include "io_hinge_ascii.h"
