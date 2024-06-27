@@ -5,7 +5,7 @@
 #include "read_param.h"
 #include "sglib.h"
 
-static void remove_particle_from_group(const int64 group1, const int64 group2, const int64 part1, const int64 part2,
+static void remove_particle_from_group(const int64 groupnum1, const int64 groupnum2, const int64 part1, const int64 part2,
                                        struct group_data *g, int64 *group_to_remove, int64 *part_to_remove);
 
 // A real wrapper to snprintf that will exit() if the allocated buffer length
@@ -592,47 +592,47 @@ int64 get_ncommon(struct group_data *prev, struct group_data *next)
     return ncommon;
 }
 
-void remove_particle_from_group(const int64 group1, const int64 group2, const int64 part1, const int64 part2,
+void remove_particle_from_group(const int64 groupnum1, const int64 groupnum2, const int64 part1, const int64 part2,
                                 struct group_data *g, int64 *group_to_remove, int64 *part_to_remove)
 {
-    if (g[group1].fofID == g[group2].fofID)
+    if (g[groupnum1].fofID == g[groupnum2].fofID)
     {
         fprintf(stderr, "ERROR: Found a duplicate particle in two halos that have the same fofID\n");
-        fprintf(stderr, "fofid: %lld, Group1: %lld, Group2: %lld, Part1: %lld, Part2: %lld\n",
-                (long long)g[group1].fofID, (long long)group1, (long long)group2, (long long)part1, (long long)part2);
+        fprintf(stderr, "fofid: %lld, groupnum1: %lld, groupnum2: %lld, Part1: %lld, Part2: %lld\n",
+                (long long)g[groupnum1].fofID, (long long)groupnum1, (long long)groupnum2, (long long)part1, (long long)part2);
         exit(EXIT_FAILURE);
     }
 
-    if (g[group1].x == NULL || g[group1].y == NULL || g[group1].z == NULL || g[group2].x == NULL ||
-        g[group2].y == NULL || g[group2].z == NULL)
+    if (g[groupnum1].x == NULL || g[groupnum1].y == NULL || g[groupnum1].z == NULL || g[groupnum2].x == NULL ||
+        g[groupnum2].y == NULL || g[groupnum2].z == NULL)
     {
-        fprintf(stderr, "ERROR: Particle positions are not allocated for group %lld or %lld\n", (long long)group1,
-                (long long)group2);
+        fprintf(stderr, "ERROR: Particle positions are not allocated for group %lld or %lld\n", (long long)groupnum1,
+                (long long)groupnum2);
         exit(EXIT_FAILURE);
     }
 
-    if (g[group1].FOFHalo == g[group2].FOFHalo)
+    if (g[groupnum1].FOFHalo == g[groupnum2].FOFHalo)
     {
         // if the particles are located within two subhalos/FOF halo that are contained within the
         // same FOFhalo, then remove the particle from the halo with the larger number of particles (i.e.,
         // keep the particle in the halo with smaller N).
-        *group_to_remove = g[group1].N < g[group2].N ? group2 : group1;
-        *part_to_remove = g[group1].N < g[group2].N ? part2 : part1;
+        *group_to_remove = g[groupnum1].N < g[groupnum2].N ? groupnum2 : groupnum1;
+        *part_to_remove = g[groupnum1].N < g[groupnum2].N ? part2 : part1;
     }
     else
     {
-        const double dx1 = periodic(g[group1].x[part1] - g[group1].xcen);
-        const double dy1 = periodic(g[group1].y[part1] - g[group1].ycen);
-        const double dz1 = periodic(g[group1].z[part1] - g[group1].zcen);
+        const double dx1 = periodic(g[groupnum1].x[part1] - g[groupnum1].xcen);
+        const double dy1 = periodic(g[groupnum1].y[part1] - g[groupnum1].ycen);
+        const double dz1 = periodic(g[groupnum1].z[part1] - g[groupnum1].zcen);
         const double dist_from_cen1 = dx1 * dx1 + dy1 * dy1 + dz1 * dz1;
 
-        const double dx2 = periodic(g[group2].x[part2] - g[group2].xcen);
-        const double dy2 = periodic(g[group2].y[part2] - g[group2].ycen);
-        const double dz2 = periodic(g[group2].z[part2] - g[group2].zcen);
+        const double dx2 = periodic(g[groupnum2].x[part2] - g[groupnum2].xcen);
+        const double dy2 = periodic(g[groupnum2].y[part2] - g[groupnum2].ycen);
+        const double dz2 = periodic(g[groupnum2].z[part2] - g[groupnum2].zcen);
         const double dist_from_cen2 = dx2 * dx2 + dy2 * dy2 + dz2 * dz2;
 
         // Keep the particle in the halo with the smaller distance from the center
-        *group_to_remove = dist_from_cen1 < dist_from_cen2 ? group2 : group1;
+        *group_to_remove = dist_from_cen1 < dist_from_cen2 ? groupnum2 : groupnum1;
         *part_to_remove = dist_from_cen1 < dist_from_cen2 ? part2 : part1;
         const id64 id = g[*group_to_remove].id[*part_to_remove];
         g[*group_to_remove].id[*part_to_remove] = id < 0 ? id : -id; // Just make the sign negative
