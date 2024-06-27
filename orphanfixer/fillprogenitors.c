@@ -16,6 +16,13 @@ of Ncommon/rank [depending on match_flag]. ]
 #define MATCH_WITH_RANK 1
 #define MATCH_WITH_NCOMMON 0
 
+#ifdef INDEX_WITH_PARTID
+#define DEST_PARTID_TYPE id64
+#else
+#define DEST_PARTID_TYPE int64_t
+#endif
+
+
 #ifdef USE_INT64_FOR_DEST_ARRAYS
 #define DESTGROUP_TYPE int64
 #else
@@ -32,7 +39,7 @@ particles that are found in some previous snapshot.
 //                              const int flag, double *rank, id64 *DestPartIds, int64 *DestGroupIds,
 //                              const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId);
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
-                             const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart,
+                             const int flag, double *rank, const DEST_PARTID_TYPE *DestPartIds, const int64 DestNumPart,
                              const DESTGROUP_TYPE *DestGroupIds, const DESTGROUP_TYPE *DestGroupLoc,
                              const id64 DestMaxPartId, const id64 DestMinPartId);
 
@@ -163,20 +170,20 @@ int compare_id64(const void *a, const void *b)
 }
 
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
-                             const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart,
+                             const int flag, double *rank, const DEST_PARTID_TYPE *DestPartIds, const int64 DestNumPart,
                              const DESTGROUP_TYPE *DestGroupIds, const DESTGROUP_TYPE *DestGroupLoc,
                              const id64 DestMaxPartId, const id64 DestMinPartId)
 {
-    double *DestRanks = NULL;
-    int64 *DestNcommon = NULL;
+    // double *DestRanks = NULL;
+    // int64 *DestNcommon = NULL;
     // int64 index, grp_index;
     int64 max_ranknum = 0;
     double max_rank = 0.0;
 
     XASSERT(destNgroups > 0, "There must be at least one group in the destination = %" STR_FMT "\n", destNgroups);
 
-    DestRanks = my_calloc(sizeof(*DestRanks), destNgroups);
-    DestNcommon = my_calloc(sizeof(*DestNcommon), destNgroups);
+    double *DestRanks = my_calloc(sizeof(*DestRanks), destNgroups);
+    int64 *DestNcommon = my_calloc(sizeof(*DestNcommon), destNgroups);
 
     // for (int64 i = 0; i < destNgroups; i++)
     // {
@@ -186,23 +193,23 @@ int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct gro
 
     for (int64 i = 0; i < Nids; i++)
     {
-        id64 index = sourceIds[i];
+        DEST_PARTID_TYPE index = sourceIds[i];
         if (index >= DestMaxPartId || index < 0 || index < DestMinPartId)
             continue;
         // #define compare_id64(a, b) ((a) < (b) ? -1 : (a) > (b))
+
+#ifdef INDEX_WITH_PARTID
+        DEST_PARTID_TYPE tmp_offset = DestPartIds[index];
+        if(tmp_offset < 0)
+            continue;
+        XASSERT(tmp_offset >= 0 && tmp_offset < DestNumPart,
+                "Error: The particle offset = %" STR_ID_FMT " must be within the range [0, %" STR_ID_FMT ")\n",
+                tmp_offset, DestNumPart);
+        index = tmp_offset;
+#else
         id64 *ptr = (id64 *)bsearch(&index, DestPartIds, DestNumPart, sizeof(*DestPartIds), compare_id64);
-        // #undef compare_id64
-        // if (DestPartIds[index] != -1)
         if (ptr == NULL)
             continue;
-        // if(ptr != NULL)
-        // {
-        /* DestPartIds is indexed by the particle ID (and hence requires a large amount of RAM )
-            The other arrays are indexed by the *value* in DestPartids - which is really
-            the particle offset where the original particle was found (as in a cumulative count over the
-            number of particles located in all previous halos plus the number of particles within the
-            originating halo - MS 18th June 2024)
-        */
         XASSERT(*ptr >= DestMinPartId && *ptr < DestMaxPartId,
                 "Error: The particle id = %" STR_ID_FMT " must be within the range [%" STR_ID_FMT ", %" STR_ID_FMT
                 ")\n",
@@ -212,6 +219,13 @@ int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct gro
                 " in the DestPartIds array\n",
                 index, *ptr);
         index = ptr - DestPartIds;
+#endif
+        /* DestPartIds is indexed by the particle ID (and hence requires a large amount of RAM )
+            The other arrays are indexed by the *value* in DestPartids - which is really
+            the particle offset where the original particle was found (as in a cumulative count over the
+            number of particles located in all previous halos plus the number of particles within the
+            originating halo - MS 18th June 2024)
+        */
         const int64 grp_index = DestGroupIds[index];
         DestNcommon[grp_index]++;
 
@@ -265,7 +279,7 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
     int64 startgroup = 0;
     time_t t_sectionstart, t_sectionend;
 
-    id64 *DestPartIds[NUM_SNAPSHOTS];
+    DEST_PARTID_TYPE *DestPartIds[NUM_SNAPSHOTS];
     DESTGROUP_TYPE *DestGroupIds[NUM_SNAPSHOTS];
     DESTGROUP_TYPE *DestGroupLoc[NUM_SNAPSHOTS];
 
@@ -441,7 +455,15 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                 if (snapshot >= PARAMS.MIN_SNAPSHOT_NUM && DestPartIds[snapshot] == NULL && incr >= 2)
                 {
                     group0 = allgroups[snapshot];
+#ifdef INDEX_WITH_PARTID
+                    DestPartIds[snapshot] = my_malloc(sizeof(*DestPartIds[snapshot]), DestMaxPartId[snapshot]);
+                    for(int64 k=0; k < DestMaxPartId[snapshot]; k++)
+                    {
+                        DestPartIds[snapshot][k] = -1;
+                    }
+#else
                     DestPartIds[snapshot] = my_malloc(sizeof(*DestPartIds[snapshot]), numpart_in_halos[snapshot]);
+#endif
                     fprintf(stderr, "Allocating for %" STR_FMT " particles in snapshot %d\n",
                             numpart_in_halos[snapshot], snapshot);
                     fprintf(stderr, "DestMaxPartId[%d] = %" STR_ID_FMT " DestMinPartId[%d] = %" STR_ID_FMT "\n",
@@ -462,7 +484,13 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                                     "must be less than max. particle id = %" STR_ID_FMT " - "
                                     "strange things must have happened",
                                     this_id, DestMaxPartId[snapshot]);
+#ifdef INDEX_WITH_PARTID
+                            DestPartIds[snapshot][this_id] = offset;
+#else
                             DestPartIds[snapshot][offset] = this_id;
+#endif
+
+
 #ifndef USE_INT64_FOR_DEST_ARRAYS
                             XASSERT(i < UINT32_MAX, "Error: Group number = %" STR_FMT " must be less than UINT32_MAX\n",
                                     i);
@@ -486,19 +514,24 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             "LOG: This is likely due to particles with negative ids. Setting 'numpart' to 'offset'\n");
                     }
                     numpart_in_halos[snapshot] = offset;
+
+#ifndef INDEX_WITH_PARTID
+
 #define MULTIPLE_ARRAY_EXCHANGER(type, varname, i, j)                                                                  \
     {                                                                                                                  \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, DestPartIds[snapshot], i, j);                                             \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(DEST_PARTID_TYPE, DestPartIds[snapshot], i, j);                                 \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(DESTGROUP_TYPE, DestGroupIds[snapshot], i, j);                                  \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(DESTGROUP_TYPE, DestGroupLoc[snapshot], i, j);                                  \
     }
 
                     time_t t0 = time(NULL);
-                    SGLIB_ARRAY_QUICK_SORT(id64, DestPartIds[snapshot], numpart_in_halos[snapshot],
+                    SGLIB_ARRAY_QUICK_SORT(DEST_PARTID_TYPE, DestPartIds[snapshot], numpart_in_halos[snapshot],
                                            SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 #undef MULTIPLE_ARRAY_EXCHANGER
                     time_t t1 = time(NULL);
                     print_time(t0, t1, "Quick sort in fillprogenitors");
+#endif
+
                 }
             }
 
