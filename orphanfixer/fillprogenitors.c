@@ -159,7 +159,7 @@ int compare_id64(const void *a, const void *b)
 {
     const id64 aa = *((const id64 *)a);
     const id64 bb = *((const id64 *)b);
-    return (aa < bb) ? -1 : (aa == bb ? 0: 1);
+    return (aa < bb) ? -1 : (aa == bb ? 0 : 1);
 }
 
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
