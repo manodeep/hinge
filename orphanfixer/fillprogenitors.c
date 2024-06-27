@@ -16,6 +16,13 @@ of Ncommon/rank [depending on match_flag]. ]
 #define MATCH_WITH_RANK 1
 #define MATCH_WITH_NCOMMON 0
 
+#ifdef USE_INT64_FOR_DEST_ARRAYS
+#define DESTGROUP_TYPE int64
+#else
+#define DESTGROUP_TYPE uint32_t
+#endif
+
+
 /* This is to match the ids of all particles in halos that
 do not have a progenitor and return group numbers for all those
 particles that are found in some previous snapshot.
@@ -27,7 +34,7 @@ particles that are found in some previous snapshot.
 //                              const int64 *DestGroupLoc, const id64 DestMaxPartId, const id64 DestMinPartId);
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
                              const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart,
-                             const int64 *DestGroupIds, const int64 *DestGroupLoc, const id64 DestMaxPartId,
+                             const DESTGROUP_TYPE *DestGroupIds, const DESTGROUP_TYPE *DestGroupLoc, const id64 DestMaxPartId,
                              const id64 DestMinPartId);
 
 int compare_id64(const void *a, const void *b);
@@ -143,6 +150,7 @@ short load_found_progenitors(struct node_data *tree[], int64 *Ngroups, const cha
                 "In load_found_progenitors:  Incomplete `%s` found - read in %" STR_FMT
                 " lines. Recalculating the orphans ...\n",
                 fname, nlines);
+        PARAMS.LOAD_FOUND_PROGENITORS = 0;
     }
 
     return min_snapshot;
@@ -155,7 +163,7 @@ int compare_id64(const void *a, const void *b)
 
 int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct group_data *dest, const int64 destNgroups,
                              const int flag, double *rank, const id64 *DestPartIds, const int64 DestNumPart,
-                             const int64 *DestGroupIds, const int64 *DestGroupLoc, const id64 DestMaxPartId,
+                             const DESTGROUP_TYPE *DestGroupIds, const DESTGROUP_TYPE *DestGroupLoc, const id64 DestMaxPartId,
                              const id64 DestMinPartId)
 {
     double *DestRanks = NULL;
@@ -251,9 +259,11 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
     struct group_data *allgroups[NUM_SNAPSHOTS];
     int64 startgroup = 0;
     time_t t_sectionstart, t_sectionend;
-    int64 *DestPartIds[NUM_SNAPSHOTS];
-    int64 *DestGroupIds[NUM_SNAPSHOTS];
-    int64 *DestGroupLoc[NUM_SNAPSHOTS];
+
+    id64 *DestPartIds[NUM_SNAPSHOTS];
+    DESTGROUP_TYPE *DestGroupIds[NUM_SNAPSHOTS];
+    DESTGROUP_TYPE *DestGroupLoc[NUM_SNAPSHOTS];
+
     id64 DestMaxPartId[NUM_SNAPSHOTS];
     id64 DestMinPartId[NUM_SNAPSHOTS];
     int64 numpart_in_halos[NUM_SNAPSHOTS];
@@ -448,6 +458,10 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                                     "strange things must have happened",
                                     this_id, DestMaxPartId[snapshot]);
                             DestPartIds[snapshot][offset] = this_id;
+#ifndef USE_INT64_FOR_DEST_ARRAYS
+                            XASSERT(i < UINT32_MAX, "Error: Group number = %" STR_FMT " must be less than UINT32_MAX\n", i);
+                            XASSERT(j < UINT32_MAX, "Error: Particle index = %" STR_FMT " (within group = %"STR_FMT") must be less than UINT32_MAX\n", j, i);
+#endif
                             DestGroupIds[snapshot][offset] = i;
                             DestGroupLoc[snapshot][offset] = j;
                             offset++;
@@ -466,8 +480,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
 #define MULTIPLE_ARRAY_EXCHANGER(type, varname, i, j)                                                                  \
     {                                                                                                                  \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, DestPartIds[snapshot], i, j);                                             \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, DestGroupIds[snapshot], i, j);                                           \
-        SGLIB_ARRAY_ELEMENTS_EXCHANGER(int64, DestGroupLoc[snapshot], i, j);                                           \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(DESTGROUP_TYPE, DestGroupIds[snapshot], i, j);                                  \
+        SGLIB_ARRAY_ELEMENTS_EXCHANGER(DESTGROUP_TYPE, DestGroupLoc[snapshot], i, j);                                  \
     }
 
                     time_t t0 = time(NULL);
