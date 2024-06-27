@@ -554,22 +554,21 @@ void reset_ncommon(int64 *Ncommon, int64 N)
 
 int64 get_ncommon(struct group_data *prev, struct group_data *next)
 {
-
-    short *PrevAllPartIds = NULL;
     int64 ncommon = 0;
-    id64 PrevMaxPartId;
 
     assert(prev != NULL && "prev group pointer can not be NULL");
     assert(next != NULL && "next group pointer can not be NULL");
 
-    PrevMaxPartId = 0;
+    if(prev->N <= 0 || next->N <= 0) return 0;/* zero common particles if either of the groups have 0 particles */
+
+    id64 PrevMaxPartId = 0;
     for (int64 i = 0; i < prev->N; i++)
         if (prev->id[i] > PrevMaxPartId)
             PrevMaxPartId = prev->id[i];
 
     PrevMaxPartId++;
 
-    PrevAllPartIds = my_calloc(sizeof(*PrevAllPartIds), PrevMaxPartId); /* Note use of calloc instead of malloc */
+    int8_t *PrevAllPartIds = my_calloc(sizeof(*PrevAllPartIds), PrevMaxPartId); /* Note use of calloc instead of malloc */
     for (int64 i = 0; i < prev->N; i++)
     {
         const id64 this_id = prev->id[i];
