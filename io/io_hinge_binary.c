@@ -22,7 +22,7 @@
 #include "progressbar.h"
 #include "utils.h"
 
-void save_unique_particles(const struct params_data *params, const int snapnum, const struct group_data *group,
+void save_unique_particles(const struct params_data *params, const int snapnum, struct group_data *group,
                            const int64 nhalos);
 void load_unique_particles(struct params_data *params, const int snapnum, struct group_data *group);
 
@@ -31,7 +31,7 @@ int64 returnNhalo_hinge_binary(const struct params_data *params, const int snapn
     return returnNhalo_hinge_ascii(params, snapnum, fof_only);
 }
 
-void loadgroups_hinge_binary(const struct params_data *params, const int snapnum, struct group_data *group)
+void loadgroups_hinge_binary(struct params_data *params, const int snapnum, struct group_data *group)
 {
     XASSERT(group != NULL, "group is NULL\n");
 
@@ -285,7 +285,8 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
 
     // fprintf(stderr, "Removing duplicates ...\n");
     t0 = time(NULL);
-    const int64_t num_removed = remove_duplicates(group, nhalos);
+    // const int64_t num_removed = remove_duplicates(group, nhalos);
+    remove_duplicates(group, nhalos);
     t1 = time(NULL);
     // fprintf(stderr, "Removing duplicates ...done. Removed %" PRId64 " duplicates out of %" PRId64 " total
     // particles\n",
@@ -305,7 +306,7 @@ void loadgroups_hinge_binary(const struct params_data *params, const int snapnum
     }
 }
 
-void save_unique_particles(const struct params_data *params, const int snapnum, const struct group_data *group,
+void save_unique_particles(const struct params_data *params, const int snapnum, struct group_data *group,
                            const int64 nhalos)
 {
     char unique_fname[MAXLEN];
@@ -422,12 +423,12 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     write(fout, &nhalos, sizeof(nhalos));
     write(fout, &totnpart, sizeof(totnpart));
 
-#define USE_SENDFILE_TO_WRITE_PROPS(fd_out, fd_in, len)                                                                \
+#define USE_SENDFILE_TO_WRITE_PROPS(fd_out, fd_in, ptr_offset, len)                                                    \
     {                                                                                                                  \
         ssize_t tot_nbytes_written = 0;                                                                                \
         while (len > 0)                                                                                                \
         {                                                                                                              \
-            ssize_t nbytes_written = sendfile(fd_out, fd_in, NULL, len);                                               \
+            ssize_t nbytes_written = sendfile(fd_out, fd_in, ptr_offset, len);                                         \
             XASSERT(nbytes_written >= 0, "Error writing to file %s. nbytes_written = %zd\n", unique_fname,             \
                     nbytes_written);                                                                                   \
             len -= nbytes_written;                                                                                     \
@@ -438,35 +439,25 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     }
 
     size_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
-    fseek(fp_ids, start_offset, SEEK_SET);
     size_t len = totnpart * sizeof(group->id[0]);
-    off_t final_bytes_offset = start_offset + len;
     fprintf(stderr, "Requesting macro to write %zu bytes (%" PRId64 " particle ids. each of size %zu)\n", len, totnpart,
             sizeof(group->id[0]));
-    USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), len);
-    XASSERT(ftello(fp_ids) == final_bytes_offset, "Error: ftello(fp_ids) = %lld != %lld\n", (long long)ftello(fp_ids),
-            (long long)final_bytes_offset);
+    USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), &start_offset, len);
 
     len = totnpart * sizeof(group->x[0]);
     start_offset = sizeof(int64);
     fseek(fp_xpos, start_offset, SEEK_SET);
-    USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_xpos), len);
-    XASSERT(ftello(fp_xpos) == final_bytes_offset, "Error: ftello(fp_xpos) = %lld != %lld\n",
-            (long long)ftello(fp_xpos), (long long)final_bytes_offset);
+    USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_xpos), &start_offset, len);
 
     len = totnpart * sizeof(group->y[0]);
     start_offset = sizeof(int64);
     fseek(fp_ypos, start_offset, SEEK_SET);
-    USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ypos), len);
-    XASSERT(ftello(fp_ypos) == final_bytes_offset, "Error: ftello(fp_ypos) = %lld != %lld\n",
-            (long long)ftello(fp_ypos), (long long)final_bytes_offset);
+    USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ypos), &start_offset, len);
 
     start_offset = sizeof(int64);
     fseek(fp_zpos, start_offset, SEEK_SET);
     len = totnpart * sizeof(group->z[0]);
-    USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), len);
-    XASSERT(ftello(fp_zpos) == final_bytes_offset, "Error: ftello(fp_zpos) = %lld != %lld\n",
-            (long long)ftello(fp_zpos), (long long)final_bytes_offset);
+    USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), &start_offset, len);
 
     close(fout);
     fclose(fp_ids);

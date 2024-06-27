@@ -3,7 +3,7 @@
 #include "io.h"
 
 /* functions in loadgroups */
-extern void loadgroups(const struct params_data *params, const int snapnum, struct group_data *group);
+extern void loadgroups(struct params_data *params, const int snapnum, struct group_data *group);
 extern int64 returnNhalo(const struct params_data *params, const int snapnum, const int fof_only);
 
 #if 0

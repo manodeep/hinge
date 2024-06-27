@@ -411,7 +411,7 @@ int64 returnNhalo(const struct params_data *params, const int snapnum, const int
     return -1;
 }
 
-void loadgroups(const struct params_data *params, const int snapnum, struct group_data *group)
+void loadgroups(struct params_data *params, const int snapnum, struct group_data *group)
 {
     if (params == NULL || group == NULL)
     {
