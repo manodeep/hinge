@@ -442,14 +442,17 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), &start_offset, len);
 
     len = totnpart * sizeof(group->x[0]);
-    start_offset = sizeof(int64);//since USE_SENDFILE can modify start_offset, start_offset needs to be set everytime before calling USE_SENDFILE_TO_WRITE_PROPS
+    start_offset = sizeof(int64); // since USE_SENDFILE can modify start_offset, start_offset needs to be set everytime
+                                  // before calling USE_SENDFILE_TO_WRITE_PROPS
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_xpos), &start_offset, len);
 
     len = totnpart * sizeof(group->y[0]);
-    start_offset = sizeof(int64);//since USE_SENDFILE can modify start_offset, start_offset needs to be set everytime before calling USE_SENDFILE_TO_WRITE_PROPS
+    start_offset = sizeof(int64); // since USE_SENDFILE can modify start_offset, start_offset needs to be set everytime
+                                  // before calling USE_SENDFILE_TO_WRITE_PROPS
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ypos), &start_offset, len);
 
-    start_offset = sizeof(int64);//since USE_SENDFILE can modify start_offset, start_offset needs to be set everytime before calling USE_SENDFILE_TO_WRITE_PROPS
+    start_offset = sizeof(int64); // since USE_SENDFILE can modify start_offset, start_offset needs to be set everytime
+                                  // before calling USE_SENDFILE_TO_WRITE_PROPS
     len = totnpart * sizeof(group->z[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), &start_offset, len);
 
