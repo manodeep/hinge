@@ -340,8 +340,8 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     int64 totnpart = 0, totnpart_all = 0;
     for (int64 i = 0; i < nhalos; i++)
     {
-        //Creating a copy to save because otherwise the current version in memory will get impacted
-        //by the change in group.N
+        // Creating a copy to save because otherwise the current version in memory will get impacted
+        // by the change in group.N
         struct group_data thisgroup;
         memcpy(&thisgroup, &group[i], sizeof(struct group_data));
         if (thisgroup.haloID < 0)
@@ -360,23 +360,22 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
             num_dups += thisgroup.id[j] < 0 ? 1 : 0;
         }
 
-#define _WRITE_ARRAY_ELEMENTS(start, num_left)                       \
-{                                                                           \
-    fwrite(&thisgroup.id[start], sizeof(*thisgroup.id), num_left, fp_ids);  \
-    fwrite(&thisgroup.x[start], sizeof(*thisgroup.x), num_left, fp_xpos);   \
-    fwrite(&thisgroup.y[start], sizeof(*thisgroup.y), num_left, fp_ypos);   \
-    fwrite(&thisgroup.z[start], sizeof(*thisgroup.z), num_left, fp_zpos);   \
-}
-#define WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups, thisgroup, start, totN, num_left)                                     \
-    {                                                                                                            \
-        XASSERT(num_dups == 0, "Error: num_dups = %" PRId64 "\n", num_dups);                                     \
-        XASSERT(start + num_left == totN, "Error: start = %" PRId64 " num_left = %" PRId64 " totN = %" PRId64 "\n", \
-                start, num_left, totN);                                                                          \
-        XASSERT(start >=0 && start < totN, "Error: start = %" PRId64 " totN = %" PRId64 "\n", start, totN);      \
-        XASSERT(num_left > 0 && num_left <= totN, "Error: num_left = %" PRId64 "\n", num_left);                  \
-        _WRITE_ARRAY_ELEMENTS(start, num_left);                                                                  \
+#define _WRITE_ARRAY_ELEMENTS(start, num_left)                                                                         \
+    {                                                                                                                  \
+        fwrite(&thisgroup.id[start], sizeof(*thisgroup.id), num_left, fp_ids);                                         \
+        fwrite(&thisgroup.x[start], sizeof(*thisgroup.x), num_left, fp_xpos);                                          \
+        fwrite(&thisgroup.y[start], sizeof(*thisgroup.y), num_left, fp_ypos);                                          \
+        fwrite(&thisgroup.z[start], sizeof(*thisgroup.z), num_left, fp_zpos);                                          \
     }
-
+#define WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups, thisgroup, start, totN, num_left)                                 \
+    {                                                                                                                  \
+        XASSERT(num_dups == 0, "Error: num_dups = %" PRId64 "\n", num_dups);                                           \
+        XASSERT(start + num_left == totN, "Error: start = %" PRId64 " num_left = %" PRId64 " totN = %" PRId64 "\n",    \
+                start, num_left, totN);                                                                                \
+        XASSERT(start >= 0 && start < totN, "Error: start = %" PRId64 " totN = %" PRId64 "\n", start, totN);           \
+        XASSERT(num_left > 0 && num_left <= totN, "Error: num_left = %" PRId64 "\n", num_left);                        \
+        _WRITE_ARRAY_ELEMENTS(start, num_left);                                                                        \
+    }
 
         if (num_dups == 0)
         {
@@ -395,7 +394,8 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
                         const int64 num_left = thisgroup.N - 1 - j;
                         if (num_left > 0)
                         {
-                            WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups_remaining, thisgroup, j + 1, thisgroup.N, num_left);
+                            WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups_remaining, thisgroup, j + 1, thisgroup.N,
+                                                               num_left);
                             num_written += num_left;
                         }
                         break;
