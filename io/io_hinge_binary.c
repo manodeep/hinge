@@ -435,27 +435,21 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
             tot_nbytes_written += nbytes_written;                                                                      \
         }                                                                                                              \
         XASSERT(len == 0, "Error: len = %zu\n", len);                                                                  \
-        fprintf(stderr, "In macro: Wrote %zu bytes\n", tot_nbytes_written);                                            \
     }
 
     off_t start_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
     size_t len = totnpart * sizeof(group->id[0]);
-    fprintf(stderr, "Requesting macro to write %zu bytes (%" PRId64 " particle ids. each of size %zu)\n", len, totnpart,
-            sizeof(group->id[0]));
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), &start_offset, len);
 
     len = totnpart * sizeof(group->x[0]);
-    start_offset = sizeof(int64);
-    fseek(fp_xpos, start_offset, SEEK_SET);
+    start_offset = sizeof(int64);//since USE_SENDFILE can modify start_offset, start_offset needs to be set everytime before calling USE_SENDFILE_TO_WRITE_PROPS
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_xpos), &start_offset, len);
 
     len = totnpart * sizeof(group->y[0]);
-    start_offset = sizeof(int64);
-    fseek(fp_ypos, start_offset, SEEK_SET);
+    start_offset = sizeof(int64);//since USE_SENDFILE can modify start_offset, start_offset needs to be set everytime before calling USE_SENDFILE_TO_WRITE_PROPS
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ypos), &start_offset, len);
 
-    start_offset = sizeof(int64);
-    fseek(fp_zpos, start_offset, SEEK_SET);
+    start_offset = sizeof(int64);//since USE_SENDFILE can modify start_offset, start_offset needs to be set everytime before calling USE_SENDFILE_TO_WRITE_PROPS
     len = totnpart * sizeof(group->z[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), &start_offset, len);
 
