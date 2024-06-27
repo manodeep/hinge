@@ -570,6 +570,9 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
         if (status != thisgroup->N)
             goto error;
 
+        thisgroup->parentgroupforparticle = my_malloc(sizeof(*thisgroup->parentgroupforparticle), thisgroup->N);
+        thisgroup->parentsnapshotforparticle = my_malloc(sizeof(*thisgroup->parentsnapshotforparticle), thisgroup->N);
+
         numpart_read += thisgroup->N;
     }
     finish_myprogressbar(&interrupted);
