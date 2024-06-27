@@ -559,19 +559,18 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                         checknode = &NewBaseNode[searchnodenum];
                         assert(searchnodenum < Ngroups[searchsnapshot] && "Possible match must be valid");
                         assert(thisnode->nodeloc < Ngroups[thisnode->snapshot] &&
-                                "Candidate node number must be valid");
+                               "Candidate node number must be valid");
                         int64 ncommon = get_ncommon(&group0[thisnode->nodeloc], &group1[searchnodenum]);
                         fprintf(stderr,
-                                "found a possible match:  nodenum = %" STR_FMT
-                                " at snapshot = %d. haloid = %" STR_FMT " with ncommon = %" STR_FMT
-                                " out of Npart = %" STR_FMT "\n",
+                                "found a possible match:  nodenum = %" STR_FMT " at snapshot = %d. haloid = %" STR_FMT
+                                " with ncommon = %" STR_FMT " out of Npart = %" STR_FMT "\n",
                                 searchnodenum, searchsnapshot, checknode->haloid, ncommon, group1[searchnodenum].N);
                         /* I am taking out the ParentLevel >= 2. As long as the FOF can be
                             re-assigned here, and it is not the main progenitor -- it's
                             fine. (I think) */
                         if (checknode->Parent == NULL ||
                             (checknode->Parent->BigChild != checknode &&
-                                (double)ncommon / (double)group0[thisnode->nodeloc].N > PARAMS.MIN_FCOMMON_THRESH))
+                             (double)ncommon / (double)group0[thisnode->nodeloc].N > PARAMS.MIN_FCOMMON_THRESH))
                         {
 
                             if (checknode->Parent != NULL && checknode->Parent->Nchild > 1)
@@ -605,9 +604,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                                     "groupnumber = %" STR_FMT " \n",
                                     thisnode->nodeloc, thisnode->snapshot, checknode->snapshot, checknode->nodeloc);
                             fprintf(fp,
-                                    "%6d    %12" STR_FMT "    %14" STR_FMT "     %16" STR_FMT
-                                    "    %10d   %12" STR_FMT "   %14" STR_FMT "    %14" STR_FMT
-                                    "      %16.4lf  %16.4lf\n",
+                                    "%6d    %12" STR_FMT "    %14" STR_FMT "     %16" STR_FMT "    %10d   %12" STR_FMT
+                                    "   %14" STR_FMT "    %14" STR_FMT "      %16.4lf  %16.4lf\n",
                                     thisnode->snapshot, thisnode->nodeloc, thisnode->haloid,
                                     group0[thisnode->nodeloc].N, checknode->snapshot, checknode->nodeloc,
                                     group1[checknode->nodeloc].N, ncommon, rank, max_rank);
