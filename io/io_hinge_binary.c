@@ -340,7 +340,6 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     for (int64 i = 0; i < nhalos; i++)
     {
         struct group_data *thisgroup = &group[i];
-        totnpart_all += thisgroup->N;
         if (thisgroup->haloID < 0)
         {
             /* While it may be tempting to do 'nhalos--' here, doing so
@@ -348,8 +347,9 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
             that is an index to the group catalog will need to be fixed.
             Certainly doable but not worth the effort for now. MS: 26th June, 2024
             */
-            continue;
+            thisgroup->N = 0;
         }
+        totnpart_all += thisgroup->N;
         int64 num_dups = 0;
         for (int64 j = 0; j < thisgroup->N; j++)
         {
@@ -443,21 +443,25 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     fprintf(stderr, "Requesting macro to write %zu bytes (%" PRId64 " particle ids. each of size %zu)\n", len, totnpart,
             sizeof(group->id[0]));
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ids), len);
+    XASSERT(ftell(fp_ids) == len + start_offset, "Error: ftell(fp_ids) = %ld != %zu\n", ftell(fp_ids), len + start_offset);
 
     len = totnpart * sizeof(group->x[0]);
     start_offset = sizeof(int64);
     fseek(fp_xpos, start_offset, SEEK_SET);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_xpos), len);
+    XASSERT(ftell(fp_xpos) == len + start_offset, "Error: ftell(fp_xpos) = %ld != %zu\n", ftell(fp_xpos), len + start_offset);
 
     len = totnpart * sizeof(group->y[0]);
     start_offset = sizeof(int64);
     fseek(fp_ypos, start_offset, SEEK_SET);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_ypos), len);
+    XASSERT(ftell(fp_ypos) == len + start_offset, "Error: ftell(fp_ypos) = %ld != %zu\n", ftell(fp_ypos), len + start_offset);
 
     start_offset = sizeof(int64);
     fseek(fp_zpos, start_offset, SEEK_SET);
     len = totnpart * sizeof(group->z[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), len);
+    XASSERT(ftell(fp_zpos) == len + start_offset, "Error: ftell(fp_zpos) = %ld != %zu\n", ftell(fp_zpos), len + start_offset);
 
     close(fout);
     fclose(fp_ids);
