@@ -340,68 +340,84 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     int64 totnpart = 0, totnpart_all = 0;
     for (int64 i = 0; i < nhalos; i++)
     {
-        struct group_data *thisgroup = &group[i];
-        if (thisgroup->haloID < 0)
+        //Creating a copy to save because otherwise the current version in memory will get impacted
+        //by the change in group.N
+        struct group_data thisgroup;
+        memcpy(&thisgroup, &group[i], sizeof(struct group_data));
+        if (thisgroup.haloID < 0)
         {
             /* While it may be tempting to do 'nhalos--' here, doing so
             would mean that we would to refix *all* the fofnum/hostnum etc, i.e., anything
             that is an index to the group catalog will need to be fixed.
             Certainly doable but not worth the effort for now. MS: 26th June, 2024
             */
-            thisgroup->N = 0;
+            thisgroup.N = 0;
         }
-        totnpart_all += thisgroup->N;
+        totnpart_all += thisgroup.N;
         int64 num_dups = 0;
-        for (int64 j = 0; j < thisgroup->N; j++)
+        for (int64 j = 0; j < thisgroup.N; j++)
         {
-            num_dups += thisgroup->id[j] < 0 ? 1 : 0;
+            num_dups += thisgroup.id[j] < 0 ? 1 : 0;
         }
+
+#define _WRITE_ARRAY_ELEMENTS(start, num_left)                       \
+{                                                                           \
+    fwrite(&thisgroup.id[start], sizeof(*thisgroup.id), num_left, fp_ids);  \
+    fwrite(&thisgroup.x[start], sizeof(*thisgroup.x), num_left, fp_xpos);   \
+    fwrite(&thisgroup.y[start], sizeof(*thisgroup.y), num_left, fp_ypos);   \
+    fwrite(&thisgroup.z[start], sizeof(*thisgroup.z), num_left, fp_zpos);   \
+}
+#define WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups, thisgroup, start, totN, num_left)                                     \
+    {                                                                                                            \
+        XASSERT(num_dups == 0, "Error: num_dups = %" PRId64 "\n", num_dups);                                     \
+        XASSERT(start + num_left == totN, "Error: start = %" PRId64 " num_left = %" PRId64 " totN = %" PRId64 "\n", \
+                start, num_left, totN);                                                                          \
+        XASSERT(start >=0 && start < totN, "Error: start = %" PRId64 " totN = %" PRId64 "\n", start, totN);      \
+        XASSERT(num_left > 0 && num_left <= totN, "Error: num_left = %" PRId64 "\n", num_left);                  \
+        _WRITE_ARRAY_ELEMENTS(start, num_left);                                                                  \
+    }
+
+
         if (num_dups == 0)
         {
-            fwrite(thisgroup->id, sizeof(*thisgroup->id), thisgroup->N, fp_ids);
-            fwrite(thisgroup->x, sizeof(*thisgroup->x), thisgroup->N, fp_xpos);
-            fwrite(thisgroup->y, sizeof(*thisgroup->y), thisgroup->N, fp_ypos);
-            fwrite(thisgroup->z, sizeof(*thisgroup->z), thisgroup->N, fp_zpos);
+            WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups, thisgroup, 0, thisgroup.N, thisgroup.N);
         }
         else
         {
             int64 num_written = 0, num_dups_remaining = num_dups;
-            for (int64 j = 0; j < thisgroup->N; j++)
+            for (int64 j = 0; j < thisgroup.N; j++)
             {
-                if (thisgroup->id[j] < 0)
+                if (thisgroup.id[j] < 0)
                 {
                     num_dups_remaining--;
-                    if (num_dups_remaining == 0 && j < (thisgroup->N - 1))
+                    if (num_dups_remaining == 0 && j < (thisgroup.N - 1))
                     {
-                        const int64 num_left = thisgroup->N - 1 - j;
+                        const int64 num_left = thisgroup.N - 1 - j;
                         if (num_left > 0)
                         {
-                            fwrite(&thisgroup->id[j + 1], sizeof(*thisgroup->id), num_left, fp_ids);
-                            fwrite(&thisgroup->x[j + 1], sizeof(*thisgroup->x), num_left, fp_xpos);
-                            fwrite(&thisgroup->y[j + 1], sizeof(*thisgroup->y), num_left, fp_ypos);
-                            fwrite(&thisgroup->z[j + 1], sizeof(*thisgroup->z), num_left, fp_zpos);
+                            WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups_remaining, thisgroup, j + 1, thisgroup.N, num_left);
                             num_written += num_left;
                         }
                         break;
                     }
                     continue;
                 }
-
-                fwrite(&thisgroup->id[j], sizeof(thisgroup->id[j]), 1, fp_ids);
-                fwrite(&thisgroup->x[j], sizeof(thisgroup->x[j]), 1, fp_xpos);
-                fwrite(&thisgroup->y[j], sizeof(thisgroup->y[j]), 1, fp_ypos);
-                fwrite(&thisgroup->z[j], sizeof(thisgroup->z[j]), 1, fp_zpos);
+                _WRITE_ARRAY_ELEMENTS(j, 1);
+                // fwrite(&thisgroup.id[j], sizeof(thisgroup.id[j]), 1, fp_ids);
+                // fwrite(&thisgroup.x[j], sizeof(thisgroup.x[j]), 1, fp_xpos);
+                // fwrite(&thisgroup.y[j], sizeof(thisgroup.y[j]), 1, fp_ypos);
+                // fwrite(&thisgroup.z[j], sizeof(thisgroup.z[j]), 1, fp_zpos);
                 num_written++;
             }
-            thisgroup->N -= num_dups;
-            XASSERT(num_written == thisgroup->N,
+            thisgroup.N -= num_dups;
+            XASSERT(num_written == thisgroup.N,
                     "Error: For halo number %" PRId64 " number of particles written = %" PRId64 " != %" PRId64
                     ". Number of duplicates = %" PRId64 "\n",
-                    i, num_written, thisgroup->N, num_dups);
+                    i, num_written, thisgroup.N, num_dups);
             XASSERT(num_dups_remaining == 0, "Number of duplicates left = %" PRId64 "\n", num_dups_remaining);
         }
-        fwrite(thisgroup, sizeof_group_data, 1, fp_cat);
-        totnpart += thisgroup->N;
+        fwrite(&thisgroup, sizeof_group_data, 1, fp_cat);
+        totnpart += thisgroup.N;
     }
     fprintf(stderr, "In %s> totnpart = %" PRId64 " totnpart_all = %" PRId64 "\n", __FUNCTION__, totnpart, totnpart_all);
     fclose(fp_cat);
