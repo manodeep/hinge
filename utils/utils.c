@@ -655,13 +655,9 @@ int64 remove_duplicates(struct group_data *g, int64 N)
     max_id++;
 
 #ifdef INDEX_WITH_PARTID
-    int64_t *all_id_offset = my_calloc(sizeof(*all_id_offset), max_id);
-    for (int64 i = 0; i < max_id; i++)
-    {
-        all_id_offset[i] = -1;
-    }
-    int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
-    int64 *partindex = my_malloc(sizeof(*partindex), totnpart);
+    int8_t *all_ids = my_calloc(sizeof(*all_ids), max_id);//must be a calloc
+    uint32_t *groupnum = my_malloc(sizeof(*groupnum), max_id);
+    uint32_t *partindex = my_malloc(sizeof(*partindex), max_id);
 #else
     id64 *all_ids = my_malloc(sizeof(*all_ids), totnpart);
     int64 *groupnum = my_malloc(sizeof(*groupnum), totnpart);
@@ -690,27 +686,28 @@ int64 remove_duplicates(struct group_data *g, int64 N)
             groupnum[offset] = i;
             partindex[offset] = j;
 #else
-            if (all_id_offset[id] == -1)
+            if (all_ids[id] == 0)
             {
-                groupnum[offset] = i;
-                partindex[offset] = j;
-                all_id_offset[id] = offset;
+                XASSERT(i >= 0 && i < UINT32_MAX, "Error: Group num ID %lld is too large\n", (long long)i);
+                XASSERT(j >= 0 && j < UINT32_MAX, "Error: Particle location j = %lld is too large\n", (long long)j);
+                groupnum[id] = i;
+                partindex[id] = j;
+                all_ids[id] = 1;
             }
             else
             {
                 // fprintf(stderr, "Found a duplicate with id = %lld in group %lld\n", (long long)id, (long long)i);
                 int64 group_to_remove, part_to_remove;
-                int64_t prev_offset = all_id_offset[id];
-                remove_particle_from_group(groupnum[prev_offset], i, partindex[prev_offset], j, g, &group_to_remove,
+                remove_particle_from_group(groupnum[id], i, partindex[id], j, g, &group_to_remove,
                                            &part_to_remove);
                 // num_removed_per_group[group_to_remove]++;
 
                 // If we are keeping the i'th groups particle, then we need to update the groupnum and partindex
                 if (group_to_remove != i)
                 {
-                    groupnum[offset] = i;
-                    partindex[offset] = j;
-                    all_id_offset[id] = offset;
+                    groupnum[id] = i;
+                    partindex[id] = j;
+                    all_ids[id] = 1;
                 }
                 nremoved++;
             }
@@ -723,7 +720,7 @@ int64 remove_duplicates(struct group_data *g, int64 N)
 #ifdef INDEX_WITH_PARTID
     fprintf(stderr, "Removing duplicate particles from %lld groups...done. Removed %lld particles \n", (long long)N,
             (long long)nremoved);
-    free(all_id_offset);
+    free(all_ids);
     free(groupnum);
     free(partindex);
     return nremoved;
