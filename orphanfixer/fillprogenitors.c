@@ -201,6 +201,10 @@ int64 get_best_groupnum_wids(const id64 *sourceIds, const int64 Nids, struct gro
             number of particles located in all previous halos plus the number of particles within the
             originating halo - MS 18th June 2024)
         */
+        XASSERT(*ptr >= DestMinPartId && *ptr < DestMaxPartId,
+                "Error: The particle id = %" STR_ID_FMT " must be within the range [%" STR_ID_FMT ", %" STR_ID_FMT
+                ")\n",
+                *ptr, DestMinPartId, DestMaxPartId);
         XASSERT(*ptr == index,
                 "Error: The particle id = %" STR_ID_FMT " must be equal to the index = %" STR_ID_FMT
                 " in the DestPartIds array\n",
@@ -546,69 +550,71 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
                             DestPartIds[searchsnapshot], numpart_in_halos[searchsnapshot], DestGroupIds[searchsnapshot],
                             DestGroupLoc[searchsnapshot], DestMaxPartId[searchsnapshot], DestMinPartId[searchsnapshot]);
 
-                        if (searchnodenum != -1)
+                        if (searchnodenum == -1)
                         {
-                            NewBaseNode = tree[searchsnapshot];
-                            checknode = &NewBaseNode[searchnodenum];
-                            assert(searchnodenum < Ngroups[searchsnapshot] && "Possible match must be valid");
-                            assert(thisnode->nodeloc < Ngroups[thisnode->snapshot] &&
-                                   "Candidate node number must be valid");
-                            int64 ncommon = get_ncommon(&group0[thisnode->nodeloc], &group1[searchnodenum]);
-                            fprintf(stderr,
-                                    "found a possible match:  nodenum = %" STR_FMT
-                                    " at snapshot = %d. haloid = %" STR_FMT " with ncommon = %" STR_FMT
-                                    " out of Npart = %" STR_FMT "\n",
-                                    searchnodenum, searchsnapshot, checknode->haloid, ncommon, group1[searchnodenum].N);
-                            /* I am taking out the ParentLevel >= 2. As long as the FOF can be
-                               re-assigned here, and it is not the main progenitor -- it's
-                               fine. (I think) */
-                            if (checknode->Parent == NULL ||
-                                (checknode->Parent->BigChild != checknode &&
-                                 (double)ncommon / (double)group0[thisnode->nodeloc].N > PARAMS.MIN_FCOMMON_THRESH))
+                            continue;
+                        }
+
+                        NewBaseNode = tree[searchsnapshot];
+                        checknode = &NewBaseNode[searchnodenum];
+                        assert(searchnodenum < Ngroups[searchsnapshot] && "Possible match must be valid");
+                        assert(thisnode->nodeloc < Ngroups[thisnode->snapshot] &&
+                                "Candidate node number must be valid");
+                        int64 ncommon = get_ncommon(&group0[thisnode->nodeloc], &group1[searchnodenum]);
+                        fprintf(stderr,
+                                "found a possible match:  nodenum = %" STR_FMT
+                                " at snapshot = %d. haloid = %" STR_FMT " with ncommon = %" STR_FMT
+                                " out of Npart = %" STR_FMT "\n",
+                                searchnodenum, searchsnapshot, checknode->haloid, ncommon, group1[searchnodenum].N);
+                        /* I am taking out the ParentLevel >= 2. As long as the FOF can be
+                            re-assigned here, and it is not the main progenitor -- it's
+                            fine. (I think) */
+                        if (checknode->Parent == NULL ||
+                            (checknode->Parent->BigChild != checknode &&
+                                (double)ncommon / (double)group0[thisnode->nodeloc].N > PARAMS.MIN_FCOMMON_THRESH))
+                        {
+
+                            if (checknode->Parent != NULL && checknode->Parent->Nchild > 1)
                             {
+                                tmp_node = checknode->Parent->BigChild;
+                                while (tmp_node->Sibling != checknode)
+                                    tmp_node = tmp_node->Sibling;
 
-                                if (checknode->Parent != NULL && checknode->Parent->Nchild > 1)
-                                {
-                                    tmp_node = checknode->Parent->BigChild;
-                                    while (tmp_node->Sibling != checknode)
-                                        tmp_node = tmp_node->Sibling;
-
-                                    tmp_node->Sibling = checknode->Sibling;
-                                    tmp_node->Parent->Nchild--;
-                                }
-
-                                checknode->Parent = thisnode;
-                                checknode->ParentID = thisnode->nodeloc;
-                                checknode->ParentZ = thisnode->z;
-                                checknode->ParentSnapshot = thisnode->snapshot;
-                                checknode->Sibling = NULL;
-                                thisnode->BigChild = checknode;
-                                thisnode->Nchild = 1;
-
-                                tmp_node = checknode;
-                                while (tmp_node != NULL)
-                                {
-                                    tmp_node->haloid = thisnode->haloid;
-                                    tmp_node = tmp_node->BigChild;
-                                }
-
-                                fprintf(stderr,
-                                        "Found a progenitor for node with groupnum %" STR_FMT
-                                        " at snapshot %d. The progenitor is at snapshot %d, "
-                                        "groupnumber = %" STR_FMT " \n",
-                                        thisnode->nodeloc, thisnode->snapshot, checknode->snapshot, checknode->nodeloc);
-                                fprintf(fp,
-                                        "%6d    %12" STR_FMT "    %14" STR_FMT "     %16" STR_FMT
-                                        "    %10d   %12" STR_FMT "   %14" STR_FMT "    %14" STR_FMT
-                                        "      %16.4lf  %16.4lf\n",
-                                        thisnode->snapshot, thisnode->nodeloc, thisnode->haloid,
-                                        group0[thisnode->nodeloc].N, checknode->snapshot, checknode->nodeloc,
-                                        group1[checknode->nodeloc].N, ncommon, rank, max_rank);
-
-                                fflush(fp);
-                                flag = 1;
-                                break;
+                                tmp_node->Sibling = checknode->Sibling;
+                                tmp_node->Parent->Nchild--;
                             }
+
+                            checknode->Parent = thisnode;
+                            checknode->ParentID = thisnode->nodeloc;
+                            checknode->ParentZ = thisnode->z;
+                            checknode->ParentSnapshot = thisnode->snapshot;
+                            checknode->Sibling = NULL;
+                            thisnode->BigChild = checknode;
+                            thisnode->Nchild = 1;
+
+                            tmp_node = checknode;
+                            while (tmp_node != NULL)
+                            {
+                                tmp_node->haloid = thisnode->haloid;
+                                tmp_node = tmp_node->BigChild;
+                            }
+
+                            fprintf(stderr,
+                                    "Found a progenitor for node with groupnum %" STR_FMT
+                                    " at snapshot %d. The progenitor is at snapshot %d, "
+                                    "groupnumber = %" STR_FMT " \n",
+                                    thisnode->nodeloc, thisnode->snapshot, checknode->snapshot, checknode->nodeloc);
+                            fprintf(fp,
+                                    "%6d    %12" STR_FMT "    %14" STR_FMT "     %16" STR_FMT
+                                    "    %10d   %12" STR_FMT "   %14" STR_FMT "    %14" STR_FMT
+                                    "      %16.4lf  %16.4lf\n",
+                                    thisnode->snapshot, thisnode->nodeloc, thisnode->haloid,
+                                    group0[thisnode->nodeloc].N, checknode->snapshot, checknode->nodeloc,
+                                    group1[checknode->nodeloc].N, ncommon, rank, max_rank);
+
+                            fflush(fp);
+                            flag = 1;
+                            break;
                         }
                     }
                     free(TrackIds);
