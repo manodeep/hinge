@@ -633,10 +633,10 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
         size_t nbytes_read = 0;                                                                                        \
         size_t bytes_left = total_bytes;                                                                               \
         off_t start_offset = offset;                                                                                   \
-        fprintf(stderr,"Reading %zu bytes starting from offset %zu\n", total_bytes, start_offset);                     \
+        fprintf(stderr, "Reading %zu bytes starting from offset %zu\n", total_bytes, start_offset);                    \
         while (bytes_left > 0)                                                                                         \
         {                                                                                                              \
-            fprintf(stderr,"Reading %zu bytes remaining  from offset %zu\n", bytes_left, start_offset);                \
+            fprintf(stderr, "Reading %zu bytes remaining  from offset %zu\n", bytes_left, start_offset);               \
             ssize_t nbytes = pread(fd, buf, bytes_left, start_offset);                                                 \
             XASSERT(nbytes >= 0, "Error reading from file. nbytes = %zd\n", nbytes);                                   \
             bytes_left -= nbytes;                                                                                      \
