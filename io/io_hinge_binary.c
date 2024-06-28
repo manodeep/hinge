@@ -472,7 +472,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     len = totnpart * sizeof(group->z[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), &start_offset, len);
 
-//#define VERIFY_FILE_CONCAT
+    // #define VERIFY_FILE_CONCAT
 
 #ifdef VERIFY_FILE_CONCAT
 #define NHALOS_CHECK(inp_file)                                                                                         \
@@ -580,7 +580,7 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     status = fread(&sizeof_group_data, sizeof(sizeof_group_data), 1, fp_cat);
     if (status != 1)
     {
-        fprintf(stderr, "Error: Could not read sizeof_group_data. Got status = %"PRId64"\n", status);
+        fprintf(stderr, "Error: Could not read sizeof_group_data. Got status = %" PRId64 "\n", status);
         perror(NULL);
         goto error;
     }
@@ -597,7 +597,9 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     status = fread(group, sizeof_group_data, nhalos, fp_cat);
     if (status != nhalos)
     {
-        fprintf(stderr,"Error with reading group catalog. got status = %"PRId64". Expected to read %"PRId64" halos\n", status, nhalos);
+        fprintf(stderr,
+                "Error with reading group catalog. got status = %" PRId64 ". Expected to read %" PRId64 " halos\n",
+                status, nhalos);
         perror(NULL);
         goto error;
     }
@@ -607,8 +609,10 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     status = read(fd, &nhalos_check, sizeof(nhalos_check));
     if (status != 1)
     {
-        fprintf(stderr,"Error with reading nhalos (to cross-check) from unique particles file. got status = %"PRId64\
-             " nhalos_check = %"PRId64" nhalos = %"PRId64"\n", status, nhalos_check, nhalos);
+        fprintf(stderr,
+                "Error with reading nhalos (to cross-check) from unique particles file. got status = %" PRId64
+                " nhalos_check = %" PRId64 " nhalos = %" PRId64 "\n",
+                status, nhalos_check, nhalos);
         goto error;
     }
     XASSERT(nhalos == nhalos_check,
@@ -619,7 +623,8 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     status = read(fd, &totnpart, sizeof(totnpart));
     if (status != 1)
     {
-        fprintf(stderr,"Error: Reading total number of particles. got status = %"PRId64" totnpart = %"PRId64"\n", status, totnpart);
+        fprintf(stderr, "Error: Reading total number of particles. got status = %" PRId64 " totnpart = %" PRId64 "\n",
+                status, totnpart);
         goto error;
     }
 
@@ -632,20 +637,22 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     const size_t total_y_bytes = totnpart * sizeof(group->y[0]);
     const size_t total_z_bytes = totnpart * sizeof(group->z[0]);
 
-#define PREAD_UNTIL_DONE(fd, buf, total_bytes, offset)     {                                                 \
-        size_t nbytes_read = 0;                                                                              \
-        size_t bytes_left = total_bytes;                                                                     \
-        off_t start_offset = offset;                                                                         \
-        while (bytes_left > 0)                                                                               \
-        {                                                                                                    \
-            ssize_t nbytes = pread(fd, buf, bytes_left, start_offset);                                       \
-            XASSERT(nbytes >= 0, "Error reading from file. nbytes = %zd\n", nbytes);                         \
-            bytes_left -= nbytes;                                                                            \
-            start_offset += nbytes;                                                                          \
-            nbytes_read += nbytes;                                                                           \
-        }                                                                                                    \
-        XASSERT(bytes_left == 0, "Error: bytes_left = %zu\n", bytes_left);                                   \
-        XASSERT(nbytes_read == total_bytes, "Error: nbytes_read = %zu total_bytes = %llu\n", nbytes_read, (unsigned long long) total_bytes); \
+#define PREAD_UNTIL_DONE(fd, buf, total_bytes, offset)                                                                 \
+    {                                                                                                                  \
+        size_t nbytes_read = 0;                                                                                        \
+        size_t bytes_left = total_bytes;                                                                               \
+        off_t start_offset = offset;                                                                                   \
+        while (bytes_left > 0)                                                                                         \
+        {                                                                                                              \
+            ssize_t nbytes = pread(fd, buf, bytes_left, start_offset);                                                 \
+            XASSERT(nbytes >= 0, "Error reading from file. nbytes = %zd\n", nbytes);                                   \
+            bytes_left -= nbytes;                                                                                      \
+            start_offset += nbytes;                                                                                    \
+            nbytes_read += nbytes;                                                                                     \
+        }                                                                                                              \
+        XASSERT(bytes_left == 0, "Error: bytes_left = %zu\n", bytes_left);                                             \
+        XASSERT(nbytes_read == total_bytes, "Error: nbytes_read = %zu total_bytes = %llu\n", nbytes_read,              \
+                (unsigned long long)total_bytes);                                                                      \
     }
 
     off_t group_partid_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
