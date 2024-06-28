@@ -475,15 +475,17 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
 #define VERIFY_FILE_CONCAT
 
 #ifdef VERIFY_FILE_CONCAT
-#define NHALOS_CHECK(inp_file) {                     \
-    int64 nhalos_check;                              \
-    lseek(fout, 0, SEEK_SET);                        \
-    rewind(inp_file);                                \
-    read(fout, &nhalos_check, sizeof(nhalos_check)); \
-    XASSERT(nhalos == nhalos_check, "In concat file: nhalos = %" PRId64 " != %" PRId64 "\n", nhalos, nhalos_check); \
-    fread(&nhalos_check, sizeof(nhalos_check), 1, inp_file); \
-    XASSERT(nhalos == nhalos_check, "In input file: nhalos = %" PRId64 " != %" PRId64 "\n", nhalos, nhalos_check); \
-}
+#define NHALOS_CHECK(inp_file)                                                                                         \
+    {                                                                                                                  \
+        int64 nhalos_check;                                                                                            \
+        lseek(fout, 0, SEEK_SET);                                                                                      \
+        rewind(inp_file);                                                                                              \
+        read(fout, &nhalos_check, sizeof(nhalos_check));                                                               \
+        XASSERT(nhalos == nhalos_check, "In concat file: nhalos = %" PRId64 " != %" PRId64 "\n", nhalos,               \
+                nhalos_check);                                                                                         \
+        fread(&nhalos_check, sizeof(nhalos_check), 1, inp_file);                                                       \
+        XASSERT(nhalos == nhalos_check, "In input file: nhalos = %" PRId64 " != %" PRId64 "\n", nhalos, nhalos_check); \
+    }
     NHALOS_CHECK(fp_ids);
     NHALOS_CHECK(fp_xpos);
     NHALOS_CHECK(fp_ypos);
