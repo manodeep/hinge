@@ -291,6 +291,8 @@ void fillprogenitors(struct node_data *tree[], int64 *Ngroups)
        number of particles.
 
     */
+    fprintf(stderr,"In %s> PARAMS.SAVE_UNIQUE_PARTICLES = %d ...now setting to 0\n", __FUNCTION__, PARAMS.SAVE_UNIQUE_PARTICLES);
+    PARAMS.SAVE_UNIQUE_PARTICLES = 0;
 
     my_snprintf(fname, MAXLEN, "%s/found_progenitors.txt", PARAMS.OUTPUT_DIR);
 
