@@ -628,14 +628,6 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
         goto error;
     }
 
-    int interrupted = 0;
-    fprintf(stderr, "Reading and assigning field (from unique particles file): 'partid', 'xpos', 'ypos', 'zpos' ...\n");
-    init_my_progressbar(totnpart, &interrupted);
-    int64 numpart_read = 0;
-    const size_t total_id_bytes = totnpart * sizeof(group->id[0]);
-    const size_t total_x_bytes = totnpart * sizeof(group->x[0]);
-    const size_t total_y_bytes = totnpart * sizeof(group->y[0]);
-    const size_t total_z_bytes = totnpart * sizeof(group->z[0]);
 
 #define PREAD_UNTIL_DONE(fd, buf, total_bytes, offset)                                                                 \
     {                                                                                                                  \
@@ -655,27 +647,36 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
                 (unsigned long long)total_bytes);                                                                      \
     }
 
+    int interrupted = 0;
+    fprintf(stderr, "Reading and assigning field (from unique particles file): 'partid', 'xpos', 'ypos', 'zpos' ...\n");
+    init_my_progressbar(totnpart, &interrupted);
+    int64 numpart_read = 0;
+    const size_t total_id_bytes = totnpart * sizeof(group->id[0]);
+    XASSERT(sizeof(group->x[0]) == sizeof(group->y[0]), "Error: sizeof(group->x[0]) = %zu != sizeof(group->y[0]) = %zu\n",
+            sizeof(group->x[0]), sizeof(group->y[0]));
+    XASSERT(sizeof(group->x[0]) == sizeof(group->z[0]), "Error: sizeof(group->x[0]) = %zu != sizeof(group->z[0]) = %zu\n",
+            sizeof(group->x[0]), sizeof(group->z[0]));
+    const size_t total_x_bytes = totnpart * sizeof(group->x[0]);
     off_t group_partid_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
     for (int64 i = 0; i < nhalos; i++)
     {
         my_progressbar(numpart_read, &interrupted);
+        fprintf(stderr,"Reading %"PRId64"/%"PRId64" with %"PRId64" particles (numpart_read = %"PRId64") ...\n",i,nhalos, group[i].N);
         struct group_data *thisgroup = &group[i];
         thisgroup->id = my_malloc(sizeof(*thisgroup->id), thisgroup->N);
         thisgroup->x = my_malloc(sizeof(*thisgroup->x), thisgroup->N);
         thisgroup->y = my_malloc(sizeof(*thisgroup->y), thisgroup->N);
         thisgroup->z = my_malloc(sizeof(*thisgroup->z), thisgroup->N);
-        size_t nbytes_to_read = thisgroup->N * sizeof(group->id[0]);
-        PREAD_UNTIL_DONE(fd, thisgroup->id, nbytes_to_read, group_partid_offset);
-
+        PREAD_UNTIL_DONE(fd, thisgroup->id, thisgroup->N * sizeof(group->id[0]), group_partid_offset);
         PREAD_UNTIL_DONE(fd, thisgroup->x, thisgroup->N * sizeof(group->x[0]), group_partid_offset + total_id_bytes);
-        PREAD_UNTIL_DONE(fd, thisgroup->y, thisgroup->N * sizeof(group->y[0]),
-                         group_partid_offset + total_id_bytes + total_x_bytes);
+        PREAD_UNTIL_DONE(fd, thisgroup->y, thisgroup->N * sizeof(group->y[0]), group_partid_offset + total_id_bytes + total_x_bytes);
         PREAD_UNTIL_DONE(fd, thisgroup->z, thisgroup->N * sizeof(group->z[0]),
-                         group_partid_offset + total_id_bytes + total_x_bytes + total_y_bytes);
+                         group_partid_offset + total_id_bytes + 2*total_x_bytes);
 
         thisgroup->parentgroupforparticle = my_malloc(sizeof(*thisgroup->parentgroupforparticle), thisgroup->N);
         thisgroup->parentsnapshotforparticle = my_malloc(sizeof(*thisgroup->parentsnapshotforparticle), thisgroup->N);
 
+        fprintf(stderr,"Reading %"PRId64"/%"PRId64" with %"PRId64" particles (numpart_read = %"PRId64") ...done\n",i,nhalos, group[i].N);
         numpart_read += thisgroup->N;
         group_partid_offset += thisgroup->N * sizeof(group->id[0]);
     }
