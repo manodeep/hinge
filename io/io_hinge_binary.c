@@ -659,8 +659,6 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     for (int64 i = 0; i < nhalos; i++)
     {
         my_progressbar(numpart_read, &interrupted);
-        fprintf(stderr, "Reading %" PRId64 "/%" PRId64 " with %" PRId64 " particles (numpart_read = %" PRId64 ") ...\n",
-                i, nhalos, group[i].N, numpart_read);
         struct group_data *thisgroup = &group[i];
         thisgroup->id = my_malloc(sizeof(*thisgroup->id), thisgroup->N);
         thisgroup->x = my_malloc(sizeof(*thisgroup->x), thisgroup->N);
@@ -679,9 +677,6 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
         thisgroup->parentgroupforparticle = my_malloc(sizeof(*thisgroup->parentgroupforparticle), thisgroup->N);
         thisgroup->parentsnapshotforparticle = my_malloc(sizeof(*thisgroup->parentsnapshotforparticle), thisgroup->N);
 
-        fprintf(stderr,
-                "Reading %" PRId64 "/%" PRId64 " with %" PRId64 " particles (numpart_read = %" PRId64 ") ...done\n", i,
-                nhalos, group[i].N, numpart_read);
         numpart_read += thisgroup->N;
         group_partid_offset += thisgroup->N * sizeof(group->id[0]);
     }
