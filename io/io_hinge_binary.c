@@ -475,17 +475,28 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
 #define VERIFY_FILE_CONCAT
 
 #ifdef VERIFY_FILE_CONCAT
-    lseek(fout, 0, SEEK_SET);
-    rewind(fp_ids);
-    int64 nhalos_check;
-    read(fout, &nhalos_check, sizeof(nhalos_check));
-    XASSERT(nhalos == nhalos_check, "nhalos = %" PRId64 " != %" PRId64 "\n", nhalos, nhalos_check);
+#define NHALOS_CHECK(inp_file) {                     \
+    int64 nhalos_check;                              \
+    lseek(fout, 0, SEEK_SET);                        \
+    rewind(inp_file);                                \
+    read(fout, &nhalos_check, sizeof(nhalos_check)); \
+    XASSERT(nhalos == nhalos_check, "In concat file: nhalos = %" PRId64 " != %" PRId64 "\n", nhalos, nhalos_check); \
+    fread(&nhalos_check, sizeof(nhalos_check), 1, inp_file); \
+    XASSERT(nhalos == nhalos_check, "In input file: nhalos = %" PRId64 " != %" PRId64 "\n", nhalos, nhalos_check); \
+}
+    NHALOS_CHECK(fp_ids);
+    NHALOS_CHECK(fp_xpos);
+    NHALOS_CHECK(fp_ypos);
+    NHALOS_CHECK(fp_zpos);
+
     int64 totnpart_check;
+    lseek(fout, sizeof(int64), SEEK_SET);
     read(fout, &totnpart_check, sizeof(totnpart_check));
     XASSERT(totnpart == totnpart_check, "totnpart = %" PRId64 " != %" PRId64 "\n", totnpart, totnpart_check);
 
 #define CHECK_VAR(var_type, var_name, fmt, inp_file)                                                                   \
     {                                                                                                                  \
+        fseek(inp_file, sizeof(int64), SEEK_SET);                                                                      \
         for (int64 i = 0; i < totnpart; i++)                                                                           \
         {                                                                                                              \
             var_type _tmp, _tmp_check;                                                                                 \
