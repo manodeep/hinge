@@ -472,7 +472,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     len = totnpart * sizeof(group->z[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), &start_offset, len);
 
-#define VERIFY_FILE_CONCAT
+//#define VERIFY_FILE_CONCAT
 
 #ifdef VERIFY_FILE_CONCAT
 #define NHALOS_CHECK(inp_file)                                                                                         \
@@ -555,14 +555,21 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     fprintf(stderr, "Loading unique particles (catalog = '%s', particles = '%s')...\n", catalog_fname, unique_fname);
 
     time_t t0 = time(NULL);
-    FILE *fp = NULL;
     FILE *fp_cat = fopen(catalog_fname, "rb");
     if (fp_cat == NULL)
+    {
+        fprintf(stderr, "Error: Could not open file %s\n", catalog_fname);
+        perror(NULL);
         goto error;
+    }
 
-    fp = fopen(unique_fname, "rb");
-    if (fp == NULL)
+    int fd = open(unique_fname, O_RDONLY);
+    if (fd < 0)
+    {
+        fprintf(stderr, "Error: Could not open file %s\n", unique_fname);
+        perror(NULL);
         goto error;
+    }
 
     int64 nhalos;
     int64 status = fread(&nhalos, sizeof(nhalos), 1, fp_cat);
@@ -572,7 +579,11 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     size_t sizeof_group_data;
     status = fread(&sizeof_group_data, sizeof(sizeof_group_data), 1, fp_cat);
     if (status != 1)
+    {
+        fprintf(stderr, "Error: Could not read sizeof_group_data. Got status = %"PRId64"\n", status);
+        perror(NULL);
         goto error;
+    }
 
     if (sizeof_group_data != sizeof(struct group_data))
     {
@@ -585,26 +596,59 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     // read the group catalog
     status = fread(group, sizeof_group_data, nhalos, fp_cat);
     if (status != nhalos)
+    {
+        fprintf(stderr,"Error with reading group catalog. got status = %"PRId64". Expected to read %"PRId64" halos\n", status, nhalos);
+        perror(NULL);
         goto error;
+    }
 
     // check nhalos from the unique particles properties file
     int64 nhalos_check;
-    status = fread(&nhalos_check, sizeof(nhalos_check), 1, fp);
+    status = read(fd, &nhalos_check, sizeof(nhalos_check));
     if (status != 1)
+    {
+        fprintf(stderr,"Error with reading nhalos (to cross-check) from unique particles file. got status = %"PRId64\
+             " nhalos_check = %"PRId64" nhalos = %"PRId64"\n", status, nhalos_check, nhalos);
         goto error;
+    }
     XASSERT(nhalos == nhalos_check,
             "nhalos (from file '%s')= %" PRId64 " should be equal to nhalos %" PRId64 " (from file '%s')\n",
             catalog_fname, nhalos, nhalos_check, unique_fname);
 
     int64 totnpart;
-    status = fread(&totnpart, sizeof(totnpart), 1, fp);
+    status = read(fd, &totnpart, sizeof(totnpart));
     if (status != 1)
+    {
+        fprintf(stderr,"Error: Reading total number of particles. got status = %"PRId64" totnpart = %"PRId64"\n", status, totnpart);
         goto error;
+    }
 
     int interrupted = 0;
     fprintf(stderr, "Reading and assigning field (from unique particles file): 'partid', 'xpos', 'ypos', 'zpos' ...\n");
     init_my_progressbar(totnpart, &interrupted);
     int64 numpart_read = 0;
+    const size_t total_id_bytes = totnpart * sizeof(group->id[0]);
+    const size_t total_x_bytes = totnpart * sizeof(group->x[0]);
+    const size_t total_y_bytes = totnpart * sizeof(group->y[0]);
+    const size_t total_z_bytes = totnpart * sizeof(group->z[0]);
+
+#define PREAD_UNTIL_DONE(fd, buf, total_bytes, offset)     {                                                 \
+        size_t nbytes_read = 0;                                                                              \
+        size_t bytes_left = total_bytes;                                                                     \
+        off_t start_offset = offset;                                                                         \
+        while (bytes_left > 0)                                                                               \
+        {                                                                                                    \
+            ssize_t nbytes = pread(fd, buf, bytes_left, start_offset);                                       \
+            XASSERT(nbytes >= 0, "Error reading from file. nbytes = %zd\n", nbytes);                         \
+            bytes_left -= nbytes;                                                                            \
+            start_offset += nbytes;                                                                          \
+            nbytes_read += nbytes;                                                                           \
+        }                                                                                                    \
+        XASSERT(bytes_left == 0, "Error: bytes_left = %zu\n", bytes_left);                                   \
+        XASSERT(nbytes_read == total_bytes, "Error: nbytes_read = %zu total_bytes = %llu\n", nbytes_read, (unsigned long long) total_bytes); \
+    }
+
+    off_t group_partid_offset = sizeof(int64); // to skip over numpart (of type int64) at the start of each file
     for (int64 i = 0; i < nhalos; i++)
     {
         my_progressbar(numpart_read, &interrupted);
@@ -613,26 +657,20 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
         thisgroup->x = my_malloc(sizeof(*thisgroup->x), thisgroup->N);
         thisgroup->y = my_malloc(sizeof(*thisgroup->y), thisgroup->N);
         thisgroup->z = my_malloc(sizeof(*thisgroup->z), thisgroup->N);
-        status = fread(thisgroup->id, sizeof(*thisgroup->id), thisgroup->N, fp);
-        if (status != thisgroup->N)
-            goto error;
+        size_t nbytes_to_read = thisgroup->N * sizeof(group->id[0]);
+        PREAD_UNTIL_DONE(fd, thisgroup->id, nbytes_to_read, group_partid_offset);
 
-        status = fread(thisgroup->x, sizeof(*thisgroup->x), thisgroup->N, fp);
-        if (status != thisgroup->N)
-            goto error;
-
-        status = fread(thisgroup->y, sizeof(*thisgroup->y), thisgroup->N, fp);
-        if (status != thisgroup->N)
-            goto error;
-
-        status = fread(thisgroup->z, sizeof(*thisgroup->z), thisgroup->N, fp);
-        if (status != thisgroup->N)
-            goto error;
+        PREAD_UNTIL_DONE(fd, thisgroup->x, thisgroup->N * sizeof(group->x[0]), group_partid_offset + total_id_bytes);
+        PREAD_UNTIL_DONE(fd, thisgroup->y, thisgroup->N * sizeof(group->y[0]),
+                         group_partid_offset + total_id_bytes + total_x_bytes);
+        PREAD_UNTIL_DONE(fd, thisgroup->z, thisgroup->N * sizeof(group->z[0]),
+                         group_partid_offset + total_id_bytes + total_x_bytes + total_y_bytes);
 
         thisgroup->parentgroupforparticle = my_malloc(sizeof(*thisgroup->parentgroupforparticle), thisgroup->N);
         thisgroup->parentsnapshotforparticle = my_malloc(sizeof(*thisgroup->parentsnapshotforparticle), thisgroup->N);
 
         numpart_read += thisgroup->N;
+        group_partid_offset += thisgroup->N * sizeof(group->id[0]);
     }
     finish_myprogressbar(&interrupted);
     fprintf(stderr,
@@ -640,7 +678,7 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     time_t t1 = time(NULL);
     print_time(t0, t1, "Reading and assigning fields (from unique particle files)");
     fclose(fp_cat);
-    fclose(fp);
+    close(fd);
     fprintf(stderr, "Loading unique particles (catalog = '%s', particles = '%s')...done\n", catalog_fname,
             unique_fname);
 
@@ -651,8 +689,8 @@ error:
             __FUNCTION__, catalog_fname, unique_fname);
     if (fp_cat != NULL)
         fclose(fp_cat);
-    if (fp != NULL)
-        fclose(fp);
+    if (fd > 0)
+        close(fd);
     params->LOAD_UNIQUE_PARTICLES =
         0; /* This is critical to "unset". Otherwise, infinite loop will occur loadgroups<->load_unique */
     return loadgroups_hinge_binary(params, snapnum, group);
