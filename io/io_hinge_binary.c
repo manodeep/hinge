@@ -603,6 +603,7 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
         perror(NULL);
         goto error;
     }
+    fclose(fp_cat);
 
     // check nhalos from the unique particles properties file
     int64 nhalos_check;
@@ -630,7 +631,6 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
 
 #define PREAD_UNTIL_DONE(fd, buf, total_bytes, offset)                                                                 \
     {                                                                                                                  \
-        size_t nbytes_read = 0;                                                                                        \
         size_t bytes_left = total_bytes;                                                                               \
         off_t start_offset = offset;                                                                                   \
         fprintf(stderr, "Reading %zu bytes starting from offset %zu\n", total_bytes, start_offset);                    \
@@ -641,11 +641,8 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
             XASSERT(nbytes >= 0, "Error reading from file. nbytes = %zd\n", nbytes);                                   \
             bytes_left -= nbytes;                                                                                      \
             start_offset += nbytes;                                                                                    \
-            nbytes_read += nbytes;                                                                                     \
         }                                                                                                              \
         XASSERT(bytes_left == 0, "Error: bytes_left = %zu\n", bytes_left);                                             \
-        XASSERT(nbytes_read == total_bytes, "Error: nbytes_read = %zu total_bytes = %llu\n", nbytes_read,              \
-                (unsigned long long)total_bytes);                                                                      \
     }
 
     int interrupted = 0;
@@ -671,12 +668,15 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
         thisgroup->x = my_malloc(sizeof(*thisgroup->x), thisgroup->N);
         thisgroup->y = my_malloc(sizeof(*thisgroup->y), thisgroup->N);
         thisgroup->z = my_malloc(sizeof(*thisgroup->z), thisgroup->N);
-        PREAD_UNTIL_DONE(fd, thisgroup->id, thisgroup->N * sizeof(group->id[0]), group_partid_offset);
-        PREAD_UNTIL_DONE(fd, thisgroup->x, thisgroup->N * sizeof(group->x[0]), group_partid_offset + total_id_bytes);
-        PREAD_UNTIL_DONE(fd, thisgroup->y, thisgroup->N * sizeof(group->y[0]),
-                         group_partid_offset + total_id_bytes + total_x_bytes);
-        PREAD_UNTIL_DONE(fd, thisgroup->z, thisgroup->N * sizeof(group->z[0]),
-                         group_partid_offset + total_id_bytes + 2 * total_x_bytes);
+        off_t offset = group_partid_offset;
+        PREAD_UNTIL_DONE(fd, thisgroup->id, thisgroup->N * sizeof(group->id[0]), offset);
+        off_t id_bytes_remaining = total_id_bytes - group_partid_offset + sizeof(int64);
+        offset = group_partid_offset + id_bytes_remaining + numpart_read * sizeof(group->x[0]);
+        PREAD_UNTIL_DONE(fd, thisgroup->x, thisgroup->N * sizeof(group->x[0]), offset);
+        offset = group_partid_offset + id_bytes_remaining + numpart_read * sizeof(group->x[0]) + total_x_bytes;
+        PREAD_UNTIL_DONE(fd, thisgroup->y, thisgroup->N * sizeof(group->y[0]), offset);
+        offset = group_partid_offset + id_bytes_remaining + numpart_read * sizeof(group->x[0]) + 2 * total_x_bytes;
+        PREAD_UNTIL_DONE(fd, thisgroup->z, thisgroup->N * sizeof(group->z[0]), offset);
 
         thisgroup->parentgroupforparticle = my_malloc(sizeof(*thisgroup->parentgroupforparticle), thisgroup->N);
         thisgroup->parentsnapshotforparticle = my_malloc(sizeof(*thisgroup->parentsnapshotforparticle), thisgroup->N);
@@ -692,7 +692,6 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
             "Reading and assigning field (from unique particles file): 'partid', 'xpos', 'ypos', 'zpos' ...done\n");
     time_t t1 = time(NULL);
     print_time(t0, t1, "Reading and assigning fields (from unique particle files)");
-    fclose(fp_cat);
     close(fd);
     fprintf(stderr, "Loading unique particles (catalog = '%s', particles = '%s')...done\n", catalog_fname,
             unique_fname);
