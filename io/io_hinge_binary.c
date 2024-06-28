@@ -496,7 +496,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
                     "\n",                                                                                              \
                     i, _tmp, _tmp_check);                                                                              \
         }                                                                                                              \
-        fprintf(stderr, "Verified field " var_name "\n");           \
+        fprintf(stderr, "Verified field " var_name "\n");                                                              \
     }
     CHECK_VAR(id64, "particle id", STR_ID_FMT, fp_ids);
     CHECK_VAR(float, "xpos", "f", fp_xpos);
