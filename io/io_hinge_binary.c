@@ -607,7 +607,7 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     // check nhalos from the unique particles properties file
     int64 nhalos_check;
     status = read(fd, &nhalos_check, sizeof(nhalos_check));
-    if (status != 1)
+    if (status != sizeof(nhalos_check))
     {
         fprintf(stderr,
                 "Error with reading nhalos (to cross-check) from unique particles file. got status = %" PRId64
@@ -621,7 +621,7 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
 
     int64 totnpart;
     status = read(fd, &totnpart, sizeof(totnpart));
-    if (status != 1)
+    if (status != sizeof(totnpart))
     {
         fprintf(stderr, "Error: Reading total number of particles. got status = %" PRId64 " totnpart = %" PRId64 "\n",
                 status, totnpart);
