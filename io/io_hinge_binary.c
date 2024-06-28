@@ -484,15 +484,19 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     read(fout, &totnpart_check, sizeof(totnpart_check));
     XASSERT(totnpart == totnpart_check, "totnpart = %" PRId64 " != %" PRId64 "\n", totnpart, totnpart_check);
 
-#define CHECK_VAR(var_type, var_name, fmt, inp_file) {               \
-    for(int64 i=0;i<totnpart;i++)                               \
-    {                                                           \
-        var_type _tmp, _tmp_check;                              \
-        read(fout, &_tmp, sizeof(var_type));                    \
-        fread(&_tmp_check, sizeof(var_type), 1, inp_file);           \
-        XASSERT(_tmp == _tmp_check, "Error: %"PRId64" particle. For field " var_name ": concat file contains = %" fmt " != %" fmt "\n", i, _tmp, _tmp_check);\
-    }                                                           \
-}
+#define CHECK_VAR(var_type, var_name, fmt, inp_file)                                                                   \
+    {                                                                                                                  \
+        for (int64 i = 0; i < totnpart; i++)                                                                           \
+        {                                                                                                              \
+            var_type _tmp, _tmp_check;                                                                                 \
+            read(fout, &_tmp, sizeof(var_type));                                                                       \
+            fread(&_tmp_check, sizeof(var_type), 1, inp_file);                                                         \
+            XASSERT(_tmp == _tmp_check,                                                                                \
+                    "Error: %" PRId64 " particle. For field " var_name ": concat file contains = %" fmt " != %" fmt    \
+                    "\n",                                                                                              \
+                    i, _tmp, _tmp_check);                                                                              \
+        }                                                                                                              \
+    }
     CHECK_VAR(id64, "particle id", STR_ID_FMT, fp_ids);
     CHECK_VAR(float, "xpos", "f", fp_xpos);
     CHECK_VAR(float, "ypos", "f", fp_ypos);
