@@ -430,7 +430,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     /* concat all the files together */
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_allprops_z%0.3f.bin", params->OUTPUT_DIR,
                 params->GROUP_BASE, REDSHIFT[snapnum]);
-    int fout = open(unique_fname, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    int fout = open(unique_fname, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     if (fout < 0)
     {
         fprintf(stderr, "Could not open file %s for writing\n", unique_fname);
@@ -471,6 +471,34 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
                                   // before calling USE_SENDFILE_TO_WRITE_PROPS
     len = totnpart * sizeof(group->z[0]);
     USE_SENDFILE_TO_WRITE_PROPS(fout, fileno(fp_zpos), &start_offset, len);
+
+#define VERIFY_FILE_CONCAT
+
+#ifdef VERIFY_FILE_CONCAT
+    lseek(fout, 0, SEEK_SET);
+    rewind(fp_ids);
+    int64 nhalos_check;
+    read(fout, &nhalos_check, sizeof(nhalos_check));
+    XASSERT(nhalos == nhalos_check, "nhalos = %" PRId64 " != %" PRId64 "\n", nhalos, nhalos_check);
+    int64 totnpart_check;
+    read(fout, &totnpart_check, sizeof(totnpart_check));
+    XASSERT(totnpart == totnpart_check, "totnpart = %" PRId64 " != %" PRId64 "\n", totnpart, totnpart_check);
+
+#define CHECK_VAR(var_type, var_name, fmt, inp_file) {               \
+    for(int64 i=0;i<totnpart;i++)                               \
+    {                                                           \
+        var_type _tmp, _tmp_check;                              \
+        read(fout, &_tmp, sizeof(var_type));                    \
+        fread(&_tmp_check, sizeof(var_type), 1, inp_file);           \
+        XASSERT(_tmp == _tmp_check, "Error: %"PRId64" particle. For field " var_name ": concat file contains = %" fmt " != %" fmt "\n", i, _tmp, _tmp_check);\
+    }                                                           \
+}
+    CHECK_VAR(id64, "particle id", STR_ID_FMT, fp_ids);
+    CHECK_VAR(float, "xpos", "f", fp_xpos);
+    CHECK_VAR(float, "ypos", "f", fp_ypos);
+    CHECK_VAR(float, "zpos", "f", fp_zpos);
+
+#endif
 
     close(fout);
     fclose(fp_ids);
