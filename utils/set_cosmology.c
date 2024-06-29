@@ -250,9 +250,9 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     double rmax = 0.0, rmin = PARAMS.BOXSIZE;
     for (int64 i = 0; i < Npart; i++)
     {
-        const float dx = periodic(group->x[i] - xcen);
-        const float dy = periodic(group->y[i] - ycen);
-        const float dz = periodic(group->z[i] - zcen);
+        const double dx = periodic(group->x[i] - xcen);
+        const double dy = periodic(group->y[i] - ycen);
+        const double dz = periodic(group->z[i] - zcen);
 
         r[i] = sqrt(dx * dx + dy * dy + dz * dz);
         rmax = r[i] > rmax ? r[i] : rmax;
@@ -268,7 +268,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
                 rmax, rmin, Npart, group->nodeloc, group->snapshot);
         fprintf(stderr, "xcen = %f ycen = %f zcen = %f\n", xcen, ycen, zcen);
         for (int64 i = 0; i < Npart; i++)
-            fprintf(stderr, "x, y, z = (%f, %f, %f) r[%" STR_FMT "] = %f id = %" STR_ID_FMT "\n", group->x[i],
+            fprintf(stderr, "x, y, z = (%f, %f, %f) r[%" STR_FMT "] = %lf id = %" STR_ID_FMT "\n", group->x[i],
                     group->y[i], group->z[i], i, r[i], group->id[i]);
     }
     XASSERT(rmax > rmin,
