@@ -143,7 +143,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             nextnpart);
 
 #ifdef INDEX_WITH_PARTID
-    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);//must be calloc
+    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); // must be calloc
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     int64 *NextAllRealGroupIds = my_malloc(sizeof(*NextAllRealGroupIds), NextMaxPartId);
     int64 *NextAllRealGroupLocs = my_malloc(sizeof(*NextAllRealGroupLocs), NextMaxPartId);
@@ -485,7 +485,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT " nextnpart = %" STR_FMT "\n", __FUNCTION__, NextMaxPartId,
             nextnpart);
 #ifdef INDEX_WITH_PARTID
-    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);//must be calloc
+    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId); // must be calloc
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     int64 *NextAllGroupLocs = my_malloc(sizeof(*NextAllGroupLocs), NextMaxPartId);
 #else
