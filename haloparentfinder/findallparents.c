@@ -143,7 +143,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
             nextnpart);
 
 #ifdef INDEX_WITH_PARTID
-    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);
+    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);//must be calloc
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     int64 *NextAllRealGroupIds = my_malloc(sizeof(*NextAllRealGroupIds), NextMaxPartId);
     int64 *NextAllRealGroupLocs = my_malloc(sizeof(*NextAllRealGroupLocs), NextMaxPartId);
@@ -207,8 +207,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     finish_myprogressbar(&interrupted);
     fprintf(stderr, "Storing ids and sorting for FOF halos ...done\n");
 
-    fprintf(stderr, "Sorting particle ids ...\n");
 #ifndef INDEX_WITH_PARTID
+    fprintf(stderr, "Sorting particle ids ...\n");
 #define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)                                                                  \
     {                                                                                                                  \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);                                                    \
@@ -220,8 +220,8 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     SGLIB_ARRAY_QUICK_SORT(id64, NextAllPartIds, nextnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 
 #undef MULTIPLE_ARRAY_EXCHANGER
-#endif
     fprintf(stderr, "Sorting particle ids ...done\n");
+#endif
 
     if (flag > 0)
     {
@@ -288,7 +288,7 @@ int64 findfofparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
                 }
                 int64 found_index;
 #ifdef INDEX_WITH_PARTID
-                if (NextAllPartIds[tmp_id] != 1)
+                if (NextAllPartIds[tmp_id] == 0)
                 {
                     continue;
                 }
@@ -485,7 +485,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
     fprintf(stderr, "In %s> NextMaxPartId = %" STR_ID_FMT " nextnpart = %" STR_FMT "\n", __FUNCTION__, NextMaxPartId,
             nextnpart);
 #ifdef INDEX_WITH_PARTID
-    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);
+    int8_t *NextAllPartIds = my_calloc(sizeof(*NextAllPartIds), NextMaxPartId);//must be calloc
     int64 *NextAllGroupIds = my_malloc(sizeof(*NextAllGroupIds), NextMaxPartId);
     int64 *NextAllGroupLocs = my_malloc(sizeof(*NextAllGroupLocs), NextMaxPartId);
 #else
@@ -522,6 +522,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
         }
     }
 #ifndef INDEX_WITH_PARTID
+    fprintf(stderr, "Sorting particle ids ...\n");
 #define MULTIPLE_ARRAY_EXCHANGER(vartype, name, i, j)                                                                  \
     {                                                                                                                  \
         SGLIB_ARRAY_ELEMENTS_EXCHANGER(id64, NextAllPartIds, i, j);                                                    \
@@ -531,6 +532,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
     SGLIB_ARRAY_QUICK_SORT(id64, NextAllPartIds, nextnpart, SGLIB_NUMERIC_COMPARATOR, MULTIPLE_ARRAY_EXCHANGER);
 #undef MULTIPLE_ARRAY_EXCHANGER
+    fprintf(stderr, "Sorting particle ids ...done\n");
 #endif
 
     Nhalofound = 0;
@@ -560,7 +562,7 @@ int64 findallparents(struct group_data *prevgroup, int64 PrevNsub, struct group_
 
             int64 found_index;
 #ifdef INDEX_WITH_PARTID
-            if (NextAllPartIds[tmp_id] != 1)
+            if (NextAllPartIds[tmp_id] == 0)
                 continue;
             XASSERT(tmp_id >= 0 && tmp_id < NextMaxPartId,
                     "Error: Particle id is out of bounds %" STR_ID_FMT " [0, %" PRId64 ")\n", tmp_id, NextMaxPartId);
