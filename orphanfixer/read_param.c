@@ -36,3 +36,16 @@ void orphanfixer_fill_params(struct params_data *params, const int maxtags, void
 
     *nt_out = nt;
 }
+
+
+void orphanfixer_write_params(FILE *fp, struct params_data *params)
+{
+    fprintf(fp, "MAX_DECR_GROUPS                   %d\n", params->MAX_DECR_GROUPS);
+    fprintf(fp, "MAX_RANK_LOC                      %" STR_FMT "\n", params->MAX_RANK_LOC);
+
+    fprintf(fp, "MIN_FCOMMON_THRESH                %lf\n", params->MIN_FCOMMON_THRESH);
+    fprintf(fp, "LOAD_FOUND_PROGENITORS            %d\n", params->LOAD_FOUND_PROGENITORS);
+    fprintf(fp, "LOAD_PARTIAL_FOUND_PROGENITORS    %d\n", params->LOAD_PARTIAL_FOUND_PROGENITORS);
+
+    return;
+}

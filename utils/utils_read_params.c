@@ -68,7 +68,7 @@ void fill_config_params(struct params_data *params)
 #endif
 }
 
-void output_params(const char *fname, struct params_data *params)
+void output_params(const char *fname, struct params_data *params, void output_special_params(FILE *, struct params_data *))
 {
     FILE *fp = NULL;
     move_existing_file(fname); // mv old param file if it exists
@@ -86,17 +86,9 @@ void output_params(const char *fname, struct params_data *params)
 
     fprintf(fp, "OUTPUT_DIR                 %s\n", params->OUTPUT_DIR);
 
-    fprintf(fp, "MAX_INCR                          %d\n", params->MAX_INCR);
-    fprintf(fp, "MAX_RANK_LOC                      %" STR_FMT "\n", params->MAX_RANK_LOC);
+    fprintf(fp, "## BOXSIZE               %lf\n", params->BOXSIZE);
 
-    fprintf(fp, "MIN_FCOMMON_FINDPROGENITOR_THRESH                       %lf\n",
-            params->MIN_FCOMMON_FINDPROGENITOR_THRESH);
-    fprintf(fp, "MIN_NUMPART_IN_FINDPROGENITOR_HALO                      %" STR_FMT "\n",
-            params->MIN_NUMPART_IN_FINDPROGENITOR_HALO);
-
-    fprintf(fp, "MIN_FCOMMON_SWITCHFOF_THRESH                           %lf\n", params->MIN_FCOMMON_SWITCHFOF_THRESH);
-    fprintf(fp, "MIN_NUMPART_IN_SWITCHFOF_HALO                          %" STR_FMT "\n",
-            params->MIN_NUMPART_IN_SWITCHFOF_HALO);
+    output_special_params(fp, params);
 
     fprintf(fp, "\n## config options [from Makefile] ##\n");
     fprintf(fp, "## FOF_ONLY              %d\n", params->fof_only);
@@ -104,9 +96,12 @@ void output_params(const char *fname, struct params_data *params)
     fprintf(fp, "## BIGSIM                %d\n", params->bigsim);
     fprintf(fp, "## LONGIDS               %d\n", params->longids);
     fprintf(fp, "## MAKE_LEAN             %d\n", params->make_lean);
-
-    fprintf(fp, "\n## Parameters read in from Gadget snapshot ##\n");
-    fprintf(fp, "## BOXSIZE               %lf\n", params->BOXSIZE);
+#ifdef INDEX_WITH_PARTID
+    fprintf(fp, "## INDEX_WITH_PARTID     1\n");
+#else
+    fprintf(fp, "## INDEX_WITH_PARTID     0\n");
+#endif
+    fprintf(fp, "\n## Parameters read in from Gadget snapshot (or estimated from group catalogs) ##\n");
     for (int i = 0; i < 6; i++)
         fprintf(fp, "## MASSARR[%d]         %e\n", i, params->MASSARR[i]);
     fclose(fp);

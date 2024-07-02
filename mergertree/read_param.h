@@ -9,3 +9,4 @@
 /* public functions in read_param.c*/
 extern void mergertree_fill_params(struct params_data *params, const int maxtags, void **addr, int *id,
                                    char (*tag)[MAXLEN], int *nt_out);
+extern void mergertree_write_params(FILE *fp, struct params_data *params);

@@ -166,7 +166,7 @@ int main(int argc, char **argv)
     // output the parameter file
     my_snprintf(outfname, MAXLEN, "%s/fofmatch.params", PARAMS.OUTPUT_DIR);
     fprintf(stderr, "output parameter file to `%s'...", outfname);
-    output_params(outfname, &PARAMS);
+    output_params(outfname, &PARAMS, haloparentfinder_write_params);
     fprintf(stderr, "..done\n");
 
     NFof0 = returnNhalo(&PARAMS, snapshot_number, 1);

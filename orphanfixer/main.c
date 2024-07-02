@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     // output the parameter file
     my_snprintf(outfname, MAXLEN, "%s/orphanfixer_used.params", PARAMS.OUTPUT_DIR);
     fprintf(stderr, "output parameter file to `%s'...", outfname);
-    output_params(outfname, &PARAMS);
+    output_params(outfname, &PARAMS, orphanfixer_write_params);
     fprintf(stderr, "..done\n");
 
 #ifdef FOF_ONLY

@@ -118,7 +118,7 @@ int main(int argc, char **argv)
     // output the parameter file
     my_snprintf(outfname, MAXLEN, "%s/complete_mergertree.params", PARAMS.OUTPUT_DIR);
     fprintf(stderr, "output parameter file to `%s'...", outfname);
-    output_params(outfname, &PARAMS);
+    output_params(outfname, &PARAMS, mergertree_write_params);
     fprintf(stderr, "..done\n");
 
     REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);

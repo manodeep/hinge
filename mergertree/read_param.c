@@ -21,3 +21,11 @@ void mergertree_fill_params(struct params_data *params, const int maxtags, void 
 
     *nt_out = nt;
 }
+
+void mergertree_write_params(FILE *fp, struct params_data *params)
+{
+    fprintf(fp, "LINKLENGTH                        %lf\n", params->LINKLENGTH);
+    fprintf(fp, "INDIVIDUAL_MERGERS                %d\n", params->INDIVIDUAL_MERGERS);
+
+    return;
+}
