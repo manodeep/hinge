@@ -473,6 +473,7 @@ void group_init(struct group_data *g, int64 N)
         g[i].NParents = 0;
         g[i].NpartinParent = 0;
         g[i].N_per_wedge = 0;
+        g[i].Rvir = 0.0;
     }
 }
 

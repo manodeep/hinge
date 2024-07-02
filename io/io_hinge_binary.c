@@ -82,6 +82,7 @@ void loadgroups_hinge_binary(struct params_data *params, const int snapnum, stru
         group[ihalo].vxcen = halocat->halos[ihalo].VXc;
         group[ihalo].vycen = halocat->halos[ihalo].VYc;
         group[ihalo].vzcen = halocat->halos[ihalo].VZc;
+        group[ihalo].Rvir = halocat->halos[ihalo].Rvir;
 
         group[ihalo].groupnum = ihalo;
         group[ihalo].nodeloc = ihalo;
