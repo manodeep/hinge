@@ -35,6 +35,7 @@ void loadgroups_hinge_binary(struct params_data *params, const int snapnum, stru
 {
     XASSERT(group != NULL, "group is NULL\n");
 
+#if 0
     if (params->LOAD_UNIQUE_PARTICLES)
     {
         fprintf(stderr, "Calling load_unique_particles\n");
@@ -45,6 +46,7 @@ void loadgroups_hinge_binary(struct params_data *params, const int snapnum, stru
         fprintf(stderr, "Not calling load_unique_particles. params->load_unique_particles = %d\n",
                 params->LOAD_UNIQUE_PARTICLES);
     }
+#endif
 
     char catalogue_fname[MAXLEN];
     my_snprintf(catalogue_fname, MAXLEN, "%s/%s_halos_z%0.3f.txt", params->GROUP_DIR, params->GROUP_BASE,

@@ -89,6 +89,9 @@ void output_params(const char *fname, struct params_data *params,
 
     fprintf(fp, "## BOXSIZE               %lf\n", params->BOXSIZE);
 
+    fprintf(fp, "## SAVE_UNIQUE_PARTICLES %d\n", params->SAVE_UNIQUE_PARTICLES);
+    fprintf(fp, "## LOAD_UNIQUE_PARTICLES %d\n", params->LOAD_UNIQUE_PARTICLES);
+
     output_special_params(fp, params);
 
     fprintf(fp, "\n## config options [from Makefile] ##\n");
