@@ -748,8 +748,10 @@ void assign_node(struct group_data *group0, int64 Ngroups0, struct parent_data *
 
         /* Set the group level density parameters */
         node[igroup].Rvir_anyl = getrvir_anyl(group0[igroup].Mtot, REDSHIFT[isnapshot], PARAMS.COSMO);
-        getrvir_from_overdensity(&group0[igroup], Nbins, rhocrit,
-                                 overdensity);                   /* Follows Bullock et al. 2001 MNRAS 321 559*/
+        if(group0[igroup].Rvir <= 0.0)
+            getrvir_from_overdensity(&group0[igroup], Nbins, rhocrit,
+                                     overdensity);                   /* Follows Bullock et al. 2001 MNRAS 321 559*/
+
         /* compute_vmax(&group0[igroup],REDSHIFT[isnapshot]); */ // Not implemented
                                                                  // yet
 
@@ -759,8 +761,15 @@ void assign_node(struct group_data *group0, int64 Ngroups0, struct parent_data *
          * group->Mtot = %lf rhocrit=%e\n", */
         /* 		group0[igroup].Rvir,node[igroup].Rvir_anyl,group0[igroup].Rhalf,group0[igroup].MaxOverDensity,group0[igroup].N,group0[igroup].Mtot,rhocrit);
          */
-
-        node[igroup].Rhalf = group0[igroup].Rhalf;
+        if(group0[igroup].Rhalf > 0.0)
+        {
+            node[igroup].Rhalf = group0[igroup].Rhalf;
+        }
+        else
+        {
+            node[igroup].Rhalf = node[igroup].Rvir_anyl * 0.5; /* hack -> half mass radius = 1/2 Rvir.
+                                                                Better fit in Lokas 2001  */
+        }
 
         if (group0[igroup].Rvir > 0.0)
         {
@@ -776,8 +785,8 @@ void assign_node(struct group_data *group0, int64 Ngroups0, struct parent_data *
                                         concentration  (Bullock 2001) */
         }
 
-        node[igroup].MaxOverDensity = group0[igroup].MaxOverDensity;
-        node[igroup].OverDensityThresh = group0[igroup].OverDensityThresh;
+        // node[igroup].MaxOverDensity = group0[igroup].MaxOverDensity;
+        // node[igroup].OverDensityThresh = group0[igroup].OverDensityThresh;
         node[igroup].Vmax = group0[igroup].Vmax;
         node[igroup].RVmax = group0[igroup].RVmax;
 
