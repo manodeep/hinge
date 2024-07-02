@@ -1,6 +1,6 @@
 #pragma once
 
-#include "defs.h"
+#include "hinge.h"
 #include "io.h"
 
 struct particle_data

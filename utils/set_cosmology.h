@@ -3,23 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "io.h"
-
-struct cosmology_data
-{
-    double G;
-    double H0;
-    double h100;
-    double Omega_0;
-    double Omega_b;
-    double Omega_dm;
-    double Omega_m;
-    double Omega_lambda;
-    double Omega_rad;
-    double Omega_k;
-    float K_fit; /* Maccio et al. 2008 fitting parameters*/
-    float F_fit;
-};
+#include "hinge.h" //for struct cosmology_data definition
+#include "io.h"    //for struct group_data definition
 
 /* functions in set_cosmology */
 double agefunc(double z, void *params);

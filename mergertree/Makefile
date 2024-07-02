@@ -1,24 +1,28 @@
 include ../common.mk
 
+EXECUTABLE = MakeMergerTree
+
 CFLAGS := $(filter-out -Wstrict-aliasing,$(CFLAGS))
 
-SOURCES    = defs.c read_param.c  impulse.c maketree.c loadfillprogenitors.c ../io/loadsnapshot.c ../io/loadgroups.c  ../io/loadparents.c  \
-			genplotdata.c ../utils/progressbar.c ../utils/utils.c ../utils/set_cosmology.c main.c
+SOURCES := read_param.c  impulse.c maketree.c loadfillprogenitors.c genplotdata.c ../utils/progressbar.c ../utils/utils.c ../utils/set_cosmology.c ../utils/utils_read_params.c
+INCL := $(SOURCES:.c=.h)
+
+IO_SRC := ../io/io.c ../io/loadparents.c ../io/loadgroups.c ../io/io_subfind_binary.c ../io/io_hinge_ascii.c ../io/io_hinge_binary.c ../io/io_hinge_utils.c
+INCL += $(IO_SRC:.c=.h) ../utils/hinge.h Makefile ../common.mk
+
+SOURCES += $(IO_SRC) main.c
+OBJECTS := $(SOURCES:.c=.o)
 
 OBJECTS    = $(SOURCES:.c=.o)
 
-EXECUTABLE = MakeMergerTree
+all: $(EXECUTABLE)
 
-INCL       = defs.h read_param.h impulse.h maketree.h loadfillprogenitors.h ../io/io.h ../io/loadsnapshot.h ../io/loadgroups.h ../io/loadparents.h \
-						genplotdata.h ../utils/progressbar.h ../utils/utils.h ../utils/set_cosmology.h proto.h 
-
-all: $(SOURCES) $(EXECUTABLE) $(INCL)
-
-$(EXECUTABLE): $(OBJECTS) $(INCL)
+$(EXECUTABLE): $(OBJECTS)
 	$(CC) $(OBJECTS) $(CLINK) $(GSL_LINK) -o $@
 
+$(OBJECTS): $(INCL)
 %.o: %.c $(INCL)
-	$(CC) $(GSL_CFLAGS) $(CFLAGS) $(OPT) $(INCLUDE) -c $< -o $@
+	$(CC) $(INCLUDE) $(GSL_CFLAGS) $(CFLAGS) $(OPT)  -c $< -o $@
 
 .PHONY: clean clena celan celna
 
@@ -28,5 +32,3 @@ clean:
 clena: clean
 celan: clean
 celna: clean
-
-

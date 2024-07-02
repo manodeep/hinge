@@ -2,11 +2,6 @@
 #define _PROGRESSBAR_H_
 
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "defs.h"
 
 #ifndef MAXLEN
 #define MAXLEN 1000

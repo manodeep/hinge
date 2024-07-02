@@ -20,18 +20,26 @@ April, 2012:  Complete with a parameter file for the upcoming public release.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/resource.h> //for <get/set>rlimit class of functions
 
-#include "defs.h"
 #include "fillprogenitors.h"
+#include "hinge.h"
 #include "io.h"
 #include "loadgroups.h"
 #include "loadsnapshot.h"
+#include "macros.h"
 #include "maketree.h"
 #include "missinghalos.h"
 #include "proto.h"
 #include "read_param.h"
 #include "set_cosmology.h"
 #include "utils.h"
+#include "utils_read_params.h"
+
+struct params_data PARAMS = {0}; // global variable
+float *REDSHIFT;
+int64 NUMPART; // Can not figure out how NUMPART is/was calculated but it is used in the code. Needs further
+               // investigation.
 
 int main(int argc, char **argv)
 {
@@ -43,7 +51,6 @@ int main(int argc, char **argv)
 #if (defined(GET_GROUPVEL) == 0 && defined(GET_MEANVEL) == 0)
     struct particle_data *P = NULL;
 #endif
-    char snapshotname[MAXLEN];
     struct group_data *group0 = NULL;
     struct node_data *node = NULL;
     struct parent_data *parent = NULL;
@@ -55,6 +62,17 @@ int main(int argc, char **argv)
     time_t t_codestart, t_codeend, t_sectionstart, t_sectionend, t_bigsectionstart;
 
     t_codestart = time(NULL);
+
+    struct rlimit rlim;
+    getrlimit(RLIMIT_AS, &rlim);
+    fprintf(stderr, "RLIMIT_AS: soft = %llu, hard = %llu\n", (unsigned long long)rlim.rlim_cur,
+            (unsigned long long)rlim.rlim_max);
+    rlim.rlim_cur = rlim.rlim_max = RLIM_INFINITY;
+    setrlimit(RLIMIT_AS, &rlim);
+
+    getrlimit(RLIMIT_AS, &rlim);
+    fprintf(stderr, "RLIMIT_AS [after setting to infinity]: soft = %llu, hard = %llu\n",
+            (unsigned long long)rlim.rlim_cur, (unsigned long long)rlim.rlim_max);
 
     /* Check compilation options */
 #if ((defined(WMAP1) + defined(WMAP3) + defined(WMAP5)) > 1)
@@ -85,19 +103,29 @@ int main(int argc, char **argv)
 
     // read in the parameter file
     fprintf(stderr, "reading parameter file `%s'...", outfname);
-    read_params(outfname, &PARAMS);
+    read_params(outfname, &PARAMS, orphanfixer_fill_params);
     fprintf(stderr, "..done\n");
-
-    fprintf(stderr, "sanity checking param values ...");
-    sanity_check_params(&PARAMS);
-    fprintf(stderr, "..done\n");
-
-    // fill in the config parameters
-    fill_config_params(&PARAMS);
 
     // the declarations that depend on MAX_SNAPSHOT_NUM
     // If MAX_SNAPSHOT_NUM is too large, consider mallocing these
     NUM_SNAPSHOTS = PARAMS.MAX_SNAPSHOT_NUM + 1;
+    REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);
+
+#ifdef SUSSING_TREES
+    my_snprintf(outfname, MAXLEN, "%s/redshifts.list", PARAMS.GROUP_DIR);
+#else
+    my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
+#endif
+    int nred = read_redshifts(outfname, REDSHIFT, NUM_SNAPSHOTS);
+    XASSERT(nred == NUM_SNAPSHOTS,
+            "Error: Number of redshifts read in = %d is not equal to the number of snapshots = %d. "
+            "Please make sure that '%s' file contains redshifts for all snapshots.\n",
+            nred, NUM_SNAPSHOTS, outfname);
+
+    set_cosmology(&COSMO);
+    PARAMS.COSMO = &COSMO;
+    set_simulation_params(&PARAMS);
+
     int64 Ngroups[NUM_SNAPSHOTS];                            // there are groups corresponding to
                                                              // MAX_SNAPSHOT_NUM
     struct parent_data *allparents[PARAMS.MAX_SNAPSHOT_NUM]; // parents_??? files only go up to
@@ -105,50 +133,16 @@ int main(int argc, char **argv)
     struct node_data *tree[NUM_SNAPSHOTS];                   // there are groups in MAX_SNAPSHOT_NUM
 
     // output the parameter file
-    my_snprintf(outfname, MAXLEN, "%s/orphanfixer.params", PARAMS.OUTPUT_DIR);
+    my_snprintf(outfname, MAXLEN, "%s/orphanfixer_used.params", PARAMS.OUTPUT_DIR);
     fprintf(stderr, "output parameter file to `%s'...", outfname);
-    output_params(outfname, &PARAMS);
+    output_params(outfname, &PARAMS, orphanfixer_write_params);
     fprintf(stderr, "..done\n");
 
-    REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);
-
-#ifndef SUSSING_TREES
-    my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
+#ifdef FOF_ONLY
+    const int fof_only = 1;
 #else
-    my_snprintf(outfname, MAXLEN, "%s/redshifts.list", PARAMS.GROUP_DIR);
+    const int fof_only = 0;
 #endif
-
-    {
-        fprintf(stderr, "Reading redshifts from file `%s'\n", outfname);
-        FILE *fd = my_fopen(outfname, "rt");
-        int line = 0;
-        char buffer[MAXLINESIZE];
-        while (line < NUM_SNAPSHOTS)
-        {
-            if (fgets(buffer, MAXLINESIZE, fd) != NULL)
-            {
-                int nread = sscanf(buffer, " %f ", &REDSHIFT[line]);
-                if (nread == 1)
-                {
-                    fprintf(stderr, "REDSHIFT[%d] = %g \n", line, REDSHIFT[line]);
-                    line++;
-                }
-            }
-            else
-            {
-                fprintf(stderr,
-                        "WARNING: DID not find enough redshifts (expected %d, found "
-                        "%d) in the redshift file `%s'\n",
-                        NUM_SNAPSHOTS, line, outfname);
-                break;
-            }
-        }
-        fclose(fd);
-    }
-
-    set_cosmology(&COSMO);
-    PARAMS.COSMO = &COSMO;
-    set_simulation_params(&PARAMS);
 
     for (int isnapshot = PARAMS.MIN_SNAPSHOT_NUM; isnapshot <= PARAMS.MAX_SNAPSHOT_NUM; isnapshot++)
         Ngroups[isnapshot] = 0;
@@ -159,87 +153,83 @@ int main(int argc, char **argv)
     {
         t_bigsectionstart = time(NULL);
         fprintf(stderr, "\n\n Now working on snapshot# %4d \n", isnapshot);
+        int64_t currRealMem = 0, peakRealMem = 0, currVirtMem = 0, peakVirtMem = 0;
+        Ngroups0 = returnNhalo(&PARAMS, isnapshot, fof_only);
+        if (Ngroups0 == 0)
+            continue;
 
-        /* read in Ngroups.  */
-#ifdef SUBFIND
-        my_snprintf(outfname, MAXLEN, "%s/groups_%03d.subcat", PARAMS.GROUP_DIR, isnapshot);
-        Ngroups0 = returnNhalo(outfname);
-#endif
-
-#ifdef SUSSING_TREES
-#define RETURN_ONLY_FOFS 0
-        /* my_snprintf(outfname,MAXLEN,"%s/%s_%03d.z%5.3f.AHF_halos",
-         * PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,isnapshot,REDSHIFT[isnapshot]); */
-        my_snprintf(outfname, MAXLEN, "%s/%s%05d.z%5.3f.AHF_halos", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE, isnapshot,
-                    REDSHIFT[isnapshot]);
-        Ngroups0 = returnNhalo_SUSSING(outfname, RETURN_ONLY_FOFS);
-#undef RETURN_ONLY_FOFS
-#endif
-
-#ifdef BGC2
-        my_snprintf(outfname, MAXLEN, "%s/halos_%03d.0.bgc2", PARAMS.GROUP_DIR, isnapshot);
-        Ngroups0 = returnNhalo_bgc2(outfname, RETURN_ONLY_FOFS);
-#endif
-
-        if (Ngroups0 > 0)
+        if (isnapshot < PARAMS.MAX_SNAPSHOT_NUM)
         {
-            if (isnapshot < PARAMS.MAX_SNAPSHOT_NUM)
-            {
-                parent = my_malloc(sizeof(*parent), Ngroups0);
-                my_snprintf(outfname, MAXLEN, "%s/parents_%03d.txt", PARAMS.OUTPUT_DIR, isnapshot);
+            parent = my_malloc(sizeof(*parent), Ngroups0);
+            my_snprintf(outfname, MAXLEN, "%s/parents_%03d.txt", PARAMS.OUTPUT_DIR, isnapshot);
 
-                fprintf(stderr, "Reading in parents from `%s' Ngroups0 = %" STR_FMT "\n", outfname, Ngroups0);
-                t_sectionstart = time(NULL);
-                parent = loadparents(outfname, parent, Ngroups0);
-                t_sectionend = time(NULL);
-                fprintf(stderr, " done ...\n\n");
-                print_time(t_sectionstart, t_sectionend, "loadparents");
-                allparents[isnapshot] = parent;
-            }
-
-            group0 = allocate_group(Ngroups0); // allocate and initialize
-            fprintf(stderr, "loading group for snapshot # %d with %" STR_FMT " halos ", isnapshot, Ngroups0);
-
+            fprintf(stderr, "Reading in parents from `%s' Ngroups0 = %" STR_FMT "\n", outfname, Ngroups0);
             t_sectionstart = time(NULL);
-            loadgroups(isnapshot, group0);
-            fprintf(stderr, " done ...\n\n");
+            parent = loadparents(outfname, parent, Ngroups0);
             t_sectionend = time(NULL);
-            print_time(t_sectionstart, t_sectionend, "loadgroups");
-            Ngroups[isnapshot] = Ngroups0;
-
-            t_sectionstart = time(NULL);
-            my_snprintf(outfname, MAXLEN, "%s/subhalolevel_%03d.txt", PARAMS.OUTPUT_DIR, isnapshot);
-            readsubhalo_hierarchy_levels(outfname, group0);
             fprintf(stderr, " done ...\n\n");
-            t_sectionend = time(NULL);
-            print_time(t_sectionstart, t_sectionend, "subhalo hierarchy levels");
+            print_time(t_sectionstart, t_sectionend, "loadparents");
+            allparents[isnapshot] = parent;
+        }
+        getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
+        fprintf(stderr,
+                "(Before allocate_group): Memory used: Real = %" PRId64 " (peak = %" PRId64
+                ") bytes, Virtual = %" PRId64 " (peak = %" PRId64 ") bytes\n",
+                currRealMem, peakRealMem, currVirtMem, peakVirtMem);
 
-            /*Read in the actual snapshot */
+        group0 = allocate_group(Ngroups0); // allocate and initialize
+        getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
+        fprintf(stderr,
+                "(After allocate_group, before loadgroups:) Memory used: Real = %" PRId64 " (peak = %" PRId64
+                ") bytes, Virtual = %" PRId64 " (peak = %" PRId64 ") bytes\n",
+                currRealMem, peakRealMem, currVirtMem, peakVirtMem);
+
+        fprintf(stderr, "loading group for snapshot # %d with %" STR_FMT " halos ", isnapshot, Ngroups0);
+        t_sectionstart = time(NULL);
+        loadgroups(&PARAMS, isnapshot, group0);
+        fprintf(stderr, " done ...\n\n");
+        t_sectionend = time(NULL);
+        print_time(t_sectionstart, t_sectionend, "loadgroups");
+        Ngroups[isnapshot] = Ngroups0;
+        getMemory(&currRealMem, &peakRealMem, &currVirtMem, &peakVirtMem);
+        fprintf(stderr,
+                "(After loadgroups:) Memory used: Real = %" PRId64 " (peak = %" PRId64 ") bytes, Virtual = %" PRId64
+                " (peak = %" PRId64 ") bytes\n",
+                currRealMem, peakRealMem, currVirtMem, peakVirtMem);
+
+        t_sectionstart = time(NULL);
+        my_snprintf(outfname, MAXLEN, "%s/subhalolevel_%03d.txt", PARAMS.OUTPUT_DIR, isnapshot);
+        readsubhalo_hierarchy_levels(outfname, group0);
+        fprintf(stderr, " done ...\n\n");
+        t_sectionend = time(NULL);
+        print_time(t_sectionstart, t_sectionend, "subhalo hierarchy levels");
+
+        /*Read in the actual snapshot */
 #if (defined(GET_GROUPVEL) == 0 && defined(GET_MEANVEL) == 0)
-            my_snprintf(snapshotname, MAXLEN, "%s/%s_%03d", PARAMS.SNAPSHOT_DIR, PARAMS.SNAPSHOT_BASE, isnapshot);
-            t_sectionstart = time(NULL);
-            P = loadsnapshot(snapshotname, &header);
-            t_sectionend = time(NULL);
-            print_time(t_sectionstart, t_sectionend, "loadsnapshot");
+        char snapshotname[MAXLEN];
+        my_snprintf(snapshotname, MAXLEN, "%s/%s_%03d", PARAMS.SNAPSHOT_DIR, PARAMS.SNAPSHOT_BASE, isnapshot);
+        t_sectionstart = time(NULL);
+        P = loadsnapshot(snapshotname, &header);
+        t_sectionend = time(NULL);
+        print_time(t_sectionstart, t_sectionend, "loadsnapshot");
 
-            t_sectionstart = time(NULL);
-            assign_vxcm(group0, Ngroups0, P, REDSHIFT[isnapshot]);
-            t_sectionend = time(NULL);
-            print_time(t_sectionstart, t_sectionend, "assign meanvel from snapshot");
-            my_free((void **)&P);
+        t_sectionstart = time(NULL);
+        assign_vxcm(group0, Ngroups0, P, REDSHIFT[isnapshot]);
+        t_sectionend = time(NULL);
+        print_time(t_sectionstart, t_sectionend, "assign meanvel from snapshot");
+        my_free((void **)&P);
 #endif
 
-            /* assign the groups for their snapshot number to the correct locations*/
-            node = my_malloc(sizeof(*node), Ngroups0);
-            t_sectionstart = time(NULL);
-            assign_node(group0, Ngroups0, parent, node, isnapshot);
-            t_sectionend = time(NULL);
-            print_time(t_sectionstart, t_sectionend, "assign_node");
+        /* assign the groups for their snapshot number to the correct locations*/
+        node = my_malloc(sizeof(*node), Ngroups0);
+        t_sectionstart = time(NULL);
+        assign_node(group0, Ngroups0, parent, node, isnapshot);
+        t_sectionend = time(NULL);
+        print_time(t_sectionstart, t_sectionend, "assign_node");
 
-            /* Now store the node data in the tree */
-            tree[isnapshot] = node;
-            free_group(group0, Ngroups0);
-        }
+        /* Now store the node data in the tree */
+        tree[isnapshot] = node;
+        free_group(group0, Ngroups0);
 
         my_snprintf(outfname, MAXLEN, "%s %d ", "Reading groups and assigning to node for i = ",
                     isnapshot); /*use outfname as temporary message variable. Gets reset..*/
@@ -262,6 +252,31 @@ int main(int argc, char **argv)
     print_time(t_sectionstart, t_sectionend, "assign_haloid");
 
 #ifndef FOF_ONLY
+    if (PARAMS.LOAD_FOUND_PROGENITORS == 1)
+    {
+        my_snprintf(outfname, MAXLEN, "%s/found_progenitors.txt", PARAMS.OUTPUT_DIR);
+        FILE *fp = fopen(outfname, "r");
+        if (fp == NULL)
+        {
+            fprintf(stderr,
+                    "Error: Could not open file `%s' for reading (even though the parameter 'LOAD_FOUND_PROGENITORS' "
+                    "is set). Resetting that param\n",
+                    outfname);
+            PARAMS.LOAD_FOUND_PROGENITORS = 0;
+        }
+        else
+        {
+            fclose(fp);
+            int nlines = getnumlines(outfname, '#');
+            if (nlines == 0)
+            {
+                fprintf(stderr, "Error: File `%s' is empty. Resetting the parameter 'LOAD_FOUND_PROGENITORS'\n",
+                        outfname);
+                PARAMS.LOAD_FOUND_PROGENITORS = 0;
+            }
+        }
+    }
+
     if (PARAMS.LOAD_FOUND_PROGENITORS == 1)
     {
         my_snprintf(outfname, MAXLEN, "%s/found_progenitors.txt", PARAMS.OUTPUT_DIR);
@@ -321,27 +336,20 @@ int main(int argc, char **argv)
 
 void assign_vxcm(struct group_data *group, int64 Ngroups, struct particle_data *P, float redshift)
 {
-    int64 index;
-    double sumx, sumy, sumz, summ;
-    double sumvx, sumvy, sumvz;
-    float mass = 0.0;
     for (int64 i = 0; i < Ngroups; i++)
     {
-        sumx = 0.0;
-        sumy = 0.0;
-        sumz = 0.0;
-        sumvx = 0.0;
-        sumvy = 0.0;
-        sumvz = 0.0;
-        summ = 0.0;
+        double sumx = 0.0, sumy = 0.0, sumz = 0.0, summ = 0.0;
+        double sumvx = 0.0, sumvy = 0.0, sumvz = 0.0;
 
 #ifdef FOF_ONLY
         group[i].Mtot = 0.0;
 #endif
         for (int64 j = 0; j < group[i].N; j++)
         {
-            index = group[i].id[j] - 1; // 0 based indexing
-            mass = P[index].Mass;
+            id64 index = group[i].id[j] - 1; // 0 based indexing
+            if (index < 0)
+                continue;
+            float mass = P[index].Mass;
             sumvx += (P[index].Vel[0] * mass);
             sumvy += (P[index].Vel[1] * mass);
             sumvz += (P[index].Vel[2] * mass);

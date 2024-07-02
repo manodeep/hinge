@@ -1,5 +1,5 @@
 #include "loadparents.h"
-#include "defs.h"
+#include "hinge.h"
 #include "utils.h"
 
 struct parent_data *loadparents(const char *fname, struct parent_data *parent, int64 Ngroups)

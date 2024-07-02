@@ -1,5 +1,5 @@
 #include "set_cosmology.h"
-#include "defs.h"
+#include "hinge.h"
 #include "io.h"
 #include "read_param.h"
 #include "utils.h"
@@ -57,6 +57,7 @@ void set_cosmology(struct cosmology_data *CP)
 
 double get_age(float z)
 {
+    XASSERT(PARAMS.COSMO != NULL, "Cosmology struct not set\n");
     const int NWORKSPACE = 1000;
     const double RECOMBINATION_REDSHIFT = 1e3;
     const double AGE_AT_RECOMBINATION = 0.37 * 1e-3; /*in Gyr ( recombination = 0.37 Myr)*/
@@ -179,17 +180,17 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
        of particles.
     */
 
-    double *r = NULL, *rho = NULL;
-    float r_minus1, r1;
-    int64 *numberdensity = NULL;
-    float rmax, rbinsize, rbin;
+    // double *r = NULL, *rho = NULL;
+    // float r_minus1, r1;
+    // int64 *numberdensity = NULL;
+    // float rmax, rbinsize, rbin;
     float xcen, ycen, zcen;
-    int i;
-    int index;
-    float maxoverdensity = 0.0;
-    const int Npart = group->N;
+    // int i;
+    // int index;
+    double maxoverdensity = 0.0;
+    const int64 Npart = group->N;
     const double halfmass = group->Mtot * 0.5;
-    float rmin = PARAMS.BOXSIZE;
+    // float rmin = PARAMS.BOXSIZE;
     int nbins = NBINS;
 
     if (Npart <= 1)
@@ -206,32 +207,34 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
         PARAMS.MASSARR[DM_PART_TYPE] = group->Mtot / Npart;
     }
 
-    r = (double *)my_malloc(sizeof(*r), Npart);
-    numberdensity = (int64 *)my_malloc(sizeof(*numberdensity), nbins);
-    rho = (double *)my_malloc(sizeof(*rho), nbins);
+    double *r = (double *)my_malloc(sizeof(*r), Npart);
+    int64 *numberdensity = (int64 *)my_malloc(sizeof(*numberdensity), nbins);
+    double *rho = (double *)my_malloc(sizeof(*rho), nbins);
 
-    if (group->Mtot > 0 && fabs(PARAMS.MASSARR[DM_PART_TYPE] * Npart - group->Mtot) / group->Mtot > 0.01)
+    if (group->Mtot > 0 && fabs(PARAMS.MASSARR[DM_PART_TYPE] * Npart - group->Mtot) / group->Mtot > 0.02)
     {
         fprintf(stderr,
-                "Particle masses may not be set correctly. Npart = %d Mtot = %e "
-                "Mpart*Npart = %e Mpart = %e \n",
-                Npart, group->Mtot, PARAMS.MASSARR[DM_PART_TYPE] * Npart, PARAMS.MASSARR[DM_PART_TYPE]);
-        exit(EXIT_FAILURE);
+                "Particle masses may not be set correctly. Npart = %" STR_FMT " Mtot = %e "
+                "Mpart*Npart = %e Mpart = %e. fractional diff = %e \n",
+                Npart, group->Mtot, PARAMS.MASSARR[DM_PART_TYPE] * Npart, PARAMS.MASSARR[DM_PART_TYPE],
+                fabs(PARAMS.MASSARR[DM_PART_TYPE] * Npart - group->Mtot) / group->Mtot);
+        fprintf(stderr, "nodeloc = %" STR_FMT " snapshot = %d\n", group->nodeloc, group->snapshot);
+        // exit(EXIT_FAILURE);
     }
 
     xcen = group->xcen; // or use group->x[0]??
     ycen = group->ycen;
     zcen = group->zcen;
-    assert(xcen >= 0 && xcen <= PARAMS.BOXSIZE && "xcen must be in [0.0, BoxSize]");
-    assert(ycen >= 0 && ycen <= PARAMS.BOXSIZE && "ycen must be in [0.0, BoxSize]");
-    assert(zcen >= 0 && zcen <= PARAMS.BOXSIZE && "zcen must be in [0.0, BoxSize]");
+    XASSERT(xcen >= 0 && xcen <= PARAMS.BOXSIZE, "xcen = %f must be in [0.0, %f]", xcen, PARAMS.BOXSIZE);
+    XASSERT(ycen >= 0 && ycen <= PARAMS.BOXSIZE, "ycen = %f must be in [0.0, %f]", ycen, PARAMS.BOXSIZE);
+    XASSERT(zcen >= 0 && zcen <= PARAMS.BOXSIZE, "zcen = %f must be in [0.0, %f]", zcen, PARAMS.BOXSIZE);
 
     /*
            Needs proper handling of box-wrapping -- taken from Groupfinder.
 
     */
 
-    for (i = 0; i < nbins; i++)
+    for (int i = 0; i < nbins; i++)
     {
         rho[i] = 0.0;
         numberdensity[i] = 0;
@@ -244,25 +247,36 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
            Switching the convention so that r[0] -> innermost.
      */
 
-    rmax = 0.0;
-    for (i = 1; i < Npart; i++)
+    double rmax = 0.0, rmin = PARAMS.BOXSIZE;
+    for (int64 i = 0; i < Npart; i++)
     {
-        const float dx = periodic(group->x[i] - xcen);
-        const float dy = periodic(group->y[i] - ycen);
-        const float dz = periodic(group->z[i] - zcen);
+        const double dx = periodic(group->x[i] - xcen);
+        const double dy = periodic(group->y[i] - ycen);
+        const double dz = periodic(group->z[i] - zcen);
 
         r[i] = sqrt(dx * dx + dy * dy + dz * dz);
-        if (r[i] > rmax)
-            rmax = r[i];
-
-        if (r[i] < rmin && r[i] > 0.0)
-            rmin = r[i];
+        rmax = r[i] > rmax ? r[i] : rmax;
+        rmin = r[i] < rmin ? r[i] : rmin;
     }
 
-    assert(rmin > 0 && "Min. radius must be non-zero");
-    assert(rmax > rmin && "Max. radius must be greater than minimum radius");
-    assert(nbins > 0 && "Number of bins must be non-zero");
-    rbinsize = (log10(rmax) - log10(rmin)) / nbins;
+    XASSERT(rmin > 0, "Error: Min. radius = %f must be non-zero\n", rmin);
+    if (rmax <= rmin)
+    {
+        fprintf(stderr,
+                "Error: Max. radius = %f must be greater than minimum radius = %f. Npart = %" STR_FMT
+                " nodeloc = %" STR_FMT " snapshot = %d\n",
+                rmax, rmin, Npart, group->nodeloc, group->snapshot);
+        fprintf(stderr, "xcen = %f ycen = %f zcen = %f\n", xcen, ycen, zcen);
+        for (int64 i = 0; i < Npart; i++)
+            fprintf(stderr, "x, y, z = (%f, %f, %f) r[%" STR_FMT "] = %lf id = %" STR_ID_FMT "\n", group->x[i],
+                    group->y[i], group->z[i], i, r[i], group->id[i]);
+    }
+    XASSERT(rmax > rmin,
+            "Error: Max. radius = %f must be greater than minimum radius = %f. Npart = %" STR_FMT " nodeloc = %" STR_FMT
+            " snapshot = %d\n",
+            rmax, rmin, Npart, group->nodeloc, group->snapshot);
+    XASSERT(nbins > 0, "Number of bins =%d must be non-zero", nbins);
+    double rbinsize = (log10(rmax) - log10(rmin)) / nbins;
     /*   for(i=0;i<nbins;i++) */
     /* 	fprintf(stderr,"rmax = %f nbins = %d rbin[%d] = %f
      * \n",rmax,nbins,i,rmin*pow(10.0,i*rbinsize)); */
@@ -272,11 +286,11 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     //   rho[0] += PARAMS.MASSARR[group->type[0]];
     rho[0] += PARAMS.MASSARR[DM_PART_TYPE];
 
-    for (i = 1; i < Npart; i++)
+    for (int64 i = 1; i < Npart; i++)
     {
-        index = 0;
+        int64 index = 0;
         if (r[i] >= rmin && r[i] <= rmax)
-            index = (int)floor((log10(r[i]) - log10(rmin)) / rbinsize);
+            index = floor((log10(r[i]) - log10(rmin)) / rbinsize);
 
         if (index >= nbins) /* Make sure there are seg. faults */
             index = nbins - 1;
@@ -290,19 +304,19 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
     }
 
     /* Now get the cumulative mass, i.e. M( < r) */
-    for (i = 1; i < nbins; i++)
+    for (int i = 1; i < nbins; i++)
         rho[i] += rho[i - 1];
 
     /*rho currently contains mass enclosed within i'th bin -> get half mass radius
      */
-    i = 0;
+    int64 i = 0;
     while (i < nbins && rho[i] < halfmass)
         i++;
 
     if (i < nbins && i > 1 && rho[i] > halfmass && rho[i - 1] < halfmass)
     {
-        r_minus1 = pow(10.0, (i - 1) * rbinsize + log10(rmin));
-        r1 = pow(10.0, i * rbinsize + log10(rmin));
+        double r_minus1 = pow(10.0, (i - 1) * rbinsize + log10(rmin));
+        double r1 = pow(10.0, i * rbinsize + log10(rmin));
         group->Rhalf = r1 * (halfmass - rho[i - 1]) +
                        r_minus1 * (rho[i] - halfmass); /* linear interpolation to half-mass radius */
         group->Rhalf /= (rho[i] - rho[i - 1]);
@@ -312,9 +326,9 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
 
     for (i = 0; i < nbins; i++)
     {
-        rbin = pow(10.0, i * rbinsize + log10(rmin));
-        rho[i] /= (4. / 3. * PI * pow(rbin, 3.0)); /* computes average density and NOT actual density */
-        rho[i] /= RhoCrit;                         /* Convert rho to overdensity  -- have to set Cosmology first*/
+        double rbin = pow(10.0, i * rbinsize + log10(rmin));
+        rho[i] /= (4. / 3. * PI * rbin * rbin * rbin); /* computes average density and NOT actual density */
+        rho[i] /= RhoCrit;                             /* Convert rho to overdensity  -- have to set Cosmology first*/
     }
 
     /*
@@ -337,8 +351,8 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
         i++;
     }
 
-    group->MaxOverDensity = maxoverdensity;
-    group->OverDensityThresh = OverDensity;
+    // group->MaxOverDensity = maxoverdensity;
+    // group->OverDensityThresh = OverDensity;
     group->Conc = getconc_anyl(group->Mtot, REDSHIFT[group->snapshot]);
 
     if (i > 0 && i < nbins)

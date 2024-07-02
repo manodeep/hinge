@@ -1,23 +1,24 @@
 include ../common.mk
 
+EXECUTABLE := OrphanFixer
 
-OPTIONS =  $(OPTIMIZE) $(OPT) $(CCFLAGS)
+SOURCES := maketree.c fillprogenitors.c missinghalos.c read_param.c ../utils/utils.c ../utils/progressbar.c ../utils/utils_read_params.c ../utils/set_cosmology.c
+INCL := $(SOURCES:.c=.h)
 
-SOURCES    = defs.c  maketree.c fillprogenitors.c missinghalos.c read_param.c ../utils/utils.c ../utils/progressbar.c ../utils/set_cosmology.c ../io/loadsnapshot.c ../io/loadgroups.c  ../io/loadparents.c main.c 
+IO_SRC := ../io/io.c ../io/loadparents.c ../io/loadgroups.c ../io/io_subfind_binary.c ../io/io_hinge_ascii.c ../io/io_hinge_binary.c ../io/io_hinge_utils.c
+INCL += $(IO_SRC:.c=.h) ../utils/hinge.h Makefile ../common.mk
 
-OBJECTS    = $(SOURCES:.c=.o)
+SOURCES += $(IO_SRC) main.c
+OBJECTS := $(SOURCES:.c=.o)
 
-EXECUTABLE = OrphanFixer
+all: $(EXECUTABLE)
 
-INCL       = defs.h maketree.h fillprogenitors.h missinghalos.h read_param.h ../utils/utils.h ../utils/progressbar.h ../utils/set_cosmology.h ../io/loadsnapshot.h ../utils/sglib.h ../io/io.h ../io/loadgroups.h ../io/loadparents.h Makefile
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(OBJECTS) $(CLINK) $(GSL_LINK) -o  $@
 
-all: $(SOURCES) $(EXECUTABLE) $(INCL)
-
-$(EXECUTABLE): $(OBJECTS) $(INCL)
-	$(CC) $(OBJECTS) $(CLINK) $(GSL_LINK) -o $@
-
+$(OBJECTS): $(INCL)
 %.o: %.c $(INCL)
-	$(CC) $(GSL_CFLAGS) $(CFLAGS) $(OPT) $(INCLUDE) -c $< -o $@
+	$(CC) $(GSL_CFLAGS) $(INCLUDE) $(CFLAGS) $(OPT) -c $< -o $@
 
 .PHONY: clean clena celan celna
 
@@ -27,4 +28,3 @@ clean:
 clena: clean
 celan: clean
 celna: clean
-

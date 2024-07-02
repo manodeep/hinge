@@ -1,9 +1,6 @@
 #pragma once
 
-#include "defs.h"
-#include "io.h"
-#include <float.h>
-
+#include "hinge.h"
 #include "maketree.h" //for assign_haloid function definition and for node_data struct definition
 
 /* functions in fillprogenitor */

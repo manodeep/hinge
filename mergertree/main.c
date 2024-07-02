@@ -31,17 +31,26 @@ entry is seen in NDisruptions.
 */
 
 // check 64 bit
-#include "defs.h"
 #include "genplotdata.h"
+#include "hinge.h"
 #include "loadfillprogenitors.h"
 #include "loadgroups.h"
 #include "loadparents.h"
 #include "loadsnapshot.h"
+#include "macros.h"
 #include "progressbar.h"
 #include "proto.h"
 #include "read_param.h"
 #include "set_cosmology.h"
 #include "utils.h"
+#include "utils_read_params.h"
+
+struct params_data PARAMS;
+float *REDSHIFT = NULL;
+int64 NUMPART;
+int64 MaxHaloId = 0; /* defined in assign_haloid function in maketree.c */
+double ActualMassUnits = 1e10;
+int Nbins = 100;
 
 int main(int argc, char **argv)
 {
@@ -94,15 +103,8 @@ int main(int argc, char **argv)
 
     // read in the parameter file
     fprintf(stderr, "reading parameter file `%s'...", outfname);
-    read_params(outfname, &PARAMS);
+    read_params(outfname, &PARAMS, mergertree_fill_params);
     fprintf(stderr, "..done\n");
-
-    fprintf(stderr, "sanity checking param values ...");
-    sanity_check_params(&PARAMS);
-    fprintf(stderr, "..done\n");
-
-    // fill in the config parameters
-    fill_config_params(&PARAMS);
 
     // the declarations that depend on MAX_SNAPSHOT_NUM
     // If MAX_SNAPSHOT_NUM is too large, consider mallocing these
@@ -116,47 +118,28 @@ int main(int argc, char **argv)
     // output the parameter file
     my_snprintf(outfname, MAXLEN, "%s/complete_mergertree.params", PARAMS.OUTPUT_DIR);
     fprintf(stderr, "output parameter file to `%s'...", outfname);
-    output_params(outfname, &PARAMS);
+    output_params(outfname, &PARAMS, mergertree_write_params);
     fprintf(stderr, "..done\n");
 
     REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);
+    PARAMS.RedShift = REDSHIFT;
+    set_cosmology(&COSMO);
+    PARAMS.COSMO = &COSMO;
 
 #ifndef SUSSING_TREES
     my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
 #else
     my_snprintf(outfname, MAXLEN, "%s/redshifts.list", PARAMS.GROUP_DIR);
 #endif
+    const int nred = read_redshifts(outfname, REDSHIFT, NUM_SNAPSHOTS);
+    XASSERT(nred == NUM_SNAPSHOTS, "Error: read %d redshifts, expected %d\n", nred, NUM_SNAPSHOTS);
 
-    {
-        fprintf(stderr, "Reading redshifts from file `%s'\n", outfname);
-        FILE *fd = my_fopen(outfname, "rt");
-        int line = 0;
-        char buffer[MAXLINESIZE];
-        while (line < NUM_SNAPSHOTS)
-        {
-            if (fgets(buffer, MAXLINESIZE, fd) != NULL)
-            {
-                int nread = sscanf(buffer, " %f ", &REDSHIFT[line]);
-                if (nread == 1)
-                {
-                    fprintf(stderr, "REDSHIFT[%d] = %g \n", line, REDSHIFT[line]);
-                    line++;
-                }
-            }
-            else
-            {
-                fprintf(stderr,
-                        "WARNING: DID not find enough redshifts (expected %d, found "
-                        "%d) in the redshift file `%s'\n",
-                        NUM_SNAPSHOTS, line, outfname);
-                break;
-            }
-        }
-        fclose(fd);
-    }
+#ifdef FOF_ONLY
+    const int fof_only = 1;
+#else
+    const int fof_only = 0;
+#endif
 
-    set_cosmology(&COSMO);
-    PARAMS.COSMO = &COSMO;
     set_simulation_params(&PARAMS);
 
     for (int isnapshot = PARAMS.MIN_SNAPSHOT_NUM; isnapshot <= PARAMS.MAX_SNAPSHOT_NUM; isnapshot++)
@@ -169,90 +152,70 @@ int main(int argc, char **argv)
         t_bigsectionstart = time(NULL);
         fprintf(stderr, "\n\n Now working on snapshot# %4d \n", isnapshot);
         /* read in Ngroups.  */
-#ifdef SUBFIND
-        my_snprintf(outfname, MAXLEN, "%s/groups_%03d.subcat", PARAMS.GROUP_DIR, isnapshot);
-        Ngroups0 = returnNhalo(outfname);
-#endif
 
-#ifdef SUSSING_TREES
-#define RETURN_ONLY_FOFS 0
-        /* my_snprintf(outfname,MAXLEN,"%s/%s_%03d.z%5.3f.AHF_halos",
-         * PARAMS.GROUP_DIR, PARAMS.GROUP_BASE,isnapshot,REDSHIFT[isnapshot]); */
-        my_snprintf(outfname, MAXLEN, "%s/%s%05d.z%5.3f.AHF_halos", PARAMS.GROUP_DIR, PARAMS.GROUP_BASE, isnapshot,
-                    REDSHIFT[isnapshot]);
-        Ngroups0 = returnNhalo_SUSSING(outfname, RETURN_ONLY_FOFS);
-#undef RETURN_ONLY_FOFS
-#endif
+        Ngroups0 = returnNhalo(&PARAMS, isnapshot, fof_only);
+        Ngroups[isnapshot] = Ngroups0;
+        if (Ngroups0 == 0)
+            continue;
 
-#ifdef BGC2
-#define RETURN_ONLY_FOFS 0
-        my_snprintf(outfname, MAXLEN, "%s/halos_%03d.0.bgc2", PARAMS.GROUP_DIR, isnapshot);
-        Ngroups0 = returnNhalo_bgc2(outfname, RETURN_ONLY_FOFS);
-#undef RETURN_ONLY_FOFS
-#endif
-
-        if (Ngroups0 > 0)
+        if (isnapshot < PARAMS.MAX_SNAPSHOT_NUM)
         {
-
-            if (isnapshot < PARAMS.MAX_SNAPSHOT_NUM)
-            {
-                parent = (struct parent_data *)my_malloc(sizeof(*parent), Ngroups0);
-                my_snprintf(outfname, MAXLEN, "%s/parents_%03d.txt", PARAMS.OUTPUT_DIR, isnapshot);
-                fprintf(stderr, "Reading in %s Ngroups0 = %" STR_FMT "\n", outfname, Ngroups0);
-                t_sectionstart = time(NULL);
-                parent = loadparents(outfname, parent, Ngroups0);
-                t_sectionend = time(NULL);
-                fprintf(stderr, " done ...\n\n");
-                print_time(t_sectionstart, t_sectionend, "loadparents");
-                allparents[isnapshot] = parent;
-            }
-
-            group0 = allocate_group(Ngroups0);
-            fprintf(stderr, "loading group for snapshot # %d with %" STR_FMT " halos ", isnapshot, Ngroups0);
-            group_init(group0, Ngroups0);
-
+            parent = (struct parent_data *)my_malloc(sizeof(*parent), Ngroups0);
+            my_snprintf(outfname, MAXLEN, "%s/parents_%03d.txt", PARAMS.OUTPUT_DIR, isnapshot);
+            fprintf(stderr, "Reading in %s Ngroups0 = %" STR_FMT "\n", outfname, Ngroups0);
             t_sectionstart = time(NULL);
-            loadgroups(isnapshot, group0);
-            /* loadgroups_no_particles(isnapshot,group0); */
-            fprintf(stderr, " done ...\n\n");
+            parent = loadparents(outfname, parent, Ngroups0);
             t_sectionend = time(NULL);
-            print_time(t_sectionstart, t_sectionend, "loadgroups");
-            Ngroups[isnapshot] = Ngroups0;
-
-            t_sectionstart = time(NULL);
-            my_snprintf(outfname, MAXLEN, "%s/subhalolevel_%03d.txt", PARAMS.OUTPUT_DIR, isnapshot);
-            readsubhalo_hierarchy_levels(outfname, group0);
             fprintf(stderr, " done ...\n\n");
-            t_sectionend = time(NULL);
-            print_time(t_sectionstart, t_sectionend, "subhalo hierarchy levels");
+            print_time(t_sectionstart, t_sectionend, "loadparents");
+            allparents[isnapshot] = parent;
+        }
 
-            /*Read in the actual snapshot */
+        group0 = allocate_group(Ngroups0);
+        fprintf(stderr, "loading group for snapshot # %d with %" STR_FMT " halos ", isnapshot, Ngroups0);
+        group_init(group0, Ngroups0);
+
+        t_sectionstart = time(NULL);
+        loadgroups(&PARAMS, isnapshot, group0);
+        /* loadgroups_no_particles(isnapshot,group0); */
+        fprintf(stderr, " done ...\n\n");
+        t_sectionend = time(NULL);
+        print_time(t_sectionstart, t_sectionend, "loadgroups");
+        Ngroups[isnapshot] = Ngroups0;
+
+        t_sectionstart = time(NULL);
+        my_snprintf(outfname, MAXLEN, "%s/subhalolevel_%03d.txt", PARAMS.OUTPUT_DIR, isnapshot);
+        readsubhalo_hierarchy_levels(outfname, group0);
+        fprintf(stderr, " done ...\n\n");
+        t_sectionend = time(NULL);
+        print_time(t_sectionstart, t_sectionend, "subhalo hierarchy levels");
+
+        /*Read in the actual snapshot */
 #if ((defined(GET_GROUPVEL) == 0) && (defined(GET_MEANVEL) == 0))
-            my_snprintf(snapshotname, MAXLEN, "%s/%s_%03d", PARAMS.SNAPSHOT_DIR, PARAMS.SNAPSHOT_BASE, isnapshot);
-            t_sectionstart = time(NULL);
-            header = get_gadget_header(snapshotname);
-            P = loadsnapshot(snapshotname, &header);
-            t_sectionend = time(NULL);
-            print_time(t_sectionstart, t_sectionend, "loadsnapshot");
+        my_snprintf(snapshotname, MAXLEN, "%s/%s_%03d", PARAMS.SNAPSHOT_DIR, PARAMS.SNAPSHOT_BASE, isnapshot);
+        t_sectionstart = time(NULL);
+        header = get_gadget_header(snapshotname);
+        P = loadsnapshot(snapshotname, &header);
+        t_sectionend = time(NULL);
+        print_time(t_sectionstart, t_sectionend, "loadsnapshot");
 
-            t_sectionstart = time(NULL);
-            assign_vxcm(group0, Ngroups0, P, REDSHIFT[isnapshot]);
-            t_sectionend = time(NULL);
-            print_time(t_sectionstart, t_sectionend, "assign meanvel from snapshot");
-            my_free((void **)&P);
+        t_sectionstart = time(NULL);
+        assign_vxcm(group0, Ngroups0, P, REDSHIFT[isnapshot]);
+        t_sectionend = time(NULL);
+        print_time(t_sectionstart, t_sectionend, "assign meanvel from snapshot");
+        my_free((void **)&P);
 #endif
 
-            /* assign the groups for their snapshot number to the correct locations*/
-            node = (struct node_data *)my_malloc(sizeof(*node), Ngroups0);
-            t_sectionstart = time(NULL);
-            assign_node(group0, Ngroups0, parent, node, isnapshot);
-            t_sectionend = time(NULL);
-            print_time(t_sectionstart, t_sectionend, "assign_node");
+        /* assign the groups for their snapshot number to the correct locations*/
+        node = (struct node_data *)my_malloc(sizeof(*node), Ngroups0);
+        t_sectionstart = time(NULL);
+        assign_node(group0, Ngroups0, parent, node, isnapshot);
+        t_sectionend = time(NULL);
+        print_time(t_sectionstart, t_sectionend, "assign_node");
 
-            /* Now store the node data in the tree */
-            tree[isnapshot] = node;
-            free_group(group0, Ngroups0);
-        }
+        /* Now store the node data in the tree */
+        tree[isnapshot] = node;
+        free_group(group0, Ngroups0);
 
         my_snprintf(outfname, MAXLEN, "%s %d ", "Reading groups and assigning to node for i = ",
                     isnapshot); /*use outfname as temporary message variable. Gets reset..*/
@@ -785,8 +748,10 @@ void assign_node(struct group_data *group0, int64 Ngroups0, struct parent_data *
 
         /* Set the group level density parameters */
         node[igroup].Rvir_anyl = getrvir_anyl(group0[igroup].Mtot, REDSHIFT[isnapshot], PARAMS.COSMO);
-        getrvir_from_overdensity(&group0[igroup], Nbins, rhocrit,
-                                 overdensity);                   /* Follows Bullock et al. 2001 MNRAS 321 559*/
+        if (group0[igroup].Rvir <= 0.0)
+            getrvir_from_overdensity(&group0[igroup], Nbins, rhocrit,
+                                     overdensity); /* Follows Bullock et al. 2001 MNRAS 321 559*/
+
         /* compute_vmax(&group0[igroup],REDSHIFT[isnapshot]); */ // Not implemented
                                                                  // yet
 
@@ -796,8 +761,15 @@ void assign_node(struct group_data *group0, int64 Ngroups0, struct parent_data *
          * group->Mtot = %lf rhocrit=%e\n", */
         /* 		group0[igroup].Rvir,node[igroup].Rvir_anyl,group0[igroup].Rhalf,group0[igroup].MaxOverDensity,group0[igroup].N,group0[igroup].Mtot,rhocrit);
          */
-
-        node[igroup].Rhalf = group0[igroup].Rhalf;
+        if (group0[igroup].Rhalf > 0.0)
+        {
+            node[igroup].Rhalf = group0[igroup].Rhalf;
+        }
+        else
+        {
+            node[igroup].Rhalf = node[igroup].Rvir_anyl * 0.5; /* hack -> half mass radius = 1/2 Rvir.
+                                                                Better fit in Lokas 2001  */
+        }
 
         if (group0[igroup].Rvir > 0.0)
         {
@@ -813,8 +785,8 @@ void assign_node(struct group_data *group0, int64 Ngroups0, struct parent_data *
                                         concentration  (Bullock 2001) */
         }
 
-        node[igroup].MaxOverDensity = group0[igroup].MaxOverDensity;
-        node[igroup].OverDensityThresh = group0[igroup].OverDensityThresh;
+        // node[igroup].MaxOverDensity = group0[igroup].MaxOverDensity;
+        // node[igroup].OverDensityThresh = group0[igroup].OverDensityThresh;
         node[igroup].Vmax = group0[igroup].Vmax;
         node[igroup].RVmax = group0[igroup].RVmax;
 

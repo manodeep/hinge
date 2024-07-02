@@ -32,6 +32,9 @@ void *my_realloc(void *x, size_t size, int64_t N, const char *varname);
 
 void *my_calloc(size_t size, int64 N);
 void my_free(void **x);
+void getMemory(int64_t *currRealMem, int64_t *peakRealMem, int64_t *currVirtMem, int64_t *peakVirtMem);
+
+int read_redshifts(const char *outfname, float *redshift, const int num_snapshots);
 
 // gadget snapshot related utils
 int get_gadget_nfiles(const char *fname);
@@ -46,6 +49,7 @@ void free_group_positions(struct group_data *g, int64 N);
 struct group_data *allocate_group(int64 N);
 
 // utils related to the particle matching
+int64 remove_duplicates(struct group_data *g, int64 N);
 void init_all_ranks(double *rank, int64 *ncommon, int64 N);
 int64 find_max_rank(double *NextAllRanks, int64 NextNsub);
 void reset_ncommon(int64 *Ncommon, int64 N);
