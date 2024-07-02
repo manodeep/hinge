@@ -180,9 +180,9 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
        of particles.
     */
 
-    double *r = NULL, *rho = NULL;
+    // double *r = NULL, *rho = NULL;
     // float r_minus1, r1;
-    int64 *numberdensity = NULL;
+    // int64 *numberdensity = NULL;
     // float rmax, rbinsize, rbin;
     float xcen, ycen, zcen;
     // int i;
@@ -207,9 +207,9 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
         PARAMS.MASSARR[DM_PART_TYPE] = group->Mtot / Npart;
     }
 
-    r = (double *)my_malloc(sizeof(*r), Npart);
-    numberdensity = (int64 *)my_malloc(sizeof(*numberdensity), nbins);
-    rho = (double *)my_malloc(sizeof(*rho), nbins);
+    double *r = (double *)my_malloc(sizeof(*r), Npart);
+    int64 *numberdensity = (int64 *)my_malloc(sizeof(*numberdensity), nbins);
+    double *rho = (double *)my_malloc(sizeof(*rho), nbins);
 
     if (group->Mtot > 0 && fabs(PARAMS.MASSARR[DM_PART_TYPE] * Npart - group->Mtot) / group->Mtot > 0.02)
     {
@@ -219,7 +219,7 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
                 Npart, group->Mtot, PARAMS.MASSARR[DM_PART_TYPE] * Npart, PARAMS.MASSARR[DM_PART_TYPE],
                 fabs(PARAMS.MASSARR[DM_PART_TYPE] * Npart - group->Mtot) / group->Mtot);
         fprintf(stderr, "nodeloc = %" STR_FMT " snapshot = %d\n", group->nodeloc, group->snapshot);
-        exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
     }
 
     xcen = group->xcen; // or use group->x[0]??
@@ -351,8 +351,8 @@ void getrvir_from_overdensity(struct group_data *group, int NBINS, const double 
         i++;
     }
 
-    group->MaxOverDensity = maxoverdensity;
-    group->OverDensityThresh = OverDensity;
+    // group->MaxOverDensity = maxoverdensity;
+    // group->OverDensityThresh = OverDensity;
     group->Conc = getconc_anyl(group->Mtot, REDSHIFT[group->snapshot]);
 
     if (i > 0 && i < nbins)
