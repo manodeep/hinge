@@ -8,7 +8,7 @@ SOURCES := read_param.c  impulse.c maketree.c loadfillprogenitors.c genplotdata.
 INCL := $(SOURCES:.c=.h)
 
 IO_SRC := ../io/io.c ../io/loadparents.c ../io/loadgroups.c ../io/io_subfind_binary.c ../io/io_hinge_ascii.c ../io/io_hinge_binary.c ../io/io_hinge_utils.c
-INCL += $(IO_SRC:.c=.h) ../utils/hinge.h Makefile
+INCL += $(IO_SRC:.c=.h) ../utils/hinge.h Makefile ../common.mk
 
 SOURCES += $(IO_SRC) main.c
 OBJECTS := $(SOURCES:.c=.o)
