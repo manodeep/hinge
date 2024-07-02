@@ -54,11 +54,6 @@ GSL_LIBDIR := $(shell gsl-config --prefix)/lib
 GSL_LINK   := $(shell gsl-config --libs) -Xlinker -rpath -Xlinker $(GSL_LIBDIR)
 
 
-ifneq (USE_OMP,$(findstring USE_OMP,$(OPT)))
-  ifneq (clang,$(findstring clang,$(CC)))
-     $(warning Recommended compiler for a serial build is clang)
-  endif
-endif
 
 ifeq (icc,$(findstring icc,$(CC)))
   CFLAGS += -xhost -opt-prefetch #-vec-report6
@@ -85,9 +80,11 @@ else
      endif
   endif
 
+  UNAME := $(shell uname)
+  ifneq ($(UNAME), Darwin)
+    CFLAGS += -march=native #replace with -march=mavx2 if using valgrind
+  endif
   #### common options for gcc and clang
-  # CFLAGS  += -march=native
-#  CFLAGS += -mavx2	
   CFLAGS  += -Wformat=2  -Wpacked  -Wnested-externs -Wpointer-arith  -Wredundant-decls  -Wfloat-equal -Wcast-qual
   CFLAGS  +=  -Wcast-align -Wmissing-declarations -Wmissing-prototypes  -Wnested-externs -Wstrict-prototypes  #-D_POSIX_C_SOURCE=2 -Wpadded -Wconversion
   CLINK += -lm
