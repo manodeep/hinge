@@ -68,7 +68,8 @@ void fill_config_params(struct params_data *params)
 #endif
 }
 
-void output_params(const char *fname, struct params_data *params, void output_special_params(FILE *, struct params_data *))
+void output_params(const char *fname, struct params_data *params,
+                   void output_special_params(FILE *, struct params_data *))
 {
     FILE *fp = NULL;
     move_existing_file(fname); // mv old param file if it exists

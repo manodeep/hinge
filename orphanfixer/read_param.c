@@ -37,7 +37,6 @@ void orphanfixer_fill_params(struct params_data *params, const int maxtags, void
     *nt_out = nt;
 }
 
-
 void orphanfixer_write_params(FILE *fp, struct params_data *params)
 {
     fprintf(fp, "MAX_DECR_GROUPS                   %d\n", params->MAX_DECR_GROUPS);

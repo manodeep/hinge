@@ -39,17 +39,19 @@ void haloparentfinder_fill_params(struct params_data *params, const int maxtags,
     *nt_out = nt;
 }
 
-
 void haloparentfinder_write_params(FILE *fp, struct params_data *params)
 {
     fprintf(fp, "MAX_INCR                          %d\n", params->MAX_INCR);
     fprintf(fp, "MAX_RANK_LOC                      %" STR_FMT "\n", params->MAX_RANK_LOC);
 
-    fprintf(fp, "MIN_FCOMMON_FINDPROGENITOR_THRESH                       %lf\n",  params->MIN_FCOMMON_FINDPROGENITOR_THRESH);
-    fprintf(fp, "MIN_NUMPART_IN_FINDPROGENITOR_HALO                      %" STR_FMT "\n", params->MIN_NUMPART_IN_FINDPROGENITOR_HALO);
+    fprintf(fp, "MIN_FCOMMON_FINDPROGENITOR_THRESH                       %lf\n",
+            params->MIN_FCOMMON_FINDPROGENITOR_THRESH);
+    fprintf(fp, "MIN_NUMPART_IN_FINDPROGENITOR_HALO                      %" STR_FMT "\n",
+            params->MIN_NUMPART_IN_FINDPROGENITOR_HALO);
 
     fprintf(fp, "MIN_FCOMMON_SWITCHFOF_THRESH                           %lf\n", params->MIN_FCOMMON_SWITCHFOF_THRESH);
-    fprintf(fp, "MIN_NUMPART_IN_SWITCHFOF_HALO                          %" STR_FMT "\n", params->MIN_NUMPART_IN_SWITCHFOF_HALO);
+    fprintf(fp, "MIN_NUMPART_IN_SWITCHFOF_HALO                          %" STR_FMT "\n",
+            params->MIN_NUMPART_IN_SWITCHFOF_HALO);
 
     return;
 }
