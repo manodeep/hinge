@@ -7,7 +7,7 @@ CLEANDIRS = $(DIRS:%=clean-%)
 all: $(BUILDDIRS)
 
 tar:
-	git archive --format=tar.gz -o $(DISTNAME).$(MAJOR).0.$(MINOR).no_version_control.tar.gz --prefix=hinge/ master
+	git archive --format=tar.gz -o $(DISTNAME).$(MAJOR).$(MINOR).$(PATCH).tar.gz --prefix=hinge/ master
 
 .PHONY: clean celna clena celan $(DIRS) $(BUILDDIRS) $(CLEANDIRS)
 
@@ -16,7 +16,7 @@ $(BUILDDIRS):
 	$(MAKE) -C $(@:build-%=%)
 
 clean: $(CLEANDIRS)
-	$(RM) $(DISTNAME).$(MAJOR).0.$(MINOR).tar.gz
+	$(RM) $(DISTNAME).$(MAJOR).$(MINOR).$(PATCH).tar.gz
 
 $(CLEANDIRS):
 	$(MAKE) -C $(@:clean-%=%) clean

@@ -41,8 +41,9 @@ CLINK=#-fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=address
 
 ### You should NOT edit below this line
 DISTNAME=HINGE
+MAJOR=2
 MINOR=0
-MAJOR=1
+PATCH=0
 
 INCLUDE := -I../io -I../utils -I.
 
