@@ -700,9 +700,10 @@ error:
             __FUNCTION__, catalog_fname, unique_fname);
     if (fp_cat != NULL)
         fclose(fp_cat);
-    if (fd > 0)
+    if (fd >= 0)
         close(fd);
-    params->LOAD_UNIQUE_PARTICLES =
-        0; /* This is critical to "unset". Otherwise, infinite loop will occur loadgroups<->load_unique */
+
+    /* This is critical to "unset". Otherwise, infinite loop will occur loadgroups<->load_unique */
+    params->LOAD_UNIQUE_PARTICLES = 0;
     return loadgroups_hinge_binary(params, snapnum, group);
 }
