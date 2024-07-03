@@ -79,6 +79,7 @@ double get_age(float z)
 
 double agefunc(double z, void *params)
 {
+    (void ) params;
     return 1.0 / (epeebles(z) * (1.0 + z));
 }
 
@@ -147,6 +148,7 @@ double getrvir_anyl(const double mvir, const float z, struct cosmology_data *CP)
 
 float getconc_anyl(const double mvir, const float z)
 {
+    (void) z;
     float conc = -1.0;
 
     /* Going to follow Maccio et al 2008 mnras 391, 1940 since that actually has

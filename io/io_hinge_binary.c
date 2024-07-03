@@ -373,16 +373,17 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
 #define WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups, thisgroup, start, totN, num_left)                                 \
     {                                                                                                                  \
         XASSERT(num_dups == 0, "Error: num_dups = %" PRId64 "\n", num_dups);                                           \
-        XASSERT(start + num_left == totN, "Error: start = %" PRId64 " num_left = %" PRId64 " totN = %" PRId64 "\n",    \
+        XASSERT(start + num_left == totN, "Error: start = %" STR_FMT " num_left = %" STR_FMT " totN = %" STR_FMT "\n", \
                 start, num_left, totN);                                                                                \
-        XASSERT(start >= 0 && start < totN, "Error: start = %" PRId64 " totN = %" PRId64 "\n", start, totN);           \
-        XASSERT(num_left > 0 && num_left <= totN, "Error: num_left = %" PRId64 "\n", num_left);                        \
+        XASSERT(start >= 0 && start < totN, "Error: start = %" STR_FMT " totN = %" STR_FMT "\n", start, totN);         \
+        XASSERT(num_left > 0 && num_left <= totN, "Error: num_left = %" STR_FMT "\n", num_left);                       \
         _WRITE_ARRAY_ELEMENTS(start, num_left);                                                                        \
     }
 
         if (num_dups == 0)
         {
-            WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups, thisgroup, 0LL, thisgroup.N, thisgroup.N);
+            int64 _start = 0;
+            WRITE_REMAINING_WHEN_NUM_DUPS_ZERO(num_dups, thisgroup, _start, thisgroup.N, thisgroup.N);
         }
         else
         {

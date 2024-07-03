@@ -2127,7 +2127,7 @@ void output_gill_data(struct node_data *tree[], int64 *Ngroups)
 {
     FILE *fp = NULL;
     const double Mmin = 1e4; /*10^14 clusters*/
-    char outfname[MAXLEN];
+    char outfname[2*MAXLEN];
     char message[MAXLEN];
     struct node_data *clusternode = NULL, *thisnode = NULL, *subnode = NULL;
     struct node_data *node = NULL;
@@ -2171,7 +2171,7 @@ void output_gill_data(struct node_data *tree[], int64 *Ngroups)
             cluster_haloids = my_realloc(cluster_haloids, sizeof(int64), Nclusters, message);
             cluster_haloids[Nclusters - 1] = clusternode->haloid;
 
-            snprintf(outfname, MAXLEN, "%s/gill_data_%" STR_FMT ".txt", PARAMS.OUTPUT_DIR, clusternode->haloid);
+            snprintf(outfname, 2*MAXLEN, "%s/gill_data_%" STR_FMT ".txt", PARAMS.OUTPUT_DIR, clusternode->haloid);
             fp = my_fopen(outfname, "w");
 
             subhaloids = NULL;
@@ -2240,7 +2240,7 @@ void output_gill_data(struct node_data *tree[], int64 *Ngroups)
                     "For cluster # %" STR_FMT " there are %" STR_FMT
                     " halos that have interacted with it and survive to z=0\n",
                     Nclusters, Nsubhaloids);
-            snprintf(outfname, MAXLEN, "%s/gill_data_%" STR_FMT ".txt", PARAMS.OUTPUT_DIR, clusternode->haloid);
+            snprintf(outfname, 2*MAXLEN, "%s/gill_data_%" STR_FMT ".txt", PARAMS.OUTPUT_DIR, clusternode->haloid);
             fp = my_fopen(outfname, "w");
             fprintf(fp, "############################################################"
                         "############################################################"
