@@ -313,7 +313,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
                            const int64 nhalos)
 {
     char test_unique_save_task_fname[MAXLEN];
-    fprintf(stderr,"Testing whether another task is writing out the unique particles\n");
+    fprintf(stderr, "Testing whether another task is writing out the unique particles\n");
     my_snprintf(test_unique_save_task_fname, MAXLEN, "%s/%s_unique_particles_test_z%0.3f.empty", params->OUTPUT_DIR,
                 params->GROUP_BASE, REDSHIFT[snapnum]);
     FILE *fp_test = fopen(test_unique_save_task_fname, "r");
@@ -440,7 +440,7 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     }
     fprintf(stderr, "In %s> totnpart = %" PRId64 " totnpart_all = %" PRId64 "\n", __FUNCTION__, totnpart, totnpart_all);
 #else
-//Directly write all the arrays (including the duplicate ids)
+    // Directly write all the arrays (including the duplicate ids)
     int64 totnpart = 0;
     for (int64 i = 0; i < nhalos; i++)
     {

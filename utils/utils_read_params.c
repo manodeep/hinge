@@ -32,13 +32,16 @@ void sanity_check_params(struct params_data *params)
                 params->MIN_SNAPSHOT_NUM, params->MAX_SNAPSHOT_NUM);
         exit(EXIT_FAILURE);
     }
-    if(params->LOAD_UNIQUE_PARTICLES && params->SAVE_UNIQUE_PARTICLES)
+    if (params->LOAD_UNIQUE_PARTICLES && params->SAVE_UNIQUE_PARTICLES)
     {
-        /* Need to first make sure all groups are saved -> otherwise, there is a chance of files being corrupted by multiple processes
-            trying to save the same set of groups - MS 7th Jul, 2024 */
+        /* Need to first make sure all groups are saved -> otherwise, there is a chance of files being corrupted by
+           multiple processes trying to save the same set of groups - MS 7th Jul, 2024 */
         fprintf(stderr, "ERROR: Cannot both load and save unique particles\n");
-        fprintf(stderr,"Probably should set only the SAVE_UNIQUE_PARTICLES for one entire run of *all* haloparentfinders, and then "\
-                        "set only the LOAD_UNIQUE_PARTICLES for all following runs (haloparentfinder, orphanfixer, mergertree)\n");
+        fprintf(
+            stderr,
+            "Probably should set only the SAVE_UNIQUE_PARTICLES for one entire run of *all* haloparentfinders, and "
+            "then "
+            "set only the LOAD_UNIQUE_PARTICLES for all following runs (haloparentfinder, orphanfixer, mergertree)\n");
         exit(EXIT_FAILURE);
     }
 }
