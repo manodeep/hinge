@@ -312,34 +312,49 @@ void loadgroups_hinge_binary(struct params_data *params, const int snapnum, stru
 void save_unique_particles(const struct params_data *params, const int snapnum, struct group_data *group,
                            const int64 nhalos)
 {
+    char test_unique_save_task_fname[MAXLEN];
+    fprintf(stderr,"Testing whether another task is writing out the unique particles\n");
+    my_snprintf(test_unique_save_task_fname, MAXLEN, "%s/%s_unique_particles_test_z%0.3f.empty", params->OUTPUT_DIR,
+                params->GROUP_BASE, REDSHIFT[snapnum]);
+    FILE *fp_test = fopen(test_unique_save_task_fname, "r");
+    if (fp_test != NULL)
+    {
+        fprintf(stderr, "Another task is writing out the unique particles. returning ...\n");
+        fclose(fp_test);
+        return;
+    }
+    fprintf(stderr, "No other task is writing out the unique particles. Continuing ...\n");
+    fp_test = my_fopen(test_unique_save_task_fname, "w");
+
     char unique_fname[MAXLEN];
     fprintf(stderr, "Saving unique particles ... nhalos = %" PRId64 "\n", nhalos);
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_partids_z%0.3f.bin", params->OUTPUT_DIR,
                 params->GROUP_BASE, REDSHIFT[snapnum]);
     FILE *fp_ids = my_fopen(unique_fname, "w+");
-    fwrite(&nhalos, sizeof(nhalos), 1, fp_ids);
+    TEST_FWRITE(&nhalos, sizeof(nhalos), 1, fp_ids);
 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_xpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
                 REDSHIFT[snapnum]);
     FILE *fp_xpos = my_fopen(unique_fname, "w+");
-    fwrite(&nhalos, sizeof(nhalos), 1, fp_xpos);
+    TEST_FWRITE(&nhalos, sizeof(nhalos), 1, fp_xpos);
 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_ypos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
                 REDSHIFT[snapnum]);
     FILE *fp_ypos = my_fopen(unique_fname, "w+");
-    fwrite(&nhalos, sizeof(nhalos), 1, fp_ypos);
+    TEST_FWRITE(&nhalos, sizeof(nhalos), 1, fp_ypos);
 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_zpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
                 REDSHIFT[snapnum]);
     FILE *fp_zpos = my_fopen(unique_fname, "w+");
-    fwrite(&nhalos, sizeof(nhalos), 1, fp_zpos);
+    TEST_FWRITE(&nhalos, sizeof(nhalos), 1, fp_zpos);
 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_halocat_z%0.3f.bin", params->OUTPUT_DIR,
                 params->GROUP_BASE, REDSHIFT[snapnum]);
     const size_t sizeof_group_data = sizeof(struct group_data);
     FILE *fp_cat = my_fopen(unique_fname, "w+");
-    fwrite(&nhalos, sizeof(nhalos), 1, fp_cat);
-    fwrite(&sizeof_group_data, sizeof(sizeof_group_data), 1, fp_cat);
+    TEST_FWRITE(&nhalos, sizeof(nhalos), 1, fp_cat);
+    TEST_FWRITE(&sizeof_group_data, sizeof(sizeof_group_data), 1, fp_cat);
+#if 0
     int64 totnpart = 0, totnpart_all = 0;
     for (int64 i = 0; i < nhalos; i++)
     {
@@ -424,6 +439,20 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
         totnpart += thisgroup.N;
     }
     fprintf(stderr, "In %s> totnpart = %" PRId64 " totnpart_all = %" PRId64 "\n", __FUNCTION__, totnpart, totnpart_all);
+#else
+//Directly write all the arrays (including the duplicate ids)
+    int64 totnpart = 0;
+    for (int64 i = 0; i < nhalos; i++)
+    {
+
+        TEST_FWRITE(group[i].id, sizeof(*group[i].id), group[i].N, fp_ids);
+        TEST_FWRITE(group[i].x, sizeof(*group[i].x), group[i].N, fp_xpos);
+        TEST_FWRITE(group[i].y, sizeof(*group[i].y), group[i].N, fp_ypos);
+        TEST_FWRITE(group[i].z, sizeof(*group[i].z), group[i].N, fp_zpos);
+        totnpart += group[i].N;
+    }
+#endif
+    TEST_FWRITE(group, sizeof_group_data, nhalos, fp_cat);
     fclose(fp_cat);
 
     fflush(fp_ids);
@@ -544,6 +573,9 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     my_snprintf(unique_fname, MAXLEN, "%s/%s_unique_particles_zpos_z%0.3f.bin", params->OUTPUT_DIR, params->GROUP_BASE,
                 REDSHIFT[snapnum]);
     unlink(unique_fname);
+
+    fclose(fp_test);
+    unlink(test_unique_save_task_fname);
 
     return;
 }
