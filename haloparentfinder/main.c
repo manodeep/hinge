@@ -293,6 +293,7 @@ int main(int argc, char **argv)
                     PARAMS.LOAD_UNIQUE_PARTICLES = 0;
                     struct group_data *group1_unique = allocate_group(Ngroups1);
                     loadgroups(&PARAMS, snapshot_number + incr, group1_unique);
+                    find_hierarchy_level(group1_unique, Ngroups1, PARAMS.OUTPUT_DIR);
                     compare_all_groups(group1, group1_unique, Ngroups1);
                     free_group(group1_unique, Ngroups1);
                     fprintf(stderr,
