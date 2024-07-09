@@ -462,65 +462,107 @@ struct group_data *allocate_group(int64 N)
     return g;
 }
 
-
-
 int compare_all_groups(const struct group_data *g1, const struct group_data *g2, const int64 ngroups)
 {
-    for(int64 i=0;i<ngroups;i++)
+    for (int64 i = 0; i < ngroups; i++)
     {
-        XASSERT(g1[i].N == g2[i].N, "ERROR: Number of particles in group %lld is different in the two groups. "\
-            "N1 = %"PRId64" N2 = %"PRId64"\n", (long long)i, g1[i].N, g2[i].N);
-        XASSERT(g1[i].xcen == g2[i].xcen, "ERROR: Group center x-coordinate mismatch in group %lld. "\
-                "x1 = %f x2 = %f\n", (long long)i, g1[i].xcen, g2[i].xcen);
-        XASSERT(g1[i].ycen == g2[i].ycen, "ERROR: Group center y-coordinate mismatch in group %lld. "\
-                "y1 = %f y2 = %f\n", (long long)i, g1[i].ycen, g2[i].ycen);
-        XASSERT(g1[i].zcen == g2[i].zcen, "ERROR: Group center z-coordinate mismatch in group %lld. "\
-                "z1 = %f z2 = %f\n", (long long)i, g1[i].zcen, g2[i].zcen);
-        XASSERT(g1[i].haloID == g2[i].haloID, "ERROR: Halo ID mismatch in group %lld. "\
-                "haloID1 = %ld haloID2 = %ld\n", (long long)i, g1[i].haloID, g2[i].haloID);
-        XASSERT(g1[i].fofID == g2[i].fofID, "ERROR: FOF ID mismatch in group %lld. "\
-                "fofID1 = %ld fofID2 = %ld\n", (long long)i, g1[i].fofID, g2[i].fofID);
-        XASSERT(g1[i].vxcen == g2[i].vxcen, "ERROR: Group center x-velocity mismatch in group %lld. "\
-                "vxcen1 = %f vxcen2 = %f\n", (long long)i, g1[i].vxcen, g2[i].vxcen);
-        XASSERT(g1[i].vycen == g2[i].vycen, "ERROR: Group center y-velocity mismatch in group %lld. "\
-                "vycen1 = %f vycen2 = %f\n", (long long)i, g1[i].vycen, g2[i].vycen);
-        XASSERT(g1[i].vzcen == g2[i].vzcen, "ERROR: Group center z-velocity mismatch in group %lld. "\
-                "vzcen1 = %f vzcen2 = %f\n", (long long)i, g1[i].vzcen, g2[i].vzcen);
-        XASSERT(g1[i].snapshot == g2[i].snapshot, "ERROR: Snapshot mismatch in group %lld. "\
-                "snapshot1 = %d snapshot2 = %d\n", (long long)i, g1[i].snapshot, g2[i].snapshot);
-        XASSERT(g1[i].redshift == g2[i].redshift, "ERROR: Redshift mismatch in group %lld. "\
-                "redshift1 = %f redshift2 = %f\n", (long long)i, g1[i].redshift, g2[i].redshift);
-        XASSERT(g1[i].nodeloc == g2[i].nodeloc, "ERROR: Node location mismatch in group %lld. "\
-                "nodeloc1 = %"PRId64" nodeloc2 = %"PRId64"\n", (long long)i, g1[i].nodeloc, g2[i].nodeloc);
-        XASSERT(g1[i].groupnum == g2[i].groupnum, "ERROR: Group number mismatch in group %lld. "\
-                "groupnum1 = %"PRId64" groupnum2 = %"PRId64"\n", (long long)i, g1[i].groupnum, g2[i].groupnum);
-        XASSERT(g1[i].Mtot == g2[i].Mtot, "ERROR: Total mass mismatch in group %lld. "\
-                "Mtot1 = %f Mtot2 = %f\n", (long long)i, g1[i].Mtot, g2[i].Mtot);
-        XASSERT(g1[i].isFof == g2[i].isFof, "ERROR: isFof mismatch in group %lld. "\
-                "isFof1 = %d isFof2 = %d\n", (long long)i, g1[i].isFof, g2[i].isFof);
-        XASSERT(g1[i].ParentLevel == g2[i].ParentLevel, "ERROR: ParentLevel mismatch in group %lld. "\
-                "ParentLevel1 = %d ParentLevel2 = %d\n", (long long)i, g1[i].ParentLevel, g2[i].ParentLevel);
-        XASSERT(g1[i].ContainerIndex == g2[i].ContainerIndex, "ERROR: ContainerIndex mismatch in group %lld. "\
-                "ContainerIndex1 = %"PRId64" ContainerIndex2 = %"PRId64"\n", (long long)i, g1[i].ContainerIndex, g2[i].ContainerIndex);
-        XASSERT(g1[i].Nsub == g2[i].Nsub, "ERROR: Nsub mismatch in group %lld. "\
-                "Nsub1 = %"PRId64" Nsub2 = %"PRId64"\n", (long long)i, g1[i].Nsub, g2[i].Nsub);
-        XASSERT(g1[i].FOFHalo == g2[i].FOFHalo, "ERROR: FOFHalo mismatch in group %lld. "\
-                "FOFHalo1 = %"PRId64" FOFHalo2 = %"PRId64"\n", (long long)i, g1[i].FOFHalo, g2[i].FOFHalo);
-
+        XASSERT(g1[i].N == g2[i].N,
+                "ERROR: Number of particles in group %lld is different in the two groups. "
+                "N1 = %" PRId64 " N2 = %" PRId64 "\n",
+                (long long)i, g1[i].N, g2[i].N);
+        XASSERT(g1[i].xcen == g2[i].xcen,
+                "ERROR: Group center x-coordinate mismatch in group %lld. "
+                "x1 = %f x2 = %f\n",
+                (long long)i, g1[i].xcen, g2[i].xcen);
+        XASSERT(g1[i].ycen == g2[i].ycen,
+                "ERROR: Group center y-coordinate mismatch in group %lld. "
+                "y1 = %f y2 = %f\n",
+                (long long)i, g1[i].ycen, g2[i].ycen);
+        XASSERT(g1[i].zcen == g2[i].zcen,
+                "ERROR: Group center z-coordinate mismatch in group %lld. "
+                "z1 = %f z2 = %f\n",
+                (long long)i, g1[i].zcen, g2[i].zcen);
+        XASSERT(g1[i].haloID == g2[i].haloID,
+                "ERROR: Halo ID mismatch in group %lld. "
+                "haloID1 = %ld haloID2 = %ld\n",
+                (long long)i, g1[i].haloID, g2[i].haloID);
+        XASSERT(g1[i].fofID == g2[i].fofID,
+                "ERROR: FOF ID mismatch in group %lld. "
+                "fofID1 = %ld fofID2 = %ld\n",
+                (long long)i, g1[i].fofID, g2[i].fofID);
+        XASSERT(g1[i].vxcen == g2[i].vxcen,
+                "ERROR: Group center x-velocity mismatch in group %lld. "
+                "vxcen1 = %f vxcen2 = %f\n",
+                (long long)i, g1[i].vxcen, g2[i].vxcen);
+        XASSERT(g1[i].vycen == g2[i].vycen,
+                "ERROR: Group center y-velocity mismatch in group %lld. "
+                "vycen1 = %f vycen2 = %f\n",
+                (long long)i, g1[i].vycen, g2[i].vycen);
+        XASSERT(g1[i].vzcen == g2[i].vzcen,
+                "ERROR: Group center z-velocity mismatch in group %lld. "
+                "vzcen1 = %f vzcen2 = %f\n",
+                (long long)i, g1[i].vzcen, g2[i].vzcen);
+        XASSERT(g1[i].snapshot == g2[i].snapshot,
+                "ERROR: Snapshot mismatch in group %lld. "
+                "snapshot1 = %d snapshot2 = %d\n",
+                (long long)i, g1[i].snapshot, g2[i].snapshot);
+        XASSERT(g1[i].redshift == g2[i].redshift,
+                "ERROR: Redshift mismatch in group %lld. "
+                "redshift1 = %f redshift2 = %f\n",
+                (long long)i, g1[i].redshift, g2[i].redshift);
+        XASSERT(g1[i].nodeloc == g2[i].nodeloc,
+                "ERROR: Node location mismatch in group %lld. "
+                "nodeloc1 = %" PRId64 " nodeloc2 = %" PRId64 "\n",
+                (long long)i, g1[i].nodeloc, g2[i].nodeloc);
+        XASSERT(g1[i].groupnum == g2[i].groupnum,
+                "ERROR: Group number mismatch in group %lld. "
+                "groupnum1 = %" PRId64 " groupnum2 = %" PRId64 "\n",
+                (long long)i, g1[i].groupnum, g2[i].groupnum);
+        XASSERT(g1[i].Mtot == g2[i].Mtot,
+                "ERROR: Total mass mismatch in group %lld. "
+                "Mtot1 = %f Mtot2 = %f\n",
+                (long long)i, g1[i].Mtot, g2[i].Mtot);
+        XASSERT(g1[i].isFof == g2[i].isFof,
+                "ERROR: isFof mismatch in group %lld. "
+                "isFof1 = %d isFof2 = %d\n",
+                (long long)i, g1[i].isFof, g2[i].isFof);
+        XASSERT(g1[i].ParentLevel == g2[i].ParentLevel,
+                "ERROR: ParentLevel mismatch in group %lld. "
+                "ParentLevel1 = %d ParentLevel2 = %d\n",
+                (long long)i, g1[i].ParentLevel, g2[i].ParentLevel);
+        XASSERT(g1[i].ContainerIndex == g2[i].ContainerIndex,
+                "ERROR: ContainerIndex mismatch in group %lld. "
+                "ContainerIndex1 = %" PRId64 " ContainerIndex2 = %" PRId64 "\n",
+                (long long)i, g1[i].ContainerIndex, g2[i].ContainerIndex);
+        XASSERT(g1[i].Nsub == g2[i].Nsub,
+                "ERROR: Nsub mismatch in group %lld. "
+                "Nsub1 = %" PRId64 " Nsub2 = %" PRId64 "\n",
+                (long long)i, g1[i].Nsub, g2[i].Nsub);
+        XASSERT(g1[i].FOFHalo == g2[i].FOFHalo,
+                "ERROR: FOFHalo mismatch in group %lld. "
+                "FOFHalo1 = %" PRId64 " FOFHalo2 = %" PRId64 "\n",
+                (long long)i, g1[i].FOFHalo, g2[i].FOFHalo);
 
         const int64 npart = g1[i].N;
-        for(int64 j=0;j<npart;j++)
+        for (int64 j = 0; j < npart; j++)
         {
-            XASSERT(g1[i].id[j] == g2[i].id[j], "ERROR: Particle ID mismatch in group %lld, particle %lld. "\
-                                                "id1 = %"PRId64" id2 = %"PRId64"\n", (long long)i, (long long)j,
-                                                g1[i].id[j], g2[i].id[j]);
+            XASSERT(g1[i].id[j] == g2[i].id[j],
+                    "ERROR: Particle ID mismatch in group %lld, particle %lld. "
+                    "id1 = %" PRId64 " id2 = %" PRId64 "\n",
+                    (long long)i, (long long)j, g1[i].id[j], g2[i].id[j]);
 
-            XASSERT(g1[i].x[j] == g2[i].x[j], "ERROR: Particle x-coordinate mismatch in group %lld, particle %lld. "\
-                                                "x1 = %f x2 = %f\n", (long long)i, (long long)j, g1[i].x[j], g2[i].x[j]);
-            XASSERT(g1[i].y[j] == g2[i].y[j], "ERROR: Particle y-coordinate mismatch in group %lld, particle %lld. "\
-                                                "y1 = %f y2 = %f\n", (long long)i, (long long)j, g1[i].y[j], g2[i].y[j]);
-            XASSERT(g1[i].z[j] == g2[i].z[j], "ERROR: Particle z-coordinate mismatch in group %lld, particle %lld. "\
-                                                "z1 = %f z2 = %f\n", (long long)i, (long long)j, g1[i].z[j], g2[i].z[j]);
+            XASSERT(g1[i].x[j] == g2[i].x[j],
+                    "ERROR: Particle x-coordinate mismatch in group %lld, particle %lld. "
+                    "x1 = %f x2 = %f\n",
+                    (long long)i, (long long)j, g1[i].x[j], g2[i].x[j]);
+            XASSERT(g1[i].y[j] == g2[i].y[j],
+                    "ERROR: Particle y-coordinate mismatch in group %lld, particle %lld. "
+                    "y1 = %f y2 = %f\n",
+                    (long long)i, (long long)j, g1[i].y[j], g2[i].y[j]);
+            XASSERT(g1[i].z[j] == g2[i].z[j],
+                    "ERROR: Particle z-coordinate mismatch in group %lld, particle %lld. "
+                    "z1 = %f z2 = %f\n",
+                    (long long)i, (long long)j, g1[i].z[j], g2[i].z[j]);
         }
     }
 

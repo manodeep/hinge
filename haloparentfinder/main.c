@@ -80,7 +80,7 @@ int main(int argc, char **argv)
     const int fof_only = 0;
 #endif
 
-    FILE *fd = NULL;
+        FILE *fd = NULL;
     int64 Ngroups0 = 0;
     int64 Ngroups1 = 0;
     int64 NFof0 = 0;
@@ -285,19 +285,21 @@ int main(int argc, char **argv)
                 print_time(t_sectionstart, t_sectionend, "hierarchy level at next snapshot ");
                 /* #endif	 */
 
-                if(PARAMS.LOAD_UNIQUE_PARTICLES > 0)
+                if (PARAMS.LOAD_UNIQUE_PARTICLES > 0)
                 {
-                    fprintf(stderr, "Loading groups from binary files (to compare against unique particles) %d ...\n", snapshot_number + incr);
+                    fprintf(stderr, "Loading groups from binary files (to compare against unique particles) %d ...\n",
+                            snapshot_number + incr);
                     const int params_load_unique_particles = PARAMS.LOAD_UNIQUE_PARTICLES;
                     PARAMS.LOAD_UNIQUE_PARTICLES = 0;
                     struct group_data *group1_unique = allocate_group(Ngroups1);
                     loadgroups(&PARAMS, snapshot_number + incr, group1_unique);
                     compare_all_groups(group1, group1_unique, Ngroups1);
                     free_group(group1_unique, Ngroups1);
-                    fprintf(stderr, "Loading groups from binary files (to compare against unique particles) %d ...done\n", snapshot_number + incr);
+                    fprintf(stderr,
+                            "Loading groups from binary files (to compare against unique particles) %d ...done\n",
+                            snapshot_number + incr);
                     PARAMS.LOAD_UNIQUE_PARTICLES = params_load_unique_particles;
                 }
-
 
                 fprintf(stderr, "freeing memory associated with particle positions \n");
                 free_group_positions(group1, Ngroups1);
