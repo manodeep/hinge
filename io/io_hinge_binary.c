@@ -218,7 +218,7 @@ void loadgroups_hinge_binary(struct params_data *params, const int snapnum, stru
             buf_type *_tmp_buf = (buf_type *)buf;                                                                      \
             for (int64_t j = 0; j < npart_field; j++)                                                                  \
             {                                                                                                          \
-                thisgroup->dst_field[j] =  _tmp_buf[j];                                                                \
+                thisgroup->dst_field[j] = _tmp_buf[j];                                                                 \
             }                                                                                                          \
         }                                                                                                              \
     }
