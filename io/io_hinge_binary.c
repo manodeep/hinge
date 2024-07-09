@@ -694,7 +694,6 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
     off_t x_offset = partid_offset + total_id_bytes;
     off_t y_offset = x_offset + total_x_bytes;
     off_t z_offset = y_offset + total_x_bytes;
-    size_t id_bytes_remaining = total_id_bytes;
     for (int64 i = 0; i < nhalos; i++)
     {
         my_progressbar(numpart_read, &interrupted);
