@@ -285,7 +285,7 @@ int main(int argc, char **argv)
                 print_time(t_sectionstart, t_sectionend, "hierarchy level at next snapshot ");
                 /* #endif	 */
 
-#if 0
+#if 1
                 if (PARAMS.LOAD_UNIQUE_PARTICLES > 0)
                 {
                     fprintf(stderr, "Loading groups from binary files (to compare against unique particles) %d ...\n",
