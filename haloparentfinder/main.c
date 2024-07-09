@@ -285,6 +285,7 @@ int main(int argc, char **argv)
                 print_time(t_sectionstart, t_sectionend, "hierarchy level at next snapshot ");
                 /* #endif	 */
 
+#if 0
                 if (PARAMS.LOAD_UNIQUE_PARTICLES > 0)
                 {
                     fprintf(stderr, "Loading groups from binary files (to compare against unique particles) %d ...\n",
@@ -301,7 +302,7 @@ int main(int argc, char **argv)
                             snapshot_number + incr);
                     PARAMS.LOAD_UNIQUE_PARTICLES = params_load_unique_particles;
                 }
-
+#endif
                 fprintf(stderr, "freeing memory associated with particle positions \n");
                 free_group_positions(group1, Ngroups1);
             }
