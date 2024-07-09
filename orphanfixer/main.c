@@ -700,5 +700,4 @@ void print_makefile_options(void)
 #else
     fprintf(stderr, "Assumes particle load is smaller than INT_MAX (2 billion)\n");
 #endif
-
 }
