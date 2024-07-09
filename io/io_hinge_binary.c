@@ -689,7 +689,8 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
             "Error: sizeof(group->x[0]) = %zu != sizeof(group->z[0]) = %zu\n", sizeof(group->x[0]),
             sizeof(group->z[0]));
     const size_t total_x_bytes = totnpart * sizeof(group->x[0]);
-    off_t group_partid_offset = sizeof(int64) + sizeof(int64); // to skip over nhalos & numpart (of type int64) at the start of each file
+    off_t group_partid_offset =
+        sizeof(int64) + sizeof(int64); // to skip over nhalos & numpart (of type int64) at the start of each file
     for (int64 i = 0; i < nhalos; i++)
     {
         my_progressbar(numpart_read, &interrupted);
