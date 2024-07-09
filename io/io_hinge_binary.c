@@ -690,7 +690,7 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
             sizeof(group->z[0]));
     const size_t total_x_bytes = totnpart * sizeof(group->x[0]);
     // to skip over nhalos & numpart (of type int64) at the start of each file
-    off_t partid_offset =  sizeof(int64) + sizeof(int64);
+    off_t partid_offset = sizeof(int64) + sizeof(int64);
     off_t x_offset = partid_offset + total_id_bytes;
     off_t y_offset = x_offset + total_x_bytes;
     off_t z_offset = y_offset + total_x_bytes;
