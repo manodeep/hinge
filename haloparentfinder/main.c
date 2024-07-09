@@ -270,7 +270,6 @@ int main(int argc, char **argv)
                 t_sectionend = time(NULL);
                 /* 			  fprintf(stderr," done ...\n\n"); */
                 print_time(t_sectionstart, t_sectionend, "hierarchy level at next snapshot ");
-                /* #endif	 */
 
 #if 0
 //This section is there to compare loadgroups with the native reader vs the load_unique mechanism
