@@ -689,8 +689,12 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
             "Error: sizeof(group->x[0]) = %zu != sizeof(group->z[0]) = %zu\n", sizeof(group->x[0]),
             sizeof(group->z[0]));
     const size_t total_x_bytes = totnpart * sizeof(group->x[0]);
-    off_t group_partid_offset =
-        sizeof(int64) + sizeof(int64); // to skip over nhalos & numpart (of type int64) at the start of each file
+    // to skip over nhalos & numpart (of type int64) at the start of each file
+    off_t partid_offset =  sizeof(int64) + sizeof(int64);
+    off_t x_offset = partid_offset + total_id_bytes;
+    off_t y_offset = x_offset + total_x_bytes;
+    off_t z_offset = y_offset + total_x_bytes;
+    size_t id_bytes_remaining = total_id_bytes;
     for (int64 i = 0; i < nhalos; i++)
     {
         my_progressbar(numpart_read, &interrupted);
@@ -699,21 +703,19 @@ void load_unique_particles(struct params_data *params, const int snapnum, struct
         thisgroup->x = my_malloc(sizeof(*thisgroup->x), thisgroup->N);
         thisgroup->y = my_malloc(sizeof(*thisgroup->y), thisgroup->N);
         thisgroup->z = my_malloc(sizeof(*thisgroup->z), thisgroup->N);
-        off_t offset = group_partid_offset;
-        PREAD_UNTIL_DONE(fd, thisgroup->id, thisgroup->N * sizeof(group->id[0]), offset);
-        off_t id_bytes_remaining = total_id_bytes - group_partid_offset + sizeof(int64);
-        offset = group_partid_offset + id_bytes_remaining + numpart_read * sizeof(group->x[0]);
-        PREAD_UNTIL_DONE(fd, thisgroup->x, thisgroup->N * sizeof(group->x[0]), offset);
-        offset = group_partid_offset + id_bytes_remaining + numpart_read * sizeof(group->x[0]) + total_x_bytes;
-        PREAD_UNTIL_DONE(fd, thisgroup->y, thisgroup->N * sizeof(group->y[0]), offset);
-        offset = group_partid_offset + id_bytes_remaining + numpart_read * sizeof(group->x[0]) + 2 * total_x_bytes;
-        PREAD_UNTIL_DONE(fd, thisgroup->z, thisgroup->N * sizeof(group->z[0]), offset);
+        PREAD_UNTIL_DONE(fd, thisgroup->id, thisgroup->N * sizeof(group->id[0]), partid_offset);
+        PREAD_UNTIL_DONE(fd, thisgroup->x, thisgroup->N * sizeof(group->x[0]), x_offset);
+        PREAD_UNTIL_DONE(fd, thisgroup->y, thisgroup->N * sizeof(group->y[0]), y_offset);
+        PREAD_UNTIL_DONE(fd, thisgroup->z, thisgroup->N * sizeof(group->z[0]), z_offset);
 
         thisgroup->parentgroupforparticle = my_malloc(sizeof(*thisgroup->parentgroupforparticle), thisgroup->N);
         thisgroup->parentsnapshotforparticle = my_malloc(sizeof(*thisgroup->parentsnapshotforparticle), thisgroup->N);
 
         numpart_read += thisgroup->N;
-        group_partid_offset += thisgroup->N * sizeof(group->id[0]);
+        partid_offset += thisgroup->N * sizeof(group->id[0]);
+        x_offset += thisgroup->N * sizeof(group->x[0]);
+        y_offset += thisgroup->N * sizeof(group->y[0]);
+        z_offset += thisgroup->N * sizeof(group->z[0]);
     }
     finish_myprogressbar(&interrupted);
     fprintf(stderr,
