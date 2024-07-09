@@ -4,6 +4,8 @@
 #define _FILE_OFFSET_BITS 64
 #include <sys/types.h>
 #include <unistd.h>
+#include <errno.h> //for errno -> EWOULDBLOCK
+#include <sys/file.h> //for flock
 
 #include <fcntl.h> //for open and close
 
@@ -323,6 +325,27 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
     }
     fprintf(stderr, "No other task is writing out the unique particles. Continuing ...\n");
     fp_test = my_fopen(test_unique_save_task_fname, "w");
+    int lock_status = flock(fileno(fp_test), LOCK_EX | LOCK_NB);
+    if (lock_status != 0)
+    {
+        switch(lock_status)
+        {
+            case EWOULDBLOCK:
+                fprintf(stderr, "Could not lock file %s. Another task is writing out the unique particles. returning ...\n",
+                    test_unique_save_task_fname);
+                fclose(fp_test);
+                return;
+            default:
+                fprintf(stderr, "Error: Could not lock file %s. flock returned %d\n", test_unique_save_task_fname, lock_status);
+                fclose(fp_test);
+                perror("flock:");
+                exit(EXIT_FAILURE);
+        }
+    }
+    else
+    {
+        fprintf(stderr, "Successfully locked file '%s'\n", test_unique_save_task_fname);
+    }
 
     char unique_fname[MAXLEN];
     fprintf(stderr, "Saving unique particles ... nhalos = %" PRId64 "\n", nhalos);
@@ -572,6 +595,8 @@ void save_unique_particles(const struct params_data *params, const int snapnum, 
                 REDSHIFT[snapnum]);
     unlink(unique_fname);
 
+    lock_status = flock(fileno(fp_test), LOCK_UN | LOCK_NB);
+    XASSERT(lock_status == 0, "Error unlocking file %s\n", test_unique_save_task_fname);
     fclose(fp_test);
     unlink(test_unique_save_task_fname);
 
