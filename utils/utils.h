@@ -47,6 +47,7 @@ double compute_rank(int64 i);
 void free_group(struct group_data *g, int64 N);
 void free_group_positions(struct group_data *g, int64 N);
 struct group_data *allocate_group(int64 N);
+extern int compare_all_groups(const struct group_data *g1, const struct group_data *g2, const int64 ngroups);
 
 // utils related to the particle matching
 int64 remove_duplicates(struct group_data *g, int64 N);

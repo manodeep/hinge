@@ -80,7 +80,7 @@ int main(int argc, char **argv)
     const int fof_only = 0;
 #endif
 
-        FILE *fd = NULL;
+    FILE *fd = NULL;
     int64 Ngroups0 = 0;
     int64 Ngroups1 = 0;
     int64 NFof0 = 0;
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     int64 Nparentsfound = 0;
     int incr = 1;
 
-    struct group_data *group0 = NULL, *group1 = NULL;
+    // struct group_data *group0 = NULL, *group1 = NULL;
     /* struct io_header header; */
     int NUM_SNAPSHOTS;
 
@@ -178,7 +178,7 @@ int main(int argc, char **argv)
     notfound = NFof0;
     if (Ngroups0 > 0)
     {
-        group0 = allocate_group(Ngroups0);
+        struct group_data *group0 = allocate_group(Ngroups0);
         fprintf(stderr, "loading group for snapshot # %d with %" STR_FMT " halos\n", snapshot_number, Ngroups0);
         t_sectionstart = time(NULL);
         loadgroups(&PARAMS, snapshot_number, group0);
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
         fprintf(stderr, " done ...\n\n");
         print_time(t_sectionstart, t_sectionend, "loadgroups");
         Ngroups1 = returnNhalo(&PARAMS, snapshot_number + incr, fof_only);
-        group1 = allocate_group(Ngroups1);
+        struct group_data *group1 = allocate_group(Ngroups1);
         fprintf(stderr, "loading group for snapshot # %d with %" STR_FMT " halos\n", snapshot_number + incr, Ngroups1);
         t_sectionstart = time(NULL);
         loadgroups(&PARAMS, snapshot_number + incr, group1);
@@ -284,6 +284,20 @@ int main(int argc, char **argv)
                 /* 			  fprintf(stderr," done ...\n\n"); */
                 print_time(t_sectionstart, t_sectionend, "hierarchy level at next snapshot ");
                 /* #endif	 */
+
+                if(PARAMS.LOAD_UNIQUE_PARTICLES > 0)
+                {
+                    fprintf(stderr, "Loading groups from binary files (to compare against unique particles) %d ...\n", snapshot_number + incr);
+                    const int params_load_unique_particles = PARAMS.LOAD_UNIQUE_PARTICLES;
+                    PARAMS.LOAD_UNIQUE_PARTICLES = 0;
+                    struct group_data *group1_unique = allocate_group(Ngroups1);
+                    loadgroups(&PARAMS, snapshot_number + incr, group1_unique);
+                    compare_all_groups(group1, group1_unique, Ngroups1);
+                    free_group(group1_unique, Ngroups1);
+                    fprintf(stderr, "Loading groups from binary files (to compare against unique particles) %d ...done\n", snapshot_number + incr);
+                    PARAMS.LOAD_UNIQUE_PARTICLES = params_load_unique_particles;
+                }
+
 
                 fprintf(stderr, "freeing memory associated with particle positions \n");
                 free_group_positions(group1, Ngroups1);
