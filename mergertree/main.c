@@ -126,11 +126,7 @@ int main(int argc, char **argv)
     set_cosmology(&COSMO);
     PARAMS.COSMO = &COSMO;
 
-#ifndef SUSSING_TREES
     my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
-#else
-    my_snprintf(outfname, MAXLEN, "%s/redshifts.list", PARAMS.GROUP_DIR);
-#endif
     const int nred = read_redshifts(outfname, REDSHIFT, NUM_SNAPSHOTS);
     XASSERT(nred == NUM_SNAPSHOTS, "Error: read %d redshifts, expected %d\n", nred, NUM_SNAPSHOTS);
 
@@ -363,9 +359,9 @@ void print_makefile_options()
 {
 
 #ifdef FOF_ONLY
-    fprintf(stderr, "The code was compiled to read in FOF groups only\n");
+    fprintf(stderr, "The code is going to read in FOF groups only\n");
 #else
-    fprintf(stderr, "The code was compiled to read in Subfind groups \n");
+    fprintf(stderr, "The code is going to read in subhalos + FOF groups \n");
 #endif
 
 #ifdef WMAP1

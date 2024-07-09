@@ -657,7 +657,7 @@ void print_makefile_options(void)
 #ifdef FOF_ONLY
     fprintf(stderr, "The code is going to read in FOF groups only\n");
 #else
-    fprintf(stderr, "The code is going to read in Subfind groups \n");
+    fprintf(stderr, "The code is going to read in subhalos + FOF groups \n");
 #endif
 
 #ifdef WMAP1
@@ -701,13 +701,4 @@ void print_makefile_options(void)
     fprintf(stderr, "Assumes particle load is smaller than INT_MAX (2 billion)\n");
 #endif
 
-#ifdef SUSSING_TREES
-    fprintf(stderr, "The code will assume data for the SUSSING Mergertree "
-                    "Comparison Project\n");
-#endif
-
-#ifdef ASCII_DATA
-    fprintf(stderr, "The code will read in ASCII input data (only valid with "
-                    "-DSUSSING_TREES; ignored otherwise) \n");
-#endif
 }

@@ -110,10 +110,6 @@ int main(int argc, char **argv)
     }
 #endif
 
-#if ((defined(SUSSING_TREES) + defined(ASCII_DATA) + defined(BGC2) + defined(SUBFIND)) > 1)
-#error Only ONE of the MAKEFILE options SUSSING_TREES, ASCII_DATA, BGC2 should be selected
-#endif
-
     // Check command line for the parameter file name.
     if (argc != 3)
     {
@@ -152,11 +148,7 @@ int main(int argc, char **argv)
     NUM_SNAPSHOTS = PARAMS.MAX_SNAPSHOT_NUM + 1;
     REDSHIFT = my_malloc(sizeof(*REDSHIFT), NUM_SNAPSHOTS);
 
-#ifdef SUSSING_TREES
-    my_snprintf(outfname, MAXLEN, "%s/redshifts.list", PARAMS.GROUP_DIR);
-#else
     my_snprintf(outfname, MAXLEN, "%s/redshift", PARAMS.GROUP_DIR);
-#endif
     const int nred = read_redshifts(outfname, REDSHIFT, NUM_SNAPSHOTS);
     XASSERT(nred == NUM_SNAPSHOTS,
             "Error: Number of redshifts read in = %d is not equal to the number of snapshots = %d. "
@@ -194,7 +186,6 @@ int main(int argc, char **argv)
         fprintf(stderr, " done ...\n\n");
         print_time(t_sectionstart, t_sectionend, "loadgroups");
 
-        /* #if !((defined(SUSSING_TREES)) || (defined(AHF_INPUT))) */
         fprintf(stderr,
                 "find hierarchy level for the subhalos group for snapshot # %d "
                 "with %" STR_FMT " halos\n",
@@ -203,12 +194,10 @@ int main(int argc, char **argv)
         find_hierarchy_level(group0, Ngroups0, PARAMS.OUTPUT_DIR);
         t_sectionend = time(NULL);
         print_time(t_sectionstart, t_sectionend, "hierarchy level at current snapshot ");
-        /* #endif		 */
 
         fprintf(stderr, "freeing memory associated with particle positions \n");
         free_group_positions(group0, Ngroups0);
 
-        /* #if !defined(SUSSING_TREES) && !defined(AHF_INPUT) */
         fprintf(stderr,
                 "find parent level for the subhalos group for snapshot # %d with "
                 "%" STR_FMT " halos\n",
@@ -217,7 +206,6 @@ int main(int argc, char **argv)
         find_hierarchy_level(group1, Ngroups1, PARAMS.OUTPUT_DIR);
         t_sectionend = time(NULL);
         print_time(t_sectionstart, t_sectionend, "hierarchy level at next snapshot ");
-        /* #endif */
 
         fprintf(stderr, "freeing memory associated with particle positions \n");
         free_group_positions(group1, Ngroups1);
@@ -273,7 +261,6 @@ int main(int argc, char **argv)
                 group1 = allocate_group(Ngroups1);
                 loadgroups(&PARAMS, snapshot_number + incr, group1);
 
-                /* #if !defined(SUSSING_TREES) && !defined(AHF_INPUT) */
                 fprintf(stderr,
                         "find hierarchy level for the subhalos group for snapshot # %d "
                         "with %" STR_FMT " halos\n",
@@ -419,24 +406,10 @@ int main(int argc, char **argv)
 void print_makefile_options(void)
 {
 
-#if 0
 #ifdef FOF_ONLY
     fprintf(stderr, "The code is going to read in FOF groups only\n");
-#endif
-
-#ifdef SUBFIND
-    fprintf(stderr, "The code is going to read in Subfind groups \n");
-#endif
-
-#ifdef SUSSING_TREES
-    fprintf(stderr, "The code will assume data for the SUSSING Mergertree "
-                    "Comparison Project\n");
-#endif
-
-#ifdef ASCII_DATA
-    fprintf(stderr, "The code will read in ASCII input data (only valid with "
-                    "-DSUSSING_TREES; ignored otherwise) \n");
-#endif
+#else
+    fprintf(stderr, "The code is going to read in subhalos + FOF groups \n");
 #endif
 
 #ifdef GET_GROUPVEL
