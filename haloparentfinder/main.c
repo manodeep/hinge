@@ -285,7 +285,10 @@ int main(int argc, char **argv)
                 print_time(t_sectionstart, t_sectionend, "hierarchy level at next snapshot ");
                 /* #endif	 */
 
-#if 1
+#if 0
+//This section is there to compare loadgroups with the native reader vs the load_unique mechanism
+//I have validated that the loadgroups function (via both mechanisms) return identical group values
+//and produces same "parents_XXX.txt" files. MS 9th July, 2024
                 if (PARAMS.LOAD_UNIQUE_PARTICLES > 0)
                 {
                     fprintf(stderr, "Loading groups from binary files (to compare against unique particles) %d ...\n",
