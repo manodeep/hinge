@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-//This is for the flock function but only when _DARWIN_C_SOURCE is defined (which is now added to `common.mk`)
+// This is for the flock function but only when _DARWIN_C_SOURCE is defined (which is now added to `common.mk`)
 #include <fcntl.h> //for open and close
 
 #if __APPLE__

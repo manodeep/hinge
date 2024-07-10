@@ -13,7 +13,6 @@ void print_subhalolevel_header(FILE *fp);
 void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId);
 void read_hierarchy_level(struct group_data *group, const int64 Ngroups, const char *fname);
 
-
 static inline int find_octant(float *pos, float *origin)
 {
     int octant = 0;
@@ -53,7 +52,6 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
 
         for (int64 k = 0; k <= Nsub; k++)
             smallest_match[k] = -1;
-
 
         // t_start = time(NULL);
         for (int64 igroup = (StartFofId + Nsub - 1); igroup > StartFofId + 1; igroup--)
@@ -128,7 +126,6 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
                     break;
                 }
             }
-
         }
 
         /* Now figure out the actual value of the levels */
@@ -199,7 +196,7 @@ void read_hierarchy_level(struct group_data *group, const int64 Ngroups, const c
     char comment = '#';
     FILE *fp = my_fopen(fname, "rt");
     fprintf(stderr, "Reading in the hierarchy levels from file `%s' ...\n", fname);
-    int interrupted=0;
+    int interrupted = 0;
     init_my_progressbar(Ngroups, &interrupted);
     int64 i = 0;
     while (fgets(str_line, MAXLINESIZE, fp) != NULL)
@@ -253,7 +250,7 @@ void find_hierarchy_level(struct group_data *group, const int64 Ngroups, const c
     fp = my_fopen(fname, "w");
     print_subhalolevel_header(fp);
 
-    int interrupted=0;
+    int interrupted = 0;
     fprintf(stderr, "Finding hierarchy levels for subhalos in FOFs ...\n");
     init_my_progressbar(Ngroups, &interrupted);
     for (int64 fofnum = 0; fofnum < Ngroups; fofnum += group[fofnum].Nsub)
