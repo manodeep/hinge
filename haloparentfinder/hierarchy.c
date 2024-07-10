@@ -13,58 +13,6 @@ void print_subhalolevel_header(FILE *fp);
 void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId);
 void read_hierarchy_level(struct group_data *group, const int64 Ngroups, const char *fname);
 
-static inline void rotate_prbar(int PLEN)
-{
-    static short index = 0;
-    char a = '\0';
-    switch (index)
-    {
-    case 0:
-        a = '\\';
-        index++;
-        break;
-    case 1:
-        a = '|';
-        index++;
-        break;
-    case 2:
-        a = '/';
-        index++;
-        break;
-    case 3:
-        a = '-';
-        index = 0;
-        break;
-    }
-    for (int i = 0; i < PLEN; i++)
-        fprintf(stderr, "%c", a);
-}
-
-static inline void print_char(const char s, const int LEN)
-{
-    for (int i = 0; i < LEN; i++)
-    {
-        fprintf(stderr, "%c", (char)s);
-    }
-}
-
-static inline void estimate_eta(const time_t t0, const float percent, int *hr, int *min, int *sec)
-{
-    float left = 100.0 - percent; /* percent is percent_done*/
-    double ratios[] = {3600.0, 60.0, 1};
-    int temp;
-    double timeleft = (double)t0 * left / percent;
-
-    if (timeleft < ratios[2])
-        timeleft = (double)t0; /* display elapsed time */
-
-    temp = floor(timeleft / ratios[0]);
-    *hr = temp > 0 ? temp : 0;
-    temp = floor((timeleft - (*hr) * ratios[0]) / ratios[1]);
-    *min = temp > 0 ? temp : 0;
-    temp = floor(timeleft - (*hr) * ratios[0] - (*min) * ratios[1]);
-    *sec = temp > 0 ? temp : 0;
-}
 
 static inline int find_octant(float *pos, float *origin)
 {
@@ -96,14 +44,7 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
     float origin[3], pos[3];
     int octant;
     int flag_no_match = 1;
-    /* int PRINTSTEP=0,SMALLPRINTSTEP=0,PRINTLEN = 100; */
-    // int SMALLPRINTSTEP = 0, PRINTLEN = 100;
-    // float percent_done = 0.0;
-    /* char octant_flag[NWEDGES+1],final_flag[NWEDGES+1]; */
-    // time_t t_start, time_t t_now, time_taken;
-    // int hr, min, sec;
     int N_per_wedge;
-    int Min_Nsub_forPBar = 300; /* >= 100 */
 
     if (group != NULL && group[StartFofId].isFof == 1 && group[StartFofId].Nsub > 2)
     {
@@ -113,29 +54,6 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
         for (int64 k = 0; k <= Nsub; k++)
             smallest_match[k] = -1;
 
-        /* for(int k=0;k<NWEDGES;k++) */
-        /* 		final_flag[k]  = '1'; */
-
-        /* final_flag[NWEDGES]  = '\0'; */
-        /* octant_flag[NWEDGES] = '\0'; */
-
-        /* Displaying the rotating progress bar */
-        int interrupted = 0;
-        if (Nsub > Min_Nsub_forPBar)
-        {
-#if 0
-            /* PRINTSTEP = (int) floor(0.1*Nsub); */
-            SMALLPRINTSTEP = ceil(0.01 * Nsub) > 1 ? ceil(0.01 * Nsub) : 1;
-            fprintf(stderr, "\n\n");
-            fprintf(stderr, "\n Working on Fofhalo id %" STR_FMT " with %" STR_FMT " subhalos \n\n", StartFofId, Nsub);
-            fprintf(stderr, " %3d%%", 0);
-            fprintf(stderr, "\b|");
-            print_char(' ', PRINTLEN);
-            fprintf(stderr, "\b|");
-            fprintf(stderr, "ETA: --:--:--");
-#endif
-            init_my_progressbar(Nsub, &interrupted);
-        }
 
         // t_start = time(NULL);
         for (int64 igroup = (StartFofId + Nsub - 1); igroup > StartFofId + 1; igroup--)
@@ -211,46 +129,6 @@ void find_hierarchy_in_fof(struct group_data *group, const int64 StartFofId)
                 }
             }
 
-            /* For displaying the rotating bar */
-            if (Nsub > Min_Nsub_forPBar)
-            {
-                my_progressbar(igroup, &interrupted);
-#if 0
-                if (((igroup - StartFofId) % SMALLPRINTSTEP) == 0)
-                {
-                    percent_done = 100.0 - (double)(igroup - StartFofId) / Nsub * 100.0;
-                    if (percent_done > 99.0)
-                        percent_done = 100.0;
-                    else if (percent_done < 0.0)
-                        percent_done = 0.0;
-
-                    fprintf(stderr, "\r %3d%% ", (int)percent_done);
-                    fprintf(stderr, "\b|");
-                    rotate_prbar((int)floor(percent_done));
-                    print_char(' ', PRINTLEN - (int)percent_done);
-                    fprintf(stderr, "\b|");
-                    t_now = time(NULL);
-                    time_taken = difftime(t_now, t_start);
-                    estimate_eta(time_taken, percent_done, &hr, &min, &sec);
-                    fprintf(stderr, "ETA:: %02dh:%02dm:%02ds", hr, min, sec);
-                }
-#endif
-            }
-        }
-
-        if (Nsub > Min_Nsub_forPBar)
-        {
-#if 0
-            fprintf(stderr, "\r %3d%% ", 100);
-            fprintf(stderr, "\b|");
-            print_char('|', PRINTLEN);
-            fprintf(stderr, "\b|");
-            t_now = time(NULL);
-            time_taken = difftime(t_now, t_start);
-            estimate_eta(time_taken, 100.0, &hr, &min, &sec);
-            fprintf(stderr, "Time: %02dh:%02dm:%02ds DONE", hr, min, sec);
-#endif
-            finish_myprogressbar(&interrupted);
         }
 
         /* Now figure out the actual value of the levels */
@@ -320,12 +198,15 @@ void read_hierarchy_level(struct group_data *group, const int64 Ngroups, const c
     char str_line[MAXLINESIZE];
     char comment = '#';
     FILE *fp = my_fopen(fname, "rt");
-    fprintf(stderr, "Reading in the hierarchy levels from file `%s' ", fname);
+    fprintf(stderr, "Reading in the hierarchy levels from file `%s' ...\n", fname);
+    int interrupted=0;
+    init_my_progressbar(Ngroups, &interrupted);
     int64 i = 0;
     while (fgets(str_line, MAXLINESIZE, fp) != NULL)
     {
         if (str_line[0] == comment)
             continue;
+        my_progressbar(i, &interrupted);
 
         int64 dummy;
         /* 					  sscanf(str_line,"%*"STR_FMT" %"STR_FMT" %hd
@@ -347,7 +228,8 @@ void read_hierarchy_level(struct group_data *group, const int64 Ngroups, const c
     fclose(fp);
     XASSERT(i == Ngroups, "Error: Expected to read in %" STR_FMT " groups but read in only %" STR_FMT " groups\n",
             Ngroups, i);
-    fprintf(stderr, " ..done\n");
+    finish_myprogressbar(&interrupted);
+    fprintf(stderr, "Reading in the hierarchy levels from file `%s' ...\n", fname);
 }
 
 void find_hierarchy_level(struct group_data *group, const int64 Ngroups, const char *outpath)
@@ -370,8 +252,13 @@ void find_hierarchy_level(struct group_data *group, const int64 Ngroups, const c
 
     fp = my_fopen(fname, "w");
     print_subhalolevel_header(fp);
+
+    int interrupted=0;
+    fprintf(stderr, "Finding hierarchy levels for subhalos in FOFs ...\n");
+    init_my_progressbar(Ngroups, &interrupted);
     for (int64 fofnum = 0; fofnum < Ngroups; fofnum += group[fofnum].Nsub)
     {
+        my_progressbar(fofnum, &interrupted);
         /*if the Fof has exactly one Nsub, i.e., the Fof halo itself, then
                 we know the ParentLevel and the ContainerIndex (set in
             loadgroups.c) */
@@ -402,7 +289,8 @@ void find_hierarchy_level(struct group_data *group, const int64 Ngroups, const c
                     i, group[i].ParentLevel, group[i].ContainerIndex, group[i].Nsub, group[i].N_per_wedge);
         }
     }
-
     fclose(fp);
+    finish_myprogressbar(&interrupted);
+    fprintf(stderr, "Finding hierarchy levels for subhalos in FOFs ...done\n");
     return;
 }
