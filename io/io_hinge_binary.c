@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #define _FILE_OFFSET_BITS 64
 #include <errno.h>    //for errno -> EWOULDBLOCK
-#include <sys/file.h> //for flock
+#include <sys/file.h> //for flock (but does not seem to work on OSX. Or potentially needs a different include path)
 #include <sys/types.h>
 #include <unistd.h>
 
+//This is for the flock function but only when _DARWIN_C_SOURCE is defined (which is now added to `common.mk`)
 #include <fcntl.h> //for open and close
 
 #if __APPLE__
