@@ -1,5 +1,5 @@
 #include "impulse.h"
-#include "defs.h"
+#include "hinge.h"
 #include "read_param.h"
 //
 //  a currently sparse set of functions designed to figure out 'physically

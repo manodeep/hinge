@@ -1,5 +1,5 @@
 #include "genplotdata.h"
-#include "defs.h"
+#include "hinge.h"
 #include "impulse.h"
 #include "read_param.h"
 #include "utils.h"

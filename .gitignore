@@ -5,6 +5,9 @@
 *yy*
 *.*~
 
+*.log
+*.txt
+
 *.param*
 *.parm*
 *.ipynb

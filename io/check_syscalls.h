@@ -1,6 +1,8 @@
 #ifndef CHECK_SYSCALLS_H
 #define CHECK_SYSCALLS_H
-#include "defs.h"
+
+#include <stdio.h>
+#include <sys/types.h>
 
 void system_error(char *errmsg);
 FILE *check_fopen(char *filename, char *mode);

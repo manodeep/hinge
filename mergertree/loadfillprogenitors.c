@@ -1,7 +1,7 @@
 #ifndef FOF_ONLY
 
 #include "loadfillprogenitors.h"
-#include "defs.h"
+#include "hinge.h"
 #include "read_param.h"
 #include "utils.h"
 

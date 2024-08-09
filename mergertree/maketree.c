@@ -1,5 +1,5 @@
 #include "maketree.h"
-#include "defs.h"
+#include "hinge.h"
 #include "impulse.h"
 #include "loadfillprogenitors.h"
 #include "progressbar.h"
@@ -439,7 +439,7 @@ void assign_haloid(struct node_data *tree[], int64 *Ngroups)
             }
         }
     }
-    MaxHaloId = haloid - 1;
+    // MaxHaloId = haloid - 1;
 }
 
 void increment_fof_nmergers(struct node_data *FofHalo, int incr)

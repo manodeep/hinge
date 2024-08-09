@@ -1,9 +1,6 @@
 #include "maketree.h"
-#include "defs.h"
 #include "loadparents.h"
-#include "proto.h"
-#include "read_param.h"
-#include <assert.h>
+#include "progressbar.h"
 
 void assign_parent(struct node_data *halo, int64 haloid, struct node_data *parenthalo, int64 parentid)
 {
@@ -74,27 +71,14 @@ void maketree(struct parent_data *allparents[], int64 *Ngroups, struct node_data
     struct node_data *ParentNode = NULL, *BaseNode = NULL;
     int parentsnapshot;
     int64 parentid;
-    int PRINTSTEP, SMALLPRINTSTEP;
-    fprintf(stderr, "\n\nAssigning parents..");
+    fprintf(stderr, "\n\nAssigning parents...\n");
 
-    PRINTSTEP = (int)floor(0.1 * (PARAMS.MAX_SNAPSHOT_NUM - PARAMS.MIN_SNAPSHOT_NUM));
-    SMALLPRINTSTEP = ceil(0.01 * (PARAMS.MAX_SNAPSHOT_NUM - PARAMS.MIN_SNAPSHOT_NUM)) > 1
-                         ? ceil(0.01 * (PARAMS.MAX_SNAPSHOT_NUM - PARAMS.MIN_SNAPSHOT_NUM))
-                         : 1;
-
+    int interrupted = 0;
+    init_my_progressbar(PARAMS.MAX_SNAPSHOT_NUM, &interrupted);
     for (int isnapshot = PARAMS.MIN_SNAPSHOT_NUM; isnapshot < PARAMS.MAX_SNAPSHOT_NUM; isnapshot++)
     {
 
-        if (SMALLPRINTSTEP > 0 && PRINTSTEP > 0)
-        {
-            if (isnapshot == PARAMS.MIN_SNAPSHOT_NUM)
-                fprintf(stderr, "\n");
-
-            if ((isnapshot - PARAMS.MIN_SNAPSHOT_NUM) % PRINTSTEP == 0)
-                fprintf(stderr, "%d%%", (int)ceil((isnapshot - PARAMS.MIN_SNAPSHOT_NUM) / PRINTSTEP) * 10);
-            else if ((isnapshot - PARAMS.MIN_SNAPSHOT_NUM) % SMALLPRINTSTEP == 0)
-                fprintf(stderr, ".");
-        }
+        my_progressbar(isnapshot, &interrupted);
 
         p = allparents[isnapshot];
         BaseNode = tree[isnapshot];
@@ -110,7 +94,8 @@ void maketree(struct parent_data *allparents[], int64 *Ngroups, struct node_data
             }
         }
     }
-    fprintf(stderr, "..done\n");
+    finish_myprogressbar(&interrupted);
+    fprintf(stderr, "\n\nAssigning parents...done\n");
 }
 
 void assign_haloid(struct node_data *tree[], int64 *Ngroups)
@@ -191,5 +176,5 @@ void assign_haloid(struct node_data *tree[], int64 *Ngroups)
             }
         }
     }
-    MaxHaloId = haloid - 1;
+    // MaxHaloId = haloid - 1;
 }

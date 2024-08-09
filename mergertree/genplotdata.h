@@ -1,9 +1,7 @@
 #pragma once
 
 #include <stdio.h>
-#include <stdlib.h>
 
-#include "defs.h"
 #include "maketree.h"
 
 /* functions in genplotdata*/
